@@ -13,6 +13,86 @@ from config import raw_regions, raw_sexs, raw_adult_categories
 class Orm:
     
     @staticmethod
+    async def get_duo_tournaments_by_region_and_sex_id(region_id, sex_id):
+        async with Session() as session:
+            query = (
+                select(TournamentDuo)
+                .where(TournamentDuo.region_id == region_id)
+                .where(TournamentDuo.sex_id == sex_id)
+                .where(func.date(TournamentDuo.date) >= datetime.datetime.now().date() - datetime.timedelta(days=2))
+                .options(
+                    joinedload(TournamentDuo.region),
+                    joinedload(TournamentDuo.category)
+                )
+            )
+            tournaments = (await session.execute(query)).scalars().all()
+            return tournaments
+    
+    @staticmethod
+    async def last_tournament_by_organizer_id(organizer_telegram_id):
+        async with Session() as session:
+            query = (
+                select(TournamentSolo)
+                .where(TournamentSolo.organizer_telegram_id == organizer_telegram_id)
+                .order_by(desc(TournamentSolo.date))
+            )
+            solo_tournament = (await session.execute(query)).scalar_one_or_none()
+            query = (
+                select(TournamentDuo)
+                .where(TournamentDuo.organizer_telegram_id == organizer_telegram_id)
+                .order_by(desc(TournamentDuo.date))
+            )
+            duo_tournament = (await session.execute(query)).scalar_one_or_none()
+            if solo_tournament.date > duo_tournament.date:
+                return solo_tournament
+            return duo_tournament
+    
+    @staticmethod
+    async def get_all_organizers():
+        async with Session() as session:
+            query = select(User).where(User.is_organizer == True)
+            organizers = (await session.execute(query)).scalars().all()
+            return organizers
+    
+    @staticmethod
+    async def change_organizer_status(telegram_id, status: bool):
+        async with Session() as session:
+            query = update(User).where(User.telegram_id == telegram_id).values(is_organizer=status)
+            await session.execute(query)
+            await session.commit()
+    
+    @staticmethod
+    async def get_count_of_types_tournaments_by_region_and_sex_id(tournament_type, region_id, sex_id):
+        async with Session() as session:
+            query = (
+                select(func.count(tournament_type.id))
+                .where(tournament_type.region_id == region_id)
+                .where(tournament_type.sex_id == sex_id)
+                .where(func.date(tournament_type.date) >= datetime.datetime.now().date() - datetime.timedelta(days=2))
+            )
+            tournaments_count = (await session.execute(query)).scalar()
+            return tournaments_count
+    
+    @staticmethod
+    async def get_count_of_tournaments_by_region_and_sex_id(region_id, sex_id):
+        async with Session() as session:
+            query = (
+                select(func.count(TournamentSolo.id))
+                .where(TournamentSolo.region_id == region_id)
+                .where(TournamentSolo.sex_id == sex_id)
+                .where(func.date(TournamentSolo.date) >= datetime.datetime.now().date() - datetime.timedelta(days=2))
+            )
+            solo_tournaments_count = (await session.execute(query)).scalar()
+            query = (
+                select(func.count(TournamentDuo.id))
+                .where(TournamentDuo.region_id == region_id)
+                .where(TournamentDuo.sex_id == sex_id)
+                .where(func.date(TournamentDuo.date) >= datetime.datetime.now().date() - datetime.timedelta(days=2))
+            )
+            duo_tournaments_count = (await session.execute(query)).scalar()
+            return solo_tournaments_count + duo_tournaments_count
+    
+    @staticmethod
     async def get_count_of_trainers_by_region_id(region_id):
         async with Session() as session:
             query = select(func.count(Trainer.id)).where(Trainer.region_id == region_id)
@@ -515,8 +595,7 @@ class Orm:
     @staticmethod
     async def get_user_by_telegram_id(telegram_id):
         async with Session() as session:
-            query = select(User).where(User.telegram_id ==
-                                       telegram_id).options(joinedload(User.region))
+            query = select(User).where(User.telegram_id == telegram_id).options(joinedload(User.region))
             user = (await session.execute(query)).scalar_one_or_none()
             return user
 

@@ -32,14 +32,26 @@ prices = {
     '12': 2100
 }
 
-document_file_id = "BQACAgIAAxkBAAIKemeHNuxP6kh9rbeZ19i0rSc0ML5hAAItZQACKXc5SEKvFrdnDT0AATYE"
+statute_file_id = "BQACAgIAAyEFAASQpZJtAAMcZ4lyIZTXW4jrmTyVUJ9AT16Pa0AAAl5sAAL7RkhIW5Tf2e7pQXs2BA"
+for_organizers_file_id = 'BQACAgIAAyEFAASQpZJtAAMbZ4lyIQRDY9JnWF3Q8QNlho4XuEgAAl1sAAL7RkhIP2xdIZJAg_A2BA'
+for_clubs_file_id = 'BQACAgIAAyEFAASQpZJtAAMaZ4lyIWUh7gseghHD0X6q-5iEvWIAAlxsAAL7RkhIHuBjzvbVJe82BA'
 
-about_us_markup = InlineKeyboardMarkup(
+documents_markup = InlineKeyboardMarkup(
     inline_keyboard=[
         [
             InlineKeyboardButton(
                 text="Положение",
                 callback_data="about_us_document"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text="Для организаторов",
+                callback_data="organizer_info"
+            ),
+            InlineKeyboardButton(
+                text="Для клубов",
+                callback_data="club_info"
             )
         ]
     ]
@@ -136,6 +148,12 @@ admin_panel_markup = InlineKeyboardMarkup(
                 text="Статистика",
                 callback_data="statistics"
             )
+        ],
+        [
+            InlineKeyboardButton(
+                text="Выдать\отнять права организатора",
+                callback_data="change_organizer"
+            )
         ]
     ]
 )
@@ -146,9 +164,7 @@ subscription_button = KeyboardButton(
 tournament_calendar_label = "📅 Календарь турниров"
 calendar_button = KeyboardButton(
     text=tournament_calendar_label)
-partners_button_label = "🤝 Наши партнеры"
-partners_button = KeyboardButton(
-    text=partners_button_label)
+partners_button_label = "/partners"
 info_about_us_label = "ℹ️ О нас"
 about_us_button = KeyboardButton(
     text=info_about_us_label)
@@ -165,6 +181,8 @@ tournament_add_back_button = InlineKeyboardButton(
     callback_data="back_add_tournament"
 )
 
+partners_text = "Партнеры"
+
 confirm_mail_markup = InlineKeyboardMarkup(
     inline_keyboard=[
         [
@@ -180,6 +198,7 @@ confirm_mail_markup = InlineKeyboardMarkup(
     ]
 )
 
+
 async def generate_statistics_text():
     return f"""
 <b>Статистика:</b>
@@ -191,6 +210,7 @@ async def generate_statistics_text():
 <b>Пришло сегодня:</b> {await Orm.get_today_count()}
 """
 
+
 async def generate_ref_statistics_text():
     referrals = await Orm.get_top_referrers()
     return f"""
@@ -199,18 +219,21 @@ async def generate_ref_statistics_text():
 {'\n'.join([f'{referral["user"].full_name} - {referral["referral_count"]}' for referral in referrals])}
 """
 
+
 async def generate_back_to_tournament_markup(tournament_id, tournament_type):
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
                     text="Назад",
-                    callback_data=f"tournament:{tournament_type}:{tournament_id}"
+                    callback_data=f"tournament:{
+                        tournament_type}:{tournament_id}"
                 )
             ]
         ]
     )
-    
+
+
 async def generate_payment_markup(payment_link, transaction_id):
     return InlineKeyboardMarkup(
         inline_keyboard=[
@@ -261,7 +284,7 @@ async def generate_main_menu_markup(telegram_id):
             keyboard=[
                 [calendar_button],
                 [my_tournaments_button],
-                [partners_button, about_us_button],
+                [about_us_button],
                 [add_tournament_button],
             ],
             resize_keyboard=True
@@ -272,7 +295,7 @@ async def generate_main_menu_markup(telegram_id):
                 [calendar_button],
                 [my_tournaments_button],
                 [subscription_button],
-                [partners_button, about_us_button],
+                [about_us_button],
             ],
             resize_keyboard=True
         )
@@ -305,8 +328,7 @@ async def generate_tournament_markup(tournament, user_id):
                 register_or_cancel_button,
                 InlineKeyboardButton(
                     text="Список Участников",
-                    callback_data=f"participants:{
-                        tournament_type}:{tournament.id}"
+                    callback_data=f"participants:{tournament_type}:{tournament.id}"
                 )
             ],
         ]
@@ -339,26 +361,26 @@ async def generate_check_tournament_payment_markup(tournament_type_str, particip
             [
                 InlineKeyboardButton(
                     text="Подтвердить",
-                    callback_data=f"check_pay:{
-                        tournament_type_str}:{participant_id}"
+                    callback_data=f"check_pay:{tournament_type_str}:{participant_id}"
                 ),
             ]
         ]
     )
-    
+
+
 async def generate_confirm_tournament_payment_markup(tournament_type_str, participant_id):
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
                     text="Подтвердить",
-                    callback_data=f"conf_pay:{
-                        tournament_type_str}:{participant_id}"
+                    callback_data=f"conf_pay:{tournament_type_str}:{participant_id}"
                 ),
             ]
         ]
     )
-    
+
+
 async def generate_tournaments_keyboard_from_list(tournaments):
     return InlineKeyboardMarkup(
         inline_keyboard=[
@@ -370,6 +392,7 @@ async def generate_tournaments_keyboard_from_list(tournaments):
             ] for tournament in tournaments
         ]
     )
+
 
 def format_tournament_info(tournament):
     return f'📆 {tournament.date.strftime("%d.%m")} 🎾{tournament.name[:20]}🎾 {tournament.category.shortname}'
@@ -446,7 +469,7 @@ async def generate_choose_tournament_to_delete_markup(region_id, sex_id, type_):
         case 'solo':
             tournaments = await Orm.get_solo_tournaments_by_region_and_sex_id(region_id, sex_id)
         case 'duo':
-            tournaments = await Orm.get_duo_tournaments_by_region_and_sex_name(region_id, sex_id)
+            tournaments = await Orm.get_duo_tournaments_by_region_and_sex_id(region_id, sex_id)
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
@@ -484,6 +507,7 @@ async def generate_tournament_text(tournament):
         return await generate_tournament_solo_text(tournament)
     else:
         return await generate_tournament_duo_text(tournament)
+
 
 async def generate_tournament_solo_text(tournament: TournamentSolo):
     return f"""
@@ -552,7 +576,7 @@ async def generate_choose_region_markup(subtext):
     markup = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(
-                text=f"{region.name} ({await Orm.get_count_of_tournaments_by_region_id(region.id) if subtext in ['see_tournaments', 'del_tour_region'] else await Orm.get_count_of_trainers_by_region_id(region.id)})",
+                text=f"{region.name} ({await Orm.get_count_of_tournaments_by_region_id(region.id) if subtext in ['see_tournaments', 'del_tour_region', 'crad'] else await Orm.get_count_of_trainers_by_region_id(region.id)})",
                 callback_data=f"{subtext}:{region.id}"
             )] for region in regions
         ] + [[
@@ -565,13 +589,13 @@ async def generate_choose_region_markup(subtext):
     return markup
 
 
-async def generate_choose_sex_keyboard(from_where):
+async def generate_choose_sex_keyboard(from_where: str, region_id: int):
     sexs = await Orm.get_all_sexs()
     markup = InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text=sex.name,
+                    text=f"{sex.name} ({await Orm.get_count_of_tournaments_by_region_and_sex_id(region_id, sex.id)})",
                     callback_data=f'sex:{sex.id}'
                 )
             ] for sex in sexs if sex.name != raw_sexs[3]
@@ -661,16 +685,16 @@ async def generate_channel_markup():
     )
 
 
-async def generate_choose_tournament_type_keyboard():
+async def generate_choose_tournament_type_keyboard(sex_id, region_id):
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="Одиночный",
+                    text=f"Одиночный ({await Orm.get_count_of_types_tournaments_by_region_and_sex_id(TournamentSolo, region_id, sex_id)})",
                     callback_data="type:solo"
                 ),
                 InlineKeyboardButton(
-                    text="Парный",
+                    text=f"Парный ({await Orm.get_count_of_types_tournaments_by_region_and_sex_id(TournamentDuo, region_id, sex_id)})",
                     callback_data="type:duo"
                 )
             ],

@@ -45,3 +45,12 @@ async def mail_four_days_before_tournament():
 Вы должны оплатить взнос за обоих участников команды ({participant.tournament.price * 2}₽)''',
                         reply_markup=await generate_check_tournament_payment_markup('duo', participant.id)
                     )
+
+async def check_last_tournaments():
+    organizers = await Orm.get_all_organizers()
+    now = datetime.datetime.now()
+    
+    for organizer in organizers:
+        last_tournament = await Orm.last_tournament_by_organizer_id(organizer.telegram_id)
+        if now - last_tournament.date > datetime.timedelta(days=30):
+            await Orm.change_organizer_status(organizer.telegram_id, False)

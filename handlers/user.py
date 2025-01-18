@@ -130,9 +130,9 @@ async def send_start_message(message: Message):
 
 @dp.callback_query(lambda callback: callback.data.startswith('sex'))
 async def choose_sex_handler(callback: CallbackQuery, state: FSMContext):
-    await callback.answer('.')
+    await callback.answer()
     await callback.message.delete()
-    
+
     if not await Orm.is_subscribed(callback.from_user.id):
         return await callback.message.answer(
             text=buy_subscription_text,
@@ -158,11 +158,14 @@ async def choose_sex_handler(callback: CallbackQuery, state: FSMContext):
             )
         )
 
+    region_id = (await state.get_data()).get("region_id")
+
     await callback.message.answer(
         text='Выберите тип турнира',
-        reply_markup=await generate_choose_tournament_type_keyboard()
+        reply_markup=await generate_choose_tournament_type_keyboard(sex.id, region_id)
     )
-    
+
+
 @dp.callback_query(lambda callback: callback.data.startswith('buy_subscription'))
 async def buy_subscription_handler(callback: CallbackQuery):
     await callback.answer()
@@ -170,13 +173,13 @@ async def buy_subscription_handler(callback: CallbackQuery):
 
     months = int(callback.data.split(':')[1])
     amount = prices[str(months)]
-    
+
     user = await Orm.get_user_by_telegram_id(callback.from_user.id)
-    
+
     payment = Payment()
     print(await payment.get_retailers())
     payment_link, operation_id = await payment.get_payment_link_and_operation_id(amount, months)
-    
+
     transaction = Transaction(
         amount=amount,
         payment_link=payment_link,
@@ -184,25 +187,26 @@ async def buy_subscription_handler(callback: CallbackQuery):
         months=months,
         user_id=user.id
     )
-    
+
     transaction = await Orm.add_item(transaction)
-    
+
     await callback.message.answer(
         text=f"Перейдите по ссылке для оплаты подписки на {months} месяцев",
         reply_markup=await generate_payment_markup(payment_link, transaction.id)
     )
-    
+
+
 @dp.callback_query(lambda callback: callback.data.startswith('check_sub_pay'))
 async def check_subscription_payment_handler(callback: CallbackQuery):
     await callback.answer()
-    
+
     transaction_id = int(callback.data.split(':')[1])
-    
+
     transaction = await Orm.get_transaction_by_id(transaction_id)
-    
+
     payment = Payment()
     status = await payment.get_payment_status(transaction.operation_id)
-    
+
     if status == 'APPROVED':
         await callback.message.delete()
         await Orm.update_user_subscription(transaction.user_id, transaction.months)
@@ -214,8 +218,9 @@ async def check_subscription_payment_handler(callback: CallbackQuery):
             text="Оплата не подтверждена"
         )
     await asyncio.sleep(4)
-    
+
     await answer.delete()
+
 
 @dp.callback_query(F.data == 'calendar_of_tournaments')
 async def calendar_of_tournaments_handler(callback: CallbackQuery):
@@ -232,7 +237,7 @@ async def calendar_of_tournaments_handler(callback: CallbackQuery):
 async def back_to_sex(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     await callback.message.delete()
-    
+
     if not await Orm.is_subscribed(callback.from_user.id):
         return await callback.message.answer(
             text=buy_subscription_text,
@@ -246,13 +251,14 @@ async def back_to_sex(callback: CallbackQuery, state: FSMContext):
         return await callback.message.answer(
             text="Выберите вариант",
             reply_markup=await generate_choose_sex_keyboard(
-                from_where='see_tournaments'
+                from_where='see_tournaments',
+                region_id=data["region_id"]
             )
         )
 
     await callback.message.answer(
         text='Выберите тип турнира',
-        reply_markup=await generate_choose_tournament_type_keyboard()
+        reply_markup=await generate_choose_tournament_type_keyboard(sex_id=sex_id, region_id=data["region_id"])
     )
 
 
@@ -260,7 +266,7 @@ async def back_to_sex(callback: CallbackQuery, state: FSMContext):
 async def choose_tournament_type_handler(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     await callback.message.delete()
-    
+
     if not await Orm.is_subscribed(callback.from_user.id):
         return await callback.message.answer(
             text=buy_subscription_text,
@@ -288,11 +294,12 @@ async def choose_tournament_type_handler(callback: CallbackQuery, state: FSMCont
             reply_markup=await generate_main_menu_markup(callback.from_user.id)
         )
 
+
 @dp.callback_query(lambda callback: callback.data.startswith('tournament'))
 async def choose_tournament_handler(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     await callback.message.delete()
-    
+
     if not await Orm.is_subscribed(callback.from_user.id):
         return await callback.message.answer(
             text=buy_subscription_text,
@@ -379,7 +386,8 @@ async def register_on_tournament_handler(callback: CallbackQuery, state: FSMCont
     tournament_type_class = TournamentSolo if tournament_type == 'solo' else TournamentDuo
 
     tournament = await Orm.get_tournament_by_id(tournament_id, tournament_type_class)
-    days_until_tournament = (tournament.date.date() - datetime.datetime.now().date()).days
+    days_until_tournament = (tournament.date.date() -
+                             datetime.datetime.now().date()).days
     if not tournament.can_register or days_until_tournament <= 4 or days_until_tournament >= 14:
         return await callback.message.answer(
             text="Регистрация на турнир закрыта",
@@ -615,12 +623,17 @@ async def tournament_calendar_handler(message: Message):
         reply_markup=await generate_choose_region_markup('see_tournaments')
     )
 
+@dp.message(F.text == partners_button_label)
+async def partners_message_handler(message: Message):
+    await message.answer(
+        text=partners_text,
+    )
 
 @dp.callback_query(lambda callback: callback.data.startswith('see_tournaments'))
 async def tournament_calendar_handler(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     await callback.message.delete()
-    
+
     if not await Orm.is_subscribed(callback.from_user.id):
         return await callback.message.answer(
             text=buy_subscription_text,
@@ -633,7 +646,7 @@ async def tournament_calendar_handler(callback: CallbackQuery, state: FSMContext
 
     await callback.message.answer(
         text=choose_sex_text,
-        reply_markup=await generate_choose_sex_keyboard(from_where='see_tournaments')
+        reply_markup=await generate_choose_sex_keyboard(from_where='see_tournaments', region_id=region_id)
     )
 
 
@@ -641,7 +654,7 @@ async def tournament_calendar_handler(callback: CallbackQuery, state: FSMContext
 async def info_about_us_handler(message: Message):
     await message.answer(
         text=about_us_text,
-        reply_markup=about_us_markup,
+        reply_markup=documents_markup,
         parse_mode='HTML'
     )
 
@@ -653,8 +666,31 @@ async def about_us_document_handler(callback: CallbackQuery):
 
     await bot.send_document(
         chat_id=callback.from_user.id,
-        document=document_file_id
+        document=statute_file_id
     )
+
+
+@dp.callback_query(F.data == 'club_info')
+async def club_info_handler(callback: CallbackQuery):
+    await callback.answer()
+    await callback.message.delete()
+
+    await bot.send_document(
+        chat_id=callback.from_user.id,
+        document=for_clubs_file_id
+    )
+
+
+@dp.callback_query(F.data == 'organizer_info')
+async def organizer_info_handler(callback: CallbackQuery):
+    await callback.answer()
+    await callback.message.delete()
+
+    await bot.send_document(
+        chat_id=callback.from_user.id,
+        document=for_organizers_file_id
+    )
+
 
 @dp.callback_query(lambda callback: callback.data.startswith('check_pay'))
 async def confirm_payment_handler(callback: CallbackQuery):
@@ -669,21 +705,24 @@ async def confirm_payment_handler(callback: CallbackQuery):
     if isinstance(participant, TournamentSoloMember):
         await bot.send_message(
             chat_id=participant.tournament.organizer_telegram_id,
-            text=f"Пользователь {participant.fio} должен был оплатить взнос на турнир {participant.tournament.name} ({participant.tournament.date.date()})",
+            text=f"Пользователь {participant.fio} должен был оплатить взнос на турнир {
+                participant.tournament.name} ({participant.tournament.date.date()})",
             reply_markup=await generate_confirm_tournament_payment_markup(tournament_type, participant.id)
         )
     elif isinstance(participant, UserPair):
         await bot.send_message(
             chat_id=participant.tournament.organizer_telegram_id,
-            text=f"Пользователь {participant.user1_fio} должен был оплатить взнос за пару ({participant.user1_fio}/{participant.user2_fio if participant.user2_fio else ''}) на турнир {participant.tournament.name} ({participant.tournament.date.date()})",
+            text=f"Пользователь {participant.user1_fio} должен был оплатить взнос за пару ({participant.user1_fio}/{
+                participant.user2_fio if participant.user2_fio else ''}) на турнир {participant.tournament.name} ({participant.tournament.date.date()})",
             reply_markup=await generate_confirm_tournament_payment_markup(tournament_type, participant.id)
         )
-    
+
     await bot.send_message(
         chat_id=participant.user.telegram_id,
         text="Ваш запрос на подтверждение оплаты отправлен организатору"
     )
-    
+
+
 @dp.callback_query(lambda callback: callback.data.startswith('conf_pay'))
 async def confirm_payment_handler(callback: CallbackQuery):
     await callback.answer()
@@ -700,21 +739,20 @@ async def confirm_payment_handler(callback: CallbackQuery):
         chat_id=participant.user.telegram_id,
         text="Ваша оплата подтверждена"
     )
-    
+
 
 @dp.message(F.text == my_tournaments_label)
 async def my_tournaments_handler(message: Message, state: FSMContext):
     await state.clear()
     user = await Orm.get_user_by_telegram_id(message.from_user.id)
     tournaments = await Orm.get_user_tournaments(user.id)
-    
+
     await message.answer(
         text="Турниры, на которые вы записаны:",
         reply_markup=await generate_tournaments_keyboard_from_list(tournaments)
     )
 
-    
-    
+
 # @dp.callback_query(F.data == 'back_to_choose_sex')
 
 
@@ -723,3 +761,18 @@ async def my_tournaments_handler(message: Message, state: FSMContext):
 #     await message.answer(
 #         text=f"{message.forward_from_chat.id}"
 #     )
+
+
+@dp.message(F.text == add_tournament_label)
+async def add_tournament_handler(message: Message, state: FSMContext):
+    tournament_region_markup = await generate_choose_region_markup('crad')
+    tournament_region_markup.inline_keyboard[-1] = [InlineKeyboardButton(
+        text="Назад",
+        callback_data="admin_panel"
+    )]
+    await message.answer(
+        text="Выберите регион, в котором будет проходить турнир:",
+        reply_markup=tournament_region_markup
+    )
+    
+    await state.set_state(AddTournamentState.region)

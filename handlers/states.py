@@ -38,3 +38,7 @@ class RegisterOnTournamentState(StatesGroup):
     fio = State()
     age = State()
     fio_duo = State()
+    
+    
+class ChangeOrganizerState(StatesGroup):
+    telegram_id = State()

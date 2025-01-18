@@ -95,6 +95,11 @@ class TournamentSolo(Base):
     region: Mapped['Region'] = relationship('Region', back_populates='tournaments_solo', lazy='joined')
     sex: Mapped['Sex'] = relationship('Sex', back_populates='tournaments_solo', lazy='joined')
     category: Mapped['Category'] = relationship('Category', back_populates='tournaments_solo', lazy='joined')
+    members: Mapped[list['TournamentSoloMember']] = relationship(
+        'TournamentSoloMember', 
+        back_populates='tournament', 
+        cascade='all, delete-orphan'  # Включаем каскадное удаление
+    )
 
 
 class TournamentDuo(Base):
@@ -119,6 +124,11 @@ class TournamentDuo(Base):
     region: Mapped['Region'] = relationship('Region', back_populates='tournaments_duo', lazy='joined')
     sex: Mapped['Sex'] = relationship('Sex', back_populates='tournaments_duo', lazy='joined')
     category: Mapped['Category'] = relationship('Category', back_populates='tournaments_duo', lazy='joined')
+    user_pairs: Mapped[list['UserPair']] = relationship(
+        'UserPair', 
+        back_populates='tournament', 
+        cascade='all, delete-orphan'  # Включаем каскадное удаление
+    )
 
 
 class TournamentSoloMember(Base):

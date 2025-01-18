@@ -17,6 +17,7 @@ from .user import *
 
 @dp.message(Command('admin'), IsAdmin())
 async def admin_command_handler(message: Message, state: FSMContext):
+    await state.clear()
     await message.answer(
         text=admin_panel_text,
         reply_markup=admin_panel_markup
@@ -190,7 +191,9 @@ async def confirm_add_trainer_handler(callback: CallbackQuery, state: FSMContext
             name=data["name"],
             description=data["description"],
             photo=data["photo_id"],
-            region_id=data["region_id"]
+            region_id=data["region_id"],
+            phone=data["phone"],
+            address=data["address"]
         )
     else:
         await callback.message.delete()
@@ -1011,3 +1014,41 @@ async def send_ref_statistics_message(user_id: int):
         chat_id=user_id,
         text=await generate_ref_statistics_text(),
     )
+    
+# ---------------------------- END OF REF STATISTICS ----------------------------
+
+# ---------------------------- STATUSES ----------------------------
+
+@dp.callback_query(F.data == 'change_organizer')
+async def change_organizer_status(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
+    await callback.message.delete()
+    
+    await callback.message.answer(
+        text="Введите telegram_id организатора"
+    )
+    
+    await state.set_state(ChangeOrganizerState.telegram_id)
+    
+@dp.message(ChangeOrganizerState.telegram_id)
+async def change_organizer_status_handler(message: Message, state: FSMContext):
+    await state.update_data(telegram_id=message.text)
+    
+    user = await Orm.get_user_by_telegram_id(message.text)
+    if not user:
+        return await message.answer(
+            text="Пользователь не найден"
+        )
+        
+    if user.is_organizer:
+        text = "Данный пользователь больше не является организатором"
+    else:
+        text = "Данный пользователь теперь является организатором"
+        
+    await Orm.change_organizer_status(user.telegram_id, not user.is_organizer)
+        
+    await message.answer(
+        text=text
+    )
+    
+    await state.clear()
