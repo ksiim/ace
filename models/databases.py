@@ -6,6 +6,7 @@ DB_NAME = 'tg_bot.db'
 DB_DIR = os.path.join(os.getcwd(), DB_NAME)
 
 engine = create_async_engine(f'sqlite+aiosqlite:///{DB_DIR}')
+sync_db = f'sqlite:///{DB_DIR}'
 Session = async_sessionmaker(engine)
 
 Base = declarative_base()
