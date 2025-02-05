@@ -28,7 +28,7 @@ async def mail_four_days_before_tournament():
                         reply_markup=await generate_check_tournament_payment_markup('solo', participant.id)
                     )
     for duo_tournament in duo_tournaments:
-        days_until_tournament = solo_tournament.date.date() - now.date()
+        days_until_tournament = duo_tournament.date.date() - now.date()
         if days_until_tournament == datetime.timedelta(days=4):
             participants = await Orm.get_tournament_participants(duo_tournament.id, TournamentDuo)
             for participant in participants:
@@ -42,7 +42,7 @@ async def mail_four_days_before_tournament():
 {participant.tournament.organizer_name_and_contacts}
 Размер взноса: {participant.tournament.price}₽
 
-Вы должны оплатить взнос за обоих участников команды ({participant.tournament.price * 2}₽)''',
+Вы должны оплатить взнос за обоих участников команды ({participant.tournament.price}₽)''',
                         reply_markup=await generate_check_tournament_payment_markup('duo', participant.id)
                     )
 

@@ -177,7 +177,6 @@ async def buy_subscription_handler(callback: CallbackQuery):
     user = await Orm.get_user_by_telegram_id(callback.from_user.id)
 
     payment = Payment()
-    print(await payment.get_retailers())
     payment_link, operation_id = await payment.get_payment_link_and_operation_id(amount, months)
 
     transaction = Transaction(
@@ -309,6 +308,7 @@ async def choose_tournament_handler(callback: CallbackQuery, state: FSMContext):
     tournament_id = int(callback.data.split(':')[-1])
     await state.update_data(tournament_id=tournament_id)
     tournament_type = callback.data.split(':')[1]
+    await state.update_data(tournament_type=tournament_type)
     match tournament_type:
         case 'solo':
             tournament_type = TournamentSolo
@@ -388,7 +388,7 @@ async def register_on_tournament_handler(callback: CallbackQuery, state: FSMCont
     tournament = await Orm.get_tournament_by_id(tournament_id, tournament_type_class)
     days_until_tournament = (tournament.date.date() -
                              datetime.datetime.now().date()).days
-    if not tournament.can_register or days_until_tournament <= 4 or days_until_tournament >= 14:
+    if not tournament.can_register or days_until_tournament <= 4 or days_until_tournament >= 21:
         return await callback.message.answer(
             text="Регистрация на турнир закрыта",
             reply_markup=await generate_back_to_tournament_markup(tournament_id, tournament_type)
