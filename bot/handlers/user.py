@@ -756,11 +756,11 @@ async def my_tournaments_handler(message: Message, state: FSMContext):
 # @dp.callback_query(F.data == 'back_to_choose_sex')
 
 
-# @dp.message()
-# async def forward_from(message: Message):
-#     await message.answer(
-#         text=f"{message.forward_from_chat.id}"
-#     )
+@dp.message()
+async def forward_from(message: Message):
+    await message.answer(
+        text=f"{message.forward_from_chat.id}"
+    )
 
 
 @dp.message(F.text == add_tournament_label)

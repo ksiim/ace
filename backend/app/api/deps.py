@@ -4,13 +4,12 @@ from typing import Annotated
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jwt.exceptions import InvalidTokenError
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core import security
-from app.core.config import API_V1_STR
-# from app.core.db import async_engine
+from backend.app.core import security
+from backend.app.core.config import API_V1_STR
+from common.db.database import async_engine
 # from app.models import TokenPayload, User
 
 reusable_oauth2 = OAuth2PasswordBearer(

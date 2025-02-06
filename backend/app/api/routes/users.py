@@ -6,14 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import or_
 from sqlmodel import col, delete, func, select
 
-from app import crud
-from app.api.deps import (
-    CurrentUser,
+from backend.app.api.deps import (
     SessionDep,
-    get_current_active_superuser,
 )
-from app.core.config import settings
-from app.core.security import get_password_hash, verify_password
+# from app.core.security import get_password_hash, verify_password
+from common.db.models import User
 
 
 router = APIRouter()
@@ -30,4 +27,6 @@ async def read_users(
     """
     Retrieve users.
     """
-    return
+    query = select(User)
+    users = await session.execute(query)
+    return users.scalars().all()
