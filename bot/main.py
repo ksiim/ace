@@ -7,8 +7,6 @@ import logging
 
 import handlers
 
-from models.databases import create_database
-
 from utils import tasks
 
 
@@ -17,7 +15,6 @@ logging.basicConfig(level=logging.INFO)
 
 async def main():
     initialize_scheduler()
-    await create_database()
     await dp.start_polling(bot)
 
 def initialize_scheduler():

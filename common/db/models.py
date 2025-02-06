@@ -1,7 +1,7 @@
 import datetime
 from sqlalchemy import CheckConstraint, ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-from models.databases import Base
+from common.db.database import Base
 from sqlmodel import SQLModel
 
 

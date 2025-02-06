@@ -1,7 +1,7 @@
 import datetime
 from handlers.markups import generate_check_tournament_payment_markup
-from models.dbs.models import TournamentDuo, TournamentSolo
-from models.dbs.orm import Orm
+from common.db.models import TournamentDuo, TournamentSolo
+from common.db.orm import Orm
 
 from bot import bot
 

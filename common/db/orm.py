@@ -1,7 +1,7 @@
 import asyncio
 
-from models.databases import Session
-from models.dbs.models import *
+from common.db.database import Session
+from common.db.models import *
 
 from sqlalchemy import desc, func, insert, inspect, or_, select, text, update
 import datetime

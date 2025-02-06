@@ -9,8 +9,8 @@ from aiogram.types import (
 from bot import dp, bot
 from config import CHANNEL_ID
 
-from models.dbs.orm import Orm
-from models.dbs.models import *
+from common.db.orm import Orm
+from common.db.models import *
 from utils.payments import Payment
 
 from .callbacks import *

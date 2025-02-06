@@ -1,6 +1,6 @@
 from aiogram.filters import Filter
 from aiogram.types import Message
-from models.dbs.orm import Orm
+from common.db.orm import Orm
 
 class IsAdmin(Filter):
     

@@ -2,8 +2,8 @@ import datetime
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from bot import bot
-from models.dbs.models import TournamentDuo, TournamentSolo, Trainer, UserPair
-from models.dbs.orm import Orm
+from common.db.models import TournamentDuo, TournamentSolo, Trainer, UserPair
+from common.db.orm import Orm
 
 from .callbacks import *
 
