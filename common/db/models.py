@@ -1,176 +1,239 @@
 import datetime
-from sqlalchemy import CheckConstraint, ForeignKey
-from sqlalchemy.orm import relationship, Mapped, mapped_column
-from common.db.database import Base
-from sqlmodel import SQLModel
+from typing import List, Optional
+from pydantic import EmailStr
+from sqlmodel import Field, Relationship, SQLModel
+from sqlalchemy.orm import relationship as sa_relationship
 
 
-class User(Base):
+
+class User(SQLModel, table=True):
     __tablename__ = 'users'
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    telegram_id: Mapped[int] = mapped_column(unique=True)
-    full_name: Mapped[str]
-    username: Mapped[str] = mapped_column(nullable=True)
-    admin: Mapped[bool] = mapped_column(default=False)
-    is_organizer: Mapped[bool] = mapped_column(default=False, nullable=True)
-    end_of_subscription: Mapped[datetime.datetime] = mapped_column(nullable=True, default=None)
-    start_time: Mapped[datetime.datetime] = mapped_column(nullable=True, default=datetime.datetime.now)
-    from_who: Mapped[str] = mapped_column(nullable=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
+    telegram_id: int = Field(unique=True, index=True)
+    full_name: str
+    username: Optional[str] = None
+    admin: bool = Field(default=False)
+    is_organizer: Optional[bool] = Field(default=False, nullable=True)
+    end_of_subscription: Optional[datetime.datetime] = Field(default=None, nullable=True)
+    start_time: Optional[datetime.datetime] = Field(default_factory=datetime.datetime.now, nullable=True)
+    from_who: Optional[str] = None
+    phone_number: Optional[str] = None
     
-    region_id: Mapped[int] = mapped_column(ForeignKey('regions.id'), nullable=True)
+    region_id: Optional[int] = Field(default=None, foreign_key="regions.id")
+    region: Optional["Region"] = Relationship(back_populates="users")
+
+
+class Sex(SQLModel, table=True):
+    __tablename__ = 'sex'
     
-    region: Mapped['Region'] = relationship('Region', back_populates='users')
-
-
-class Sex(Base):
-    __tablename__ = "sex"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str]
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
     
-    tournaments_solo: Mapped[list['TournamentSolo']] = relationship('TournamentSolo', back_populates='sex')
-    tournaments_duo: Mapped[list['TournamentDuo']] = relationship('TournamentDuo', back_populates='sex')
+    tournaments_solo: List["TournamentSolo"] = Relationship(back_populates="sex")
+    tournaments_duo: List["TournamentDuo"] = Relationship(back_populates="sex")
 
 
-class Region(Base):
-    __tablename__ = 'regions'
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str]
+class Region(SQLModel, table=True):
+    __tablename__ = "regions"
     
-    users: Mapped[list['User']] = relationship('User', back_populates='region')
-    tournaments_solo: Mapped[list['TournamentSolo']] = relationship('TournamentSolo', back_populates='region')
-    tournaments_duo: Mapped[list['TournamentDuo']] = relationship('TournamentDuo', back_populates='region')
-    trainers: Mapped[list['Trainer']] = relationship('Trainer', back_populates='region')
-
-
-class UserPair(Base):
-    __tablename__ = 'users_pairs'
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user1_fio: Mapped[str] = mapped_column(nullable=True)
-    user2_fio: Mapped[str] = mapped_column(nullable=True)
-    confirmed: Mapped[bool] = mapped_column(default=False, nullable=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
     
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=True)
-    tournament_id: Mapped[int] = mapped_column(ForeignKey('tournaments_duo.id'))
+    users: List[User] = Relationship(back_populates="region")
+    tournaments_solo: List["TournamentSolo"] = Relationship(back_populates="region")
+    tournaments_duo: List["TournamentDuo"] = Relationship(back_populates="region")
+    trainers: List["Trainer"] = Relationship(back_populates="region")
+
+
+class UserPair(SQLModel, table=True):
+    __tablename__ = "users_pairs"
     
-    user: Mapped['User'] = relationship('User', foreign_keys=[user_id], lazy='joined')
-    tournament: Mapped['TournamentDuo'] = relationship('TournamentDuo', lazy='joined')
-
-
-
-class Category(Base):
-    __tablename__ = 'categories'
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    child: Mapped[bool] = mapped_column(default=False, nullable=True)
-    shortname: Mapped[str] = mapped_column(nullable=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user1_fio: Optional[str] = None
+    user2_fio: Optional[str] = None
+    confirmed: Optional[bool] = Field(default=False, nullable=True)
     
-    tournaments_solo: Mapped[list['TournamentSolo']] = relationship('TournamentSolo', back_populates='category')
-    tournaments_duo: Mapped[list['TournamentDuo']] = relationship('TournamentDuo', back_populates='category')
-
-
-class TournamentSolo(Base):
-    __tablename__ = 'tournaments_solo'
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    photo_id: Mapped[str] = mapped_column(nullable=True)
-    organizer_name_and_contacts: Mapped[str] = mapped_column(nullable=True)
-    organizer_requisites: Mapped[str] = mapped_column(nullable=True)
-    organizer_telegram_id: Mapped[int] = mapped_column(nullable=True)
-    date: Mapped[datetime.datetime] = mapped_column(nullable=True)
-    price: Mapped[int] = mapped_column(nullable=True)
-    can_register: Mapped[bool] = mapped_column(default=True)
-    address: Mapped[str] = mapped_column(nullable=True)
-    prize_fund: Mapped[int] = mapped_column(nullable=True)
+    user_id: Optional[int] = Field(default=None, foreign_key="users.id")
+    tournament_id: int = Field(foreign_key="tournaments_duo.id")
     
-    region_id: Mapped[int] = mapped_column(ForeignKey('regions.id'))
-    sex_id: Mapped[int] = mapped_column(ForeignKey('sex.id'))
-    category_id: Mapped[int] = mapped_column(ForeignKey('categories.id'))
+    user: Optional[User] = Relationship()
+    tournament: "TournamentDuo" = Relationship(back_populates="user_pairs")
+
+
+class Category(SQLModel, table=True):
+    __tablename__ = "categories"
     
-    region: Mapped['Region'] = relationship('Region', back_populates='tournaments_solo', lazy='joined')
-    sex: Mapped['Sex'] = relationship('Sex', back_populates='tournaments_solo', lazy='joined')
-    category: Mapped['Category'] = relationship('Category', back_populates='tournaments_solo', lazy='joined')
-    members: Mapped[list['TournamentSoloMember']] = relationship(
-        'TournamentSoloMember', 
-        back_populates='tournament', 
-        cascade='all, delete-orphan'  # Включаем каскадное удаление
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    child: Optional[bool] = Field(default=False, nullable=True)
+    shortname: Optional[str] = None
+    
+    tournaments_solo: List["TournamentSolo"] = Relationship(back_populates="category")
+    tournaments_duo: List["TournamentDuo"] = Relationship(back_populates="category")
+
+
+class TournamentSolo(SQLModel, table=True):
+    __tablename__ = "tournaments_solo"
+    
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    photo_id: Optional[str] = None
+    organizer_name_and_contacts: Optional[str] = None
+    organizer_requisites: Optional[str] = None
+    organizer_telegram_id: Optional[int] = None
+    date: Optional[datetime.datetime] = None
+    price: Optional[int] = None
+    can_register: bool = Field(default=True)
+    address: Optional[str] = None
+    prize_fund: Optional[int] = None
+    
+    region_id: int = Field(foreign_key="regions.id")
+    sex_id: int = Field(foreign_key="sex.id")
+    category_id: int = Field(foreign_key="categories.id")
+    
+    region: Region = Relationship(back_populates="tournaments_solo")
+    sex: Sex = Relationship(back_populates="tournaments_solo")
+    category: Category = Relationship(back_populates="tournaments_solo")
+    members: List["TournamentSoloMember"] = Relationship(
+        back_populates="tournament",
+        sa_relationship=sa_relationship("TournamentSoloMember", cascade="all, delete-orphan"),
     )
 
 
-class TournamentDuo(Base):
-    __tablename__ = 'tournaments_duo'
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    photo_id: Mapped[str] = mapped_column(nullable=True)
-    name: Mapped[str]
-    organizer_name_and_contacts: Mapped[str] = mapped_column(nullable=True)
-    organizer_requisites: Mapped[str] = mapped_column(nullable=True)
-    organizer_telegram_id: Mapped[int] = mapped_column(nullable=True)
-    date: Mapped[datetime.datetime] = mapped_column(nullable=True)
-    price: Mapped[int] = mapped_column(nullable=True)
-    can_register: Mapped[bool] = mapped_column(default=True)
-    address: Mapped[str] = mapped_column(nullable=True)
-    prize_fund: Mapped[int] = mapped_column(nullable=True)
+class TournamentDuo(SQLModel, table=True):
+    __tablename__ = "tournaments_duo"
     
-    region_id: Mapped[int] = mapped_column(ForeignKey('regions.id'))
-    sex_id: Mapped[int] = mapped_column(ForeignKey('sex.id'))
-    category_id: Mapped[int] = mapped_column(ForeignKey('categories.id'))
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    photo_id: Optional[str] = None
+    organizer_name_and_contacts: Optional[str] = None
+    organizer_requisites: Optional[str] = None
+    organizer_telegram_id: Optional[int] = None
+    date: Optional[datetime.datetime] = None
+    price: Optional[int] = None
+    can_register: bool = Field(default=True)
+    address: Optional[str] = None
+    prize_fund: Optional[int] = None
     
-    region: Mapped['Region'] = relationship('Region', back_populates='tournaments_duo', lazy='joined')
-    sex: Mapped['Sex'] = relationship('Sex', back_populates='tournaments_duo', lazy='joined')
-    category: Mapped['Category'] = relationship('Category', back_populates='tournaments_duo', lazy='joined')
-    user_pairs: Mapped[list['UserPair']] = relationship(
-        'UserPair', 
-        back_populates='tournament', 
-        cascade='all, delete-orphan'  # Включаем каскадное удаление
+    region_id: int = Field(foreign_key="regions.id")
+    sex_id: int = Field(foreign_key="sex.id")
+    category_id: int = Field(foreign_key="categories.id")
+    
+    region: Region = Relationship(back_populates="tournaments_duo")
+    sex: Sex = Relationship(back_populates="tournaments_duo")
+    category: Category = Relationship(back_populates="tournaments_duo")
+    user_pairs: List[UserPair] = Relationship(
+        back_populates="tournament",
+        sa_relationship=sa_relationship("UserPair", cascade="all, delete-orphan"),
     )
 
 
-class TournamentSoloMember(Base):
-    __tablename__ = 'solo_tournament_members'
+class TournamentSoloMember(SQLModel, table=True):
+    __tablename__ = "solo_tournament_members"
+    
+    id: Optional[int] = Field(default=None, primary_key=True)
+    confirmed: bool = Field(default=False)
+    fio: Optional[str] = None
+    
+    user_id: int = Field(foreign_key="users.id")
+    tournament_id: int = Field(foreign_key="tournaments_solo.id")
+    
+    user: User = Relationship()
+    tournament: TournamentSolo = Relationship(back_populates="members")
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    confirmed: Mapped[bool] = mapped_column(default=False)
-    fio: Mapped[str] = mapped_column(nullable=True)
-    
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
-    tournament_id: Mapped[int] = mapped_column(ForeignKey('tournaments_solo.id'))
-    
-    user: Mapped['User'] = relationship('User', lazy='joined')
-    tournament: Mapped['TournamentSolo'] = relationship('TournamentSolo', lazy='joined')
 
-class Trainer(Base):
-    __tablename__ = 'trainers'
+class Trainer(SQLModel, table=True):
+    __tablename__ = "trainers"
     
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    photo: Mapped[str]
-    description: Mapped[str]
-    phone: Mapped[str] = mapped_column(nullable=True)
-    address: Mapped[str] = mapped_column(nullable=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    photo: str
+    description: str
+    phone: Optional[str] = None
+    address: Optional[str] = None
     
-    region_id: Mapped[int] = mapped_column(ForeignKey('regions.id'))
-    
-    region: Mapped['Region'] = relationship('Region', back_populates='trainers', lazy='joined')
-    
+    region_id: int = Field(foreign_key="regions.id")
+    region: Region = Relationship(back_populates="trainers")
 
-class Transaction(Base):
+
+class Transaction(SQLModel, table=True):
+    __tablename__ = "transactions"
     
-    __tablename__ = 'transactions'
+    id: Optional[int] = Field(default=None, primary_key=True)
+    amount: int
+    payment_link: str
+    operation_id: str
+    months: int
     
-    id: Mapped[int] = mapped_column(primary_key=True)
-    amount: Mapped[int]
-    payment_link: Mapped[str]
-    operation_id: Mapped[str]
-    months: Mapped[int]
+    user_id: int = Field(foreign_key="users.id")
+    user: User = Relationship()
     
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
-    
-    user: Mapped['User'] = relationship('User', lazy='joined')
-    
-    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
+    created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
+
+
+class UserBase(SQLModel):
+    email: EmailStr = Field(unique=True, index=True, max_length=255)
+    is_active: bool = True
+    is_superuser: bool = False
+    full_name: str | None = Field(default=None, max_length=255)
+
+
+
+class UserCreate(UserBase):
+    password: str = Field(min_length=8, max_length=40)
+
+
+class UserRegister(SQLModel):
+    email: EmailStr = Field(max_length=255)
+    password: str = Field(min_length=8, max_length=40)
+    full_name: str | None = Field(default=None, max_length=255)
+
+
+# Properties to receive via API on update, all are optional
+class UserUpdate(UserBase):
+    email: EmailStr | None = Field(default=None, max_length=255)  # type: ignore
+    password: str | None = Field(default=None, min_length=8, max_length=40)
+
+
+class UserUpdateMe(SQLModel):
+    full_name: str | None = Field(default=None, max_length=255)
+    email: EmailStr | None = Field(default=None, max_length=255)
+
+
+class UpdatePassword(SQLModel):
+    current_password: str = Field(min_length=8, max_length=40)
+    new_password: str = Field(min_length=8, max_length=40)
+
+
+
+# Properties to return via API, id is always required
+class UserPublic(UserBase):
+    id: int
+
+
+class UsersPublic(SQLModel):
+    data: list[UserPublic]
+    count: int
+
+
+
+# Generic message
+class Message(SQLModel):
+    message: str
+
+
+# JSON payload containing access token
+class Token(SQLModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
+# Contents of JWT token
+class TokenPayload(SQLModel):
+    sub: str | None = None
+
+
+class NewPassword(SQLModel):
+    token: str
+    new_password: str = Field(min_length=8, max_length=40)

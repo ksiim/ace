@@ -18,8 +18,8 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from common.db.models import Base
-target_metadata = Base.metadata
+from common.db.models import SQLModel
+target_metadata = SQLModel.metadata
 
 from common.db.database import sync_db
 

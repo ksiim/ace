@@ -12,6 +12,7 @@ dependencies = [
     "apscheduler>=3.10.4",
     "asyncpg>=0.30.0",
     "greenlet>=3.1.1",
+    "pydantic[email]>=2.9.2",
     "python-dotenv>=1.0.1",
     "sqlalchemy>=2.0.36",
     "sqlmodel>=0.0.22",
