@@ -70,5 +70,32 @@ services:
       CUSTOMER_CODE: ${CUSTOMER_CODE}
       MERCHANT_ID: ${MERCHANT_ID}
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: dev
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    command: [ "npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000" ]
+    depends_on:
+      - backend
+
+  frontend-prod:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+
+
 volumes:
   postgres_data:
