@@ -3,12 +3,10 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeybo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from bot import bot
 from common.db.models import TournamentDuo, TournamentSolo, Trainer, UserPair
-from common.db.orm import Orm
+from common.db.orm import Orm, raw_sexs, raw_regions, raw_adult_categories
 
 from .callbacks import *
 
-
-from config import raw_sexs, raw_regions, raw_adult_categories
 
 choose_sex_text = f"Выберите вариант для поиска турнира"
 main_menu_text = "Вы в главном меню!"

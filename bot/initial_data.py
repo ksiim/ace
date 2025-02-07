@@ -1,8 +1,8 @@
 import asyncio
 import logging
 
-from models.dbs.orm import Orm
-from config import raw_regions, raw_sexs, raw_adult_categories, raw_child_categories
+from common.db.orm import Orm
+from common.db.orm import raw_regions, raw_sexs, raw_adult_categories, raw_child_categories
 
 logging.basicConfig(level=logging.INFO)
 

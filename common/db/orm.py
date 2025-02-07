@@ -1,4 +1,5 @@
 import asyncio
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from common.db.database import Session
 from common.db.models import *
@@ -7,7 +8,43 @@ from sqlalchemy import desc, func, insert, inspect, or_, select, text, update
 import datetime
 from sqlalchemy.orm import joinedload
 
-from config import raw_regions, raw_sexs, raw_adult_categories
+raw_regions = [
+    'Московская область',
+    'Ростовская область',
+    'Краснодарский край',
+    'Ставропольский край',
+    'Воронежская область',
+    'Волгоградская область ',
+    'Санкт-Петербург',
+    'Астраханская область',
+    'Самарская область',
+    'Саратовская область',
+    'Красноярский край',
+    'Брянская область',
+    'Нижегородская область',
+    'Республика Татарстан'
+]
+
+raw_sexs = [
+    'Мужской',
+    'Женский',
+    'Детский',
+    "Микст"
+]
+
+raw_adult_categories = [
+    "Pro-Am",
+    "1 категория",
+    "2 категория",
+    "3 категория",
+]
+
+raw_child_categories = [
+    "Red ball",
+    "Orange ball",
+    "Green ball",
+]
+
 
 
 class Orm:
