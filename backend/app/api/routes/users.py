@@ -12,7 +12,7 @@ from backend.app.api.deps import (
 )
 from backend.app.core.config import SUPERUSER_EMAIL, SUPERUSER_PASSWORD
 from backend.app.core.security import get_password_hash
-from common.db.models import User, UsersPublic
+from common.db.models import User, UserPublic, UsersPublic
 
 
 router = APIRouter()
@@ -57,3 +57,21 @@ async def create_super_user(
     session.add(user)
     await session.commit()
     return 'Super user created'
+
+@router.get(
+    "/{user_telegram_id}",
+    response_model=UserPublic,
+)
+async def read_user_by_telegram_id(
+    session: SessionDep,
+    user_telegram_id: int,
+) -> Any:
+    """
+    Retrieve user by telegram_id.
+    """
+    statement = select(User).where(User.telegram_id == user_telegram_id)
+    user = (await session.execute(statement)).scalars().first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
