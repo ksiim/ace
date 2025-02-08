@@ -3,9 +3,10 @@ from typing import Any, Optional
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import or_
+from sqlalchemy import or_, update
 from sqlmodel import col, delete, func, select
 
+from backend.app import crud
 from backend.app.api.deps import (
     SessionDep,
     get_current_active_superuser,
@@ -96,3 +97,23 @@ async def delete_user_by_telegram_id(
     await session.execute(statement)
     await session.commit()
     return {"message": "User deleted successfully"}
+
+
+@router.put(
+    "/{user_telegram_id}",
+    dependencies=[Depends(get_current_active_superuser)],
+)
+async def update_user_by_telegram_id(
+    session: SessionDep,
+    user_telegram_id: int,
+    user_in: UserPublic,
+) -> Any:
+    """
+    Update user by telegram_id.
+    """
+    user_found = (await session.execute(select(User).where(User.telegram_id == user_telegram_id))).scalar_one_or_none()
+    if user_found is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user = await crud.update_user(session=session, db_user=user_found, user_in=user_in)
+    return user

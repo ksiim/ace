@@ -1,7 +1,8 @@
+from typing import Any
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.core.security import verify_password
+from backend.app.core.security import get_password_hash, verify_password
 from common.db.models import User
 
 from backend.app.utils import logger
@@ -19,4 +20,22 @@ async def authenticate(session: AsyncSession, email: str, password: str) -> User
         return None
     if not await verify_password(password, db_user.hashed_password):
         return None
+    return db_user
+
+async def get_user_by_telegram_id(session: AsyncSession, user_telegram_id: int) -> User | None:
+    statement = select(User).where(User.telegram_id == user_telegram_id)
+    session_user = (await session.execute(statement)).scalars().all()[-1]
+    return session_user
+
+async def update_user(session: AsyncSession, user_in: User, db_user: User) -> Any:
+    user_data = user_in.model_dump(exclude_unset=True)
+    extra_data = {}
+    if "password" in user_data:
+        password = user_data["password"]
+        hashed_password = await get_password_hash(password)
+        extra_data["hashed_password"] = hashed_password
+    db_user.sqlmodel_update(user_data, update=extra_data)
+    session.add(db_user)
+    await session.commit()
+    await session.refresh(db_user)
     return db_user
