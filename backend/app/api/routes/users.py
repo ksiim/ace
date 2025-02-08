@@ -52,7 +52,7 @@ async def create_super_user(
         email=SUPERUSER_EMAIL,
         hashed_password=await get_password_hash(SUPERUSER_PASSWORD),
         admin=True,
-        telegram_id=1234567895,
+        telegram_id=123456789,
     )
     session.add(user)
     await session.commit()
@@ -60,6 +60,7 @@ async def create_super_user(
 
 @router.get(
     "/{user_telegram_id}",
+    dependencies=[Depends(get_current_active_superuser)],
     response_model=UserPublic,
 )
 async def read_user_by_telegram_id(
@@ -75,3 +76,23 @@ async def read_user_by_telegram_id(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
+@router.delete(
+    "/{user_telegram_id}",
+    dependencies=[Depends(get_current_active_superuser)],
+)
+async def delete_user_by_telegram_id(
+    session: SessionDep,
+    user_telegram_id: int,
+) -> Any:
+    """
+    Delete user by telegram_id.
+    """
+    user_found = (await session.execute(select(User).where(User.telegram_id == user_telegram_id))).scalar_one_or_none()
+    if user_found is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    statement = delete(User).where(User.telegram_id == user_telegram_id)
+    await session.execute(statement)
+    await session.commit()
+    return {"message": "User deleted successfully"}
