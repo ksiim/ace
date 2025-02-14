@@ -77,6 +77,7 @@ services:
       target: dev
     volumes:
       - ./frontend:/app
+      - /app/node_modules  # Исключаем node_modules, чтобы избежать проблем с зависимостями
     ports:
       - "3000:3000"
     environment:
@@ -85,11 +86,14 @@ services:
     depends_on:
       - backend
 
+
   frontend-prod:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       target: production
+    volumes:
+      - ./frontend:/app
     ports:
       - "80:80"
     depends_on:

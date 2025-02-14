@@ -1,0 +1,53 @@
+.wrapper {
+  width: 100%;
+  padding: 24px 40px;
+  background-color: #FFF5F3;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  font-family: "Manrope", sans-serif;
+}
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+}
+
+.scroll_top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: #333;
+  cursor: pointer;
+  font-size: 14px;
+  transition: color 0.2s ease;
+}
+.scroll_top:hover {
+  color: #ff8562;
+}
+.scroll_top .icon {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 768px) {
+  .wrapper {
+    padding: 20px;
+  }
+  .content {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+}
+
+/*# sourceMappingURL=Footer.module.css.map */
