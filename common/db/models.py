@@ -1,42 +1,47 @@
 import datetime
-from typing import List, Optional
+from typing import List, Optional, Literal
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
 from sqlalchemy.orm import relationship as sa_relationship
 
-
+user_roles = Literal["admin", "user", "organizer"]
+match_type = Literal["solo", "duo"]
 
 class UserBase(SQLModel):
-    telegram_id: int = Field(unique=True, index=True)
-    full_name: str = Field(max_length=255, nullable=True)
-    username: Optional[str] = Field(default=None, nullable=True)
+    name: str = Field(max_length=255, nullable=True)
+    surname: str = Field(max_length=255, nullable=True)
+    patronymic: str = Field(max_length=255, nullable=True)
     admin: bool = Field(default=False)
-    is_organizer: Optional[bool] = Field(default=False, nullable=True)
+    # role: user_roles = Field(default="user")
     end_of_subscription: Optional[datetime.datetime] = Field(default=None, nullable=True)
-    start_time: Optional[datetime.datetime] = Field(default_factory=datetime.datetime.now, nullable=True)
-    from_who: Optional[str] = Field(default=None, nullable=True)
+    updated_at: Optional[datetime.datetime] = Field(default_factory=datetime.datetime.now, nullable=True)
+    created_at: Optional[datetime.datetime] = Field(default_factory=datetime.datetime.now, nullable=True)
     phone_number: Optional[str] = Field(default=None, nullable=True)
     email: EmailStr = Field(max_length=255, nullable=True)
 
 
 class UserCreate(UserBase):
     password: str = Field(min_length=8, max_length=40)
-
-
+    
 class UserRegister(SQLModel):
-    email: EmailStr = Field(max_length=255)
-    password: str = Field(min_length=8, max_length=40)
-    full_name: str | None = Field(default=None, max_length=255)
-
-
-# Properties to receive via API on update, all are optional
+    email: EmailStr
+    password: str
+    name: str
+    surname: str
+    patronymic: str
+    phone_number: str
+    
 class UserUpdate(UserBase):
+    role: user_roles | None = Field(default="user")
     email: EmailStr | None = Field(default=None, max_length=255)  # type: ignore
     password: str | None = Field(default=None, min_length=8, max_length=40)
+    updated_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
 
 class UserUpdateMe(SQLModel):
-    full_name: str | None = Field(default=None, max_length=255)
+    name: str | None = Field(default=None, max_length=255)
+    surname: str | None = Field(default=None, max_length=255)
+    patronymic: str | None = Field(default=None, max_length=255)
     email: EmailStr | None = Field(default=None, max_length=255)
 
 
@@ -45,38 +50,28 @@ class UpdatePassword(SQLModel):
     new_password: str = Field(min_length=8, max_length=40)
 
 
-
-# Properties to return via API, id is always required
 class UserPublic(UserBase):
     id: int
-    full_name: str | None
-    email: EmailStr | None
-
-
-class UsersPublic(SQLModel):
-    data: list[UserPublic]
-    count: int
 
 
 class User(UserBase, table=True):
     __tablename__ = 'users'
-    
-    
     id: int = Field(primary_key=True)
     hashed_password: str | None = Field(default=None, nullable=True)
 
+class UsersPublic(SQLModel):
+    data: List[UserPublic]
+    count: int
 
 class SexBase(SQLModel):
     name: str
+    shortname: str
 
 
 class Sex(SexBase, table=True):
     __tablename__ = "sex"
-    
-    
     id: int = Field(primary_key=True)
-    tournaments_solo: List["TournamentSolo"] = Relationship(back_populates="sex")
-    tournaments_duo: List["TournamentDuo"] = Relationship(back_populates="sex")
+    tournaments: List["Tournament"] = Relationship(back_populates="sex")
 
 
 class RegionBase(SQLModel):
@@ -85,105 +80,68 @@ class RegionBase(SQLModel):
 
 class Region(RegionBase, table=True):
     __tablename__ = "regions"
-    
-    
     id: int = Field(primary_key=True)
-    tournaments_solo: List["TournamentSolo"] = Relationship(back_populates="region")
-    tournaments_duo: List["TournamentDuo"] = Relationship(back_populates="region")
+    tournaments: List["Tournament"] = Relationship(back_populates="region")
     trainers: List["Trainer"] = Relationship(back_populates="region")
 
 
 class CategoryBase(SQLModel):
     name: str
-    child: Optional[bool] = Field(default=False, nullable=True)
-    shortname: Optional[str] = None
+    is_child: bool = Field(default=False)
 
 
 class Category(CategoryBase, table=True):
     __tablename__ = "categories"
-    
-    
     id: int = Field(primary_key=True)
-    tournaments_solo: List["TournamentSolo"] = Relationship(back_populates="category")
-    tournaments_duo: List["TournamentDuo"] = Relationship(back_populates="category")
+    tournaments: List["Tournament"] = Relationship(back_populates="category")
 
 
 class TournamentBase(SQLModel):
     name: str
-    photo_id: Optional[str] = None
+    # type: match_type
+    is_child: bool = Field(default=False)
+    photo: str = Field(default=None)
     organizer_name_and_contacts: Optional[str] = None
     organizer_requisites: Optional[str] = None
-    organizer_telegram_id: Optional[int] = None
     date: Optional[datetime.datetime] = None
     price: Optional[int] = None
     can_register: bool = Field(default=True)
     address: Optional[str] = None
     prize_fund: Optional[int] = None
-    
-class UserPairBase(SQLModel):
-    user1_fio: Optional[str] = Field(default=None, nullable=True)
-    user2_fio: Optional[str] = Field(default=None, nullable=True)
-    confirmed: Optional[bool] = Field(default=False, nullable=True)
 
 
-class UserPair(UserPairBase, table=True):
-    __tablename__ = "users_pairs"
-    
-    id: int = Field(primary_key=True)
-    user_id: Optional[int] = Field(default=None, foreign_key="users.id")
-    tournament_id: int = Field(foreign_key="tournaments_duo.id")
-    user: Optional[User] = Relationship()
-    tournament: "TournamentDuo" = Relationship(back_populates="user_pairs")
-
-
-class TournamentSolo(TournamentBase, table=True):
-    __tablename__ = "tournaments_solo"
-    
-    
+class Tournament(TournamentBase, table=True):
+    __tablename__ = "tournaments"
     id: int = Field(primary_key=True)
     region_id: int = Field(foreign_key="regions.id")
-    sex_id: int = Field(foreign_key="sex.id")
+    sex_id: Optional[int] = Field(default=None, foreign_key="sex.id")
     category_id: int = Field(foreign_key="categories.id")
-    region: Region = Relationship(back_populates="tournaments_solo")
-    sex: Sex = Relationship(back_populates="tournaments_solo")
-    category: Category = Relationship(back_populates="tournaments_solo")
-    members: List["TournamentSoloMember"] = Relationship(
+    
+    region: Region = Relationship(back_populates="tournaments")
+    sex: Optional[Sex] = Relationship(back_populates="tournaments")
+    category: Category = Relationship(back_populates="tournaments")
+    participants: List["TournamentParticipant"] = Relationship(
         back_populates="tournament",
-        sa_relationship=sa_relationship("TournamentSoloMember", cascade="all, delete-orphan"),
+        sa_relationship=sa_relationship(
+            "TournamentParticipant",
+            back_populates="tournament"
+        )
     )
 
 
-class TournamentDuo(TournamentBase, table=True):
-    __tablename__ = "tournaments_duo"
-    
-    
-    id: int = Field(primary_key=True)
-    region_id: int = Field(foreign_key="regions.id")
-    sex_id: int = Field(foreign_key="sex.id")
-    category_id: int = Field(foreign_key="categories.id")
-    region: Region = Relationship(back_populates="tournaments_duo")
-    sex: Sex = Relationship(back_populates="tournaments_duo")
-    category: Category = Relationship(back_populates="tournaments_duo")
-    user_pairs: List["UserPair"] = Relationship(
-        back_populates="tournament",
-        sa_relationship=sa_relationship("UserPair", cascade="all, delete-orphan"),
-    )
-
-
-class TournamentSoloMemberBase(SQLModel):
+class TournamentParticipantBase(SQLModel):
     confirmed: bool = Field(default=False)
-    fio: Optional[str] = None
 
 
-class TournamentSoloMember(TournamentSoloMemberBase, table=True):
-    __tablename__ = "solo_tournament_members"
-    
-    
+class TournamentParticipant(TournamentParticipantBase, table=True):
+    __tablename__ = "tournament_participants"
     id: int = Field(primary_key=True)
+    tournament_id: int = Field(foreign_key="tournaments.id")
     user_id: int = Field(foreign_key="users.id")
-    tournament_id: int = Field(foreign_key="tournaments_solo.id")
+    partner_id: Optional[int] = Field(default=None, foreign_key="users.id")
     user: User = Relationship()
-    tournament: TournamentSolo = Relationship(back_populates="members")
+    partner: Optional[User] = Relationship()
+    tournament: Tournament = Relationship(back_populates="participants")
 
 
 class TrainerBase(SQLModel):
@@ -196,37 +154,13 @@ class TrainerBase(SQLModel):
 
 class Trainer(TrainerBase, table=True):
     __tablename__ = "trainers"
-    
-    
     id: int = Field(primary_key=True)
     region_id: int = Field(foreign_key="regions.id")
     region: Region = Relationship(back_populates="trainers")
-
-
-class TransactionBase(SQLModel):
-    amount: int
-    payment_link: str
-    operation_id: str
-    months: int
-
-
-class Transaction(TransactionBase, table=True):
-    __tablename__ = "transactions"
     
-    
-    id: int = Field(primary_key=True)
-    user_id: int = Field(foreign_key="users.id")
-    user: User = Relationship()
-    created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
-
-
-
-# Generic message
 class Message(SQLModel):
     message: str
 
-
-# JSON payload containing access token
 class Token(SQLModel):
     access_token: str
     token_type: str = "bearer"

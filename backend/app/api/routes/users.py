@@ -111,9 +111,9 @@ async def update_user_by_telegram_id(
     """
     Update user by telegram_id.
     """
-    user_found = (await session.execute(select(User).where(User.telegram_id == user_telegram_id))).scalar_one_or_none()
-    if user_found is None:
+    db_user = (await session.execute(select(User).where(User.telegram_id == user_telegram_id))).scalar_one_or_none()
+    if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     
-    user = await crud.update_user(session=session, db_user=user_found, user_in=user_in)
+    user = await crud.update_user(session=session, db_user=db_user, user_in=user_in)
     return user
