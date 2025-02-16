@@ -52,3 +52,10 @@ async def get_current_active_superuser(current_user: CurrentUser) -> User:
             status_code=403, detail="The user doesn't have enough privileges"
         )
     return current_user
+
+async def get_current_active_organizer(current_user: CurrentUser) -> User:
+    if not current_user.organizer and not current_user.admin:
+        raise HTTPException(
+            status_code=403, detail="The user doesn't have enough privileges"
+        )
+    return current_user

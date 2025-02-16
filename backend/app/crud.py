@@ -3,14 +3,23 @@ from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.security import get_password_hash, verify_password
-from common.db.models import User
+from common.db.models import User, UserCreate
 
 from backend.app.utils import logger
 
 
+async def create_user(*, session: AsyncSession, user_create: UserCreate) -> User:
+    db_obj = User.model_validate(
+        user_create, update={"hashed_password": await get_password_hash(user_create.password)}
+    )
+    session.add(db_obj)
+    await session.commit()
+    await session.refresh(db_obj)
+    return db_obj
+
 async def get_user_by_email(session: AsyncSession, email: str) -> User | None:
     statement = select(User).where(User.email == email)
-    session_user = (await session.execute(statement)).scalars().all()[-1]
+    session_user = (await session.execute(statement)).scalar_one_or_none()
     return session_user
     
 async def authenticate(session: AsyncSession, email: str, password: str) -> User | None:
