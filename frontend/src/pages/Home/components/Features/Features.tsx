@@ -39,8 +39,11 @@ const Features: React.FC = () => {
               <div className={styles.icon_wrapper}>
                 {feature.icon}
               </div>
-              <h3 className={styles.feature_title}>{feature.title}</h3>
-              <p className={styles.feature_description}>{feature.description}</p>
+              <div className={styles.content_wrapper}>
+                <h3 className={styles.feature_title}>{feature.title}</h3>
+                <p className={styles.feature_description}>{feature.description}</p>
+              </div>
+            
             </div>
           ))}
         </div>
