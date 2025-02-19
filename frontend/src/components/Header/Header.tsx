@@ -1,33 +1,46 @@
 import React from 'react';
 import styles from './Header.module.scss';
-import {useNavigate} from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface HeaderProps {
   scrollToBenefits: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ scrollToBenefits }) => {
-  const menuItems = [
-    { label: 'КАЛЕНДАРЬ', href: '/calendar' },
-    { label: 'КЛАССИФИКАЦИЯ', href: '/classification' },
-    { label: 'НОВОСТИ', href: '/news' },
-    { label: 'ТАРИФЫ', href: '/tariffs' },
-    { label: 'О НАС', onClick: scrollToBenefits }, // Изменено
-  ];
-  
   const navigate = useNavigate();
+  const location = useLocation(); // Получаем текущий путь
+  
+  const handleAboutClick = () => {
+    if (location.pathname === '/') {
+      scrollToBenefits(); // Если на главной, просто скроллим
+    } else {
+      navigate('/'); // Иначе переходим на главную
+    }
+  };
+  
+  const menuItems = [
+    { label: 'КАЛЕНДАРЬ', onClick: () => navigate('/schedule') },
+    { label: 'КЛАССИФИКАЦИЯ', onClick: () => navigate('/rating') },
+    { label: 'НОВОСТИ', onClick: () => navigate('/news') },
+    { label: 'ТАРИФЫ', onClick: () => navigate('/subscription') },
+    { label: 'О НАС', onClick: handleAboutClick },
+  ];
   
   return (
     <div className={styles.wrapper}>
       <div className={styles.content}>
         <div className={styles.social_links}>
-          <img alt={'Телеграм канал'} src={'/tgicon.png'} onClick={() => {
-          }}/>
+          <a
+            href="https://t.me/Ace_tournament_bot"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img alt="Телеграм канал" src="/tgicon.png" />
+          </a>
         </div>
         
         <div className={styles.controls}>
-          <button onClick={() => navigate('/registration')}>Регистрация
-          </button>
+          <button onClick={() => navigate('/registration')}>Регистрация</button>
         </div>
       </div>
       
@@ -42,7 +55,6 @@ const Header: React.FC<HeaderProps> = ({ scrollToBenefits }) => {
           </button>
         ))}
       </nav>
-    
     </div>
   );
 };

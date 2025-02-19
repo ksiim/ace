@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Calendar:React.FC = () => {
+const Rating:React.FC = () => {
   return (
     <div>
     
@@ -8,4 +8,4 @@ const Calendar:React.FC = () => {
   );
 };
 
-export default Calendar;
+export default Rating;

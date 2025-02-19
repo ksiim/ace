@@ -4,6 +4,10 @@
   box-sizing: border-box;
 }
 
+button {
+  cursor: pointer;
+}
+
 .wrapper {
   height: 120px;
   display: flex;
@@ -32,6 +36,9 @@
 .social_links img {
   width: 30px;
   height: 30px;
+}
+.social_links a {
+  cursor: pointer;
 }
 
 .controls {
