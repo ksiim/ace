@@ -1,3 +1,147 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
+.wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.classificationContainer {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: "Roboto", sans-serif;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 24px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.filtersContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+}
+@media (max-width: 768px) {
+  .filtersContainer {
+    flex-direction: column;
+  }
+}
+
+.searchBox {
+  position: relative;
+  flex: 1;
+  min-width: 250px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+.searchInput:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+}
+
+.searchSuggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  z-index: 10;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.suggestion {
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.suggestion:hover {
+  background-color: #f0f0f0;
+}
+
+.filterSelect {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 200px;
+}
+.filterSelect label {
+  font-weight: 500;
+  white-space: nowrap;
+}
+.filterSelect .select {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+.filterSelect .select:focus {
+  outline: none;
+  border-color: #0066cc;
+}
+
+.tableContainer {
+  overflow-x: auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.classificationTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+.classificationTable th, .classificationTable td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+.classificationTable th {
+  background-color: #336633;
+  color: white;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.classificationTable th:first-child {
+  border-top-left-radius: 8px;
+}
+.classificationTable th:last-child {
+  border-top-right-radius: 8px;
+}
+.classificationTable tr:hover {
+  background-color: #f9f9f9;
+}
+.classificationTable .evenRow {
+  background-color: #f5f5f5;
+}
+.classificationTable .evenRow:hover {
+  background-color: #eef4ff;
+}
 
 /*# sourceMappingURL=Rating.module.css.map */
