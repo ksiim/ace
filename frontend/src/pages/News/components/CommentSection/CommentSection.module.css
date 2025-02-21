@@ -1,0 +1,96 @@
+.commentSection {
+  padding: 1.5rem;
+  background-color: #f9f9f9;
+  border-top: 1px solid #eee;
+}
+.commentSection .heading {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
+  color: #444;
+}
+.commentSection .noComments {
+  color: #888;
+  font-style: italic;
+  margin-bottom: 1rem;
+}
+.commentSection .commentList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem;
+}
+.commentSection .commentList .commentItem {
+  padding: 1rem;
+  background-color: #fff;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.commentSection .commentList .commentItem:last-child {
+  margin-bottom: 0;
+}
+.commentSection .commentList .commentItem .commentHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.commentSection .commentList .commentItem .commentHeader .commentAuthor {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #333;
+}
+.commentSection .commentList .commentItem .commentHeader .commentDate {
+  font-size: 0.75rem;
+  color: #888;
+}
+.commentSection .commentList .commentItem .commentText {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: #444;
+  margin: 0;
+  word-break: break-word;
+}
+.commentSection .commentForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.commentSection .commentForm .commentInput {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  transition: border-color 0.2s ease;
+}
+.commentSection .commentForm .commentInput:focus {
+  outline: none;
+  border-color: #ff8562;
+}
+.commentSection .commentForm .commentInput::placeholder {
+  color: #aaa;
+}
+.commentSection .commentForm .commentButton {
+  align-self: flex-end;
+  padding: 0.625rem 1.25rem;
+  background-color: #ff8562;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.commentSection .commentForm .commentButton:hover {
+  background-color: #f9a58c;
+}
+.commentSection .commentForm .commentButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/*# sourceMappingURL=CommentSection.module.css.map */

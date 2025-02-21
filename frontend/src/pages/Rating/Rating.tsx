@@ -15,7 +15,7 @@ interface Player {
 
 const Rating: React.FC = () => {
   // Sample data based on the image
-  const [players, setPlayers] = useState<Player[]>([
+  const [players] = useState<Player[]>([
     { place: 1, name: 'Захарченко Валерия', city: 'Ростов-на-Дону', points: 75, tournaments: 1, category: 'Юниоры' },
     { place: 2, name: 'Ширяева Александрина', city: 'Ростов-на-Дону', points: 60, tournaments: 1, category: 'Юниоры' },
     { place: 3, name: 'Ващенко Артем', city: 'Таганрог', points: 45, tournaments: 1, category: 'Дети' },
