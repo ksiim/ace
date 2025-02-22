@@ -38,7 +38,12 @@ async def get_user_by_telegram_id(session: AsyncSession, user_telegram_id: int) 
 
 async def update_user(session: AsyncSession, user_in: User, db_user: User) -> Any:
     user_data = user_in.model_dump(exclude_unset=True)
-    extra_data = {}
+    extra_data = {
+        "updated_at": user_in.updated_at.replace(tzinfo=None) if user_in.updated_at else None,
+        "created_at": user_in.created_at.replace(tzinfo=None) if user_in.created_at else None,
+        "end_of_subscription": user_in.end_of_subscription.replace(tzinfo=None) if user_in.end_of_subscription else None,
+    }
+
     if "password" in user_data:
         password = user_data["password"]
         hashed_password = await get_password_hash(password)
