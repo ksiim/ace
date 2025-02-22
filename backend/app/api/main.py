@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from backend.app.api.routes import (
     users, login, tournaments,
     sex, categories, regions,
+    trainers
 )
 
 api_router = APIRouter()
@@ -12,3 +13,4 @@ api_router.include_router(tournaments.router, tags=["tournaments"], prefix="/tou
 api_router.include_router(sex.router, tags=["sex"], prefix="/sex")
 api_router.include_router(categories.router, tags=["categories"], prefix="/categories")
 api_router.include_router(regions.router, tags=["regions"], prefix="/regions")
+api_router.include_router(trainers.router, tags=["trainers"], prefix="/trainers")

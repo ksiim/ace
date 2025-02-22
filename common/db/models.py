@@ -222,6 +222,19 @@ class Trainer(TrainerBase, table=True):
     region_id: int = Field(foreign_key="regions.id")
     region: Region = Relationship(back_populates="trainers")
     
+class TrainerCreate(TrainerBase):
+    region_id: int
+    
+class TrainerUpdate(TrainerBase):
+    pass
+
+class TrainerPublic(TrainerBase):
+    id: int
+    
+class TrainersPublic(SQLModel):
+    data: List[TrainerPublic]
+    count: int
+    
 class Message(SQLModel):
     message: str
 
@@ -238,3 +251,21 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=40)
+    
+class NewsBase(SQLModel):
+    title: str
+    text: str
+    photo: str
+    created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
+    
+    
+class News(NewsBase, table=True):
+    __tablename__ = "news"
+    id: Optional[int] = Field(primary_key=True, default=None)
+    
+    creator_id: int = Field(foreign_key="users.id")
+    creator: User = Relationship()
+    
+class NewsCreate(NewsBase):
+    pass
+    

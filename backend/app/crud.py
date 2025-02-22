@@ -3,7 +3,7 @@ from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.security import get_password_hash, verify_password
-from common.db.models import User, UserCreate
+from common.db.models import Trainer, TrainerCreate, User, UserCreate
 
 from backend.app.utils import logger
 
@@ -17,11 +17,21 @@ async def create_user(*, session: AsyncSession, user_create: UserCreate) -> User
     await session.refresh(db_obj)
     return db_obj
 
+
+async def create_trainer(*, session: AsyncSession, trainer_create: TrainerCreate) -> Trainer:
+    db_obj = Trainer.model_validate(trainer_create)
+    session.add(db_obj)
+    await session.commit()
+    await session.refresh(db_obj)
+    return db_obj
+
+
 async def get_user_by_email(session: AsyncSession, email: str) -> User | None:
     statement = select(User).where(User.email == email)
     session_user = (await session.execute(statement)).scalar_one_or_none()
     return session_user
-    
+
+
 async def authenticate(session: AsyncSession, email: str, password: str) -> User | None:
     db_user = await get_user_by_email(session=session, email=email)
 
@@ -31,10 +41,12 @@ async def authenticate(session: AsyncSession, email: str, password: str) -> User
         return None
     return db_user
 
+
 async def get_user_by_telegram_id(session: AsyncSession, user_telegram_id: int) -> User | None:
     statement = select(User).where(User.telegram_id == user_telegram_id)
     session_user = (await session.execute(statement)).scalars().all()[-1]
     return session_user
+
 
 async def update_user(session: AsyncSession, user_in: User, db_user: User) -> Any:
     user_data = user_in.model_dump(exclude_unset=True)
@@ -53,3 +65,12 @@ async def update_user(session: AsyncSession, user_in: User, db_user: User) -> An
     await session.commit()
     await session.refresh(db_user)
     return db_user
+
+
+async def update_trainer(*, session: AsyncSession, db_trainer: Trainer, trainer_in: TrainerCreate) -> Trainer:
+    trainer_data = trainer_in.model_dump(exclude_unset=True)
+    db_trainer.sqlmodel_update(trainer_data)
+    session.add(db_trainer)
+    await session.commit()
+    await session.refresh(db_trainer)
+    return db_trainer
