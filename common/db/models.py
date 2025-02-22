@@ -235,6 +235,57 @@ class TrainersPublic(SQLModel):
     data: List[TrainerPublic]
     count: int
     
+class NewsBase(SQLModel):
+    title: str
+    text: str
+    photo: str
+    created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
+    
+class News(NewsBase, table=True):
+    __tablename__ = "news"
+    id: Optional[int] = Field(primary_key=True, default=None)
+    
+    creator_id: int = Field(foreign_key="users.id")
+    
+    
+class NewsCreate(NewsBase):
+    creator_id: int
+    
+class NewsUpdate(NewsBase):
+    pass
+
+class NewsPublic(NewsBase):
+    id: int
+    
+class NewsesPublic(SQLModel):
+    data: List[NewsPublic]
+    count: int
+
+class CommentBase(SQLModel):
+    text: str
+    created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
+    
+class Comment(CommentBase, table=True):
+    __tablename__ = "comments"
+    id: Optional[int] = Field(primary_key=True, default=None)
+    
+    creator_id: int = Field(foreign_key="users.id")
+    news_id: int = Field(foreign_key="news.id")
+    
+class CommentCreate(CommentBase):
+    creator_id: int
+    news_id: int
+    
+class CommentUpdate(CommentBase):
+    pass
+
+class CommentPublic(CommentBase):
+    id: int
+    
+class CommentsPublic(SQLModel):
+    data: List[CommentPublic]
+    count: int
+    
 class Message(SQLModel):
     message: str
 
@@ -251,21 +302,4 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=40)
-    
-class NewsBase(SQLModel):
-    title: str
-    text: str
-    photo: str
-    created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
-    
-    
-class News(NewsBase, table=True):
-    __tablename__ = "news"
-    id: Optional[int] = Field(primary_key=True, default=None)
-    
-    creator_id: int = Field(foreign_key="users.id")
-    creator: User = Relationship()
-    
-class NewsCreate(NewsBase):
-    pass
     

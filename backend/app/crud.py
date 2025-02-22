@@ -3,7 +3,7 @@ from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.security import get_password_hash, verify_password
-from common.db.models import Trainer, TrainerCreate, User, UserCreate
+from common.db.models import Comment, CommentCreate, News, NewsCreate, Trainer, TrainerCreate, User, UserCreate
 
 from backend.app.utils import logger
 
@@ -74,3 +74,40 @@ async def update_trainer(*, session: AsyncSession, db_trainer: Trainer, trainer_
     await session.commit()
     await session.refresh(db_trainer)
     return db_trainer
+
+async def create_news(*, session: AsyncSession, news_create: NewsCreate) -> News:
+    db_obj = News.model_validate(news_create, update={"created_at": news_create.created_at.replace(tzinfo=None)})
+    session.add(db_obj)
+    await session.commit()
+    await session.refresh(db_obj)
+    return db_obj
+
+
+async def update_news(*, session: AsyncSession, news: News, news_update: News) -> News:
+    news_data = news_update.model_dump(exclude_unset=True)
+    extra_data = {
+        "created_at": news_update.created_at.replace(tzinfo=None) if news_update.created_at else None,
+    }
+    news.sqlmodel_update(news_data, update=extra_data)
+    session.add(news)
+    await session.commit()
+    await session.refresh(news)
+    return news
+
+async def create_comment(*, session: AsyncSession, comment_create: CommentCreate) -> Comment:
+    db_obj = Comment.model_validate(comment_create, update={"created_at": comment_create.created_at.replace(tzinfo=None)})
+    session.add(db_obj)
+    await session.commit()
+    await session.refresh(db_obj)
+    return db_obj
+
+async def update_comment(*, session: AsyncSession, comment: Comment, comment_update: Comment) -> Comment:
+    comment_data = comment_update.model_dump(exclude_unset=True)
+    extra_data = {
+        "created_at": comment_update.created_at.replace(tzinfo=None) if comment_update.created_at else None,
+    }
+    comment.sqlmodel_update(comment_data, update=extra_data)
+    session.add(comment)
+    await session.commit()
+    await session.refresh(comment)
+    return comment
