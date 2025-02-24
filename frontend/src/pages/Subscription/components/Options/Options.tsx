@@ -12,17 +12,7 @@ const plans: SubscriptionPlan[] = [
     ],
     price: null
   },
-  {
-    type: 'monthly',
-    period: '1 месяц',
-    features: [
-      { text: 'Доступ к календарю' },
-      { text: 'Участие в турнирах' },
-      { text: 'Начисление рейтинга' },
-      { text: 'Участие в розыгрышах ценных призов' }
-    ],
-    price: 199
-  },
+  
   {
     type: 'halfyear',
     period: '6 месяцев',
