@@ -102,7 +102,7 @@
 .otp__buttons {
   color: #000000;
   display: flex;
-  justify-content: space-between;
+  justify-content: end;
 }
 .otp__buttons button {
   width: 90px;

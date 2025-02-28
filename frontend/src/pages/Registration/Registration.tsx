@@ -2,6 +2,9 @@ import React, {useState, useEffect, useRef} from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Registration.module.scss';
 import OTPInput, {OTPInputRef} from '../../components/OTPInput/OTPInput.tsx';
+import {apiRequest} from '../../utils/apiRequest.ts';
+import {saveToken, setAuthHeader} from '../../utils/serviceToken.ts';
+import axios from 'axios';
 
 const Registration: React.FC = () => {
   const navigate = useNavigate();
@@ -65,26 +68,11 @@ const Registration: React.FC = () => {
     return validateFullName() && emailValid && phoneValid;
   };
   
-  const apiRequest = async (endpoint: string, method = 'POST', body?: object) => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/users/${endpoint}`, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: body ? JSON.stringify(body) : undefined,
-      });
-      
-      if (!response.ok) throw new Error(`Ошибка: ${response.status}`);
-      return response.json();
-    } catch (error) {
-      console.error(`Ошибка запроса (${endpoint}):`, error);
-      return null;
-    }
-  };
   
   const sendVerificationCode = async () => {
     const phone = formData.phone.replace(/\D/g, '');
     const query = new URLSearchParams({ phone_number: phone }).toString();
-    const data = await apiRequest(`send_phone_verification_code/?${query}`, 'GET');
+    const data = await apiRequest(`users/send_phone_verification_code/?${query}`, 'GET');
     
     if (data?.response?.ok && data.response.result?.request_id) {
       setRequestId(data.response.result.request_id);
@@ -98,7 +86,7 @@ const Registration: React.FC = () => {
     if (!requestId) return;
     
     const query = new URLSearchParams({ request_id: requestId, code: formData.verificationCode }).toString();
-    const success = await apiRequest(`verify_code/?${query}`, 'GET');
+    const success = await apiRequest(`users/verify_code/?${query}`, 'GET');
     console.log('Ответ верификации:', success);
     
     
@@ -110,7 +98,7 @@ const Registration: React.FC = () => {
   };
   
   const registerUser = async () => {
-    const [name, surname, patronymic] = formData.fullName.split(' ');
+    const [surname, name, patronymic] = formData.fullName.split(' ');
     const userData = {
       email: formData.email,
       password: 'temporaryPassword',
@@ -120,11 +108,40 @@ const Registration: React.FC = () => {
       phone_number: formData.phone.replace(/\D/g, ''),
     };
     
-    const success = await apiRequest('signup/', 'POST', userData);
-    if (success) {
-      navigate('/');
+    const response = await apiRequest('users/signup/', 'POST', userData);
+    if (response) {
+      await login(userData.email, userData.password);
     }
   };
+  
+  const login = async (email: string, password: string) => {
+    try {
+      const formData = new URLSearchParams();
+      formData.append('username', email);
+      formData.append('password', password);
+      
+      const response = await axios.post('http://localhost:8000/api/v1/login/access-token', formData, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
+      
+      console.log('Ответ от сервера:', response.data);
+      
+      const token = response.data.access_token;
+      if (token) {
+        saveToken(token);
+        setAuthHeader(token);
+        navigate('/');
+      } else {
+        console.error('Токен не получен');
+      }
+    } catch (error) {
+      console.error('Ошибка авторизации:');
+    }
+  };
+  
+  
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -185,7 +202,6 @@ const Registration: React.FC = () => {
               verificationCode: otp
             })}/>
             <div className={styles.otp__buttons}>
-              <button onClick={() => otpRef.current?.focus()}>Фокус</button>
               <button onClick={() => otpRef.current?.clear()}>Очистить</button>
             </div>
           

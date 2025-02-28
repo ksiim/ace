@@ -1,0 +1,141 @@
+@charset "UTF-8";
+.pageWrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.mainContent {
+  flex: 1;
+  padding: 20px;
+  margin-top: 60px; /* Используйте значение, соответствующее высоте вашего хедера */
+}
+
+.tournamentContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.contentWrapper {
+  display: flex;
+  flex-direction: row;
+  gap: 30px;
+}
+@media (max-width: 768px) {
+  .contentWrapper {
+    flex-direction: column-reverse;
+  }
+}
+
+.tournamentInfo {
+  flex: 1;
+}
+
+.imageContainer {
+  flex: 0 0 40%;
+}
+@media (max-width: 768px) {
+  .imageContainer {
+    flex: 1;
+    margin-bottom: 20px;
+  }
+}
+
+.tournamentImage {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.loaderContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  text-align: center;
+}
+
+.loader {
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.error {
+  color: #e74c3c;
+  font-size: 18px;
+  text-align: center;
+  padding: 20px;
+}
+
+/* Стили для данных турнира */
+.tournamentName {
+  font-size: 28px;
+  margin-bottom: 15px;
+  color: #2c3e50;
+}
+
+.tournamentDate {
+  font-size: 16px;
+  color: #7f8c8d;
+  margin-bottom: 20px;
+}
+
+.tournamentType,
+.tournamentAddress,
+.tournamentOrganizer,
+.tournamentRequisites,
+.tournamentPrice,
+.tournamentPrizeFund {
+  margin-bottom: 12px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.registrationContainer {
+  margin-top: 20px;
+}
+
+.registrationButton {
+  padding: 10px 20px;
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.registrationButton:hover {
+  background-color: #27ae60;
+}
+
+.registrationClosed {
+  padding: 10px 20px;
+  background-color: #e74c3c;
+  color: white;
+  border-radius: 4px;
+  display: inline-block;
+  font-weight: bold;
+}
+
+/*# sourceMappingURL=TournamentPage.module.css.map */

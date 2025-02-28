@@ -1,66 +1,33 @@
-// Schedule.tsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Schedule.module.css';
+import { apiRequest } from '../../../../utils/apiRequest';
 
 interface Tournament {
-  id: string;
+  id: number;
   date: string;
   name: string;
-  location: string;
-  mainReferee: string;
-  category: string;
+  address: string;
+  organizer_name_and_contacts: string;
+  type: string;
 }
 
 const Schedule: React.FC = () => {
-  // Встроенные данные о турнирах
-  const tournaments: Tournament[] = [
-    {
-      id: 't001',
-      date: '02.02.2025',
-      name: 'Красный мяч+',
-      location: 'ТК "Аксай"',
-      mainReferee: 'Ширяева И.И.',
-      category: 'г.р. 2018 и мл.'
-    },
-    {
-      id: 't002',
-      date: '09.02.2025',
-      name: 'Оранжевый мяч',
-      location: 'ТК "Аксай"',
-      mainReferee: 'Ширяева И.И.',
-      category: 'г.р. 2017 и мл.'
-    },
-    {
-      id: 't003',
-      date: '16.02.2025',
-      name: 'Зеленый мяч',
-      location: 'ТК "Аксай"',
-      mainReferee: 'Ширяева И.И.',
-      category: 'г.р. 2015 и мл.'
-    },
-    {
-      id: 't004',
-      date: '22.02.2025',
-      name: 'Блиц-турнир',
-      location: 'Донская теннисная академия',
-      mainReferee: 'Гигиташвили А.',
-      category: 'до 13 лет и мл.'
-    },
-    {
-      id: 't005',
-      date: '15.03.2025',
-      name: 'Красный мяч',
-      location: 'Донская теннисная академия',
-      mainReferee: 'Гигиташвили А.',
-      category: 'до 10 лет и мл.'
-    }
-  ];
-  
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const navigate = useNavigate();
   
-  const handleRowClick = (tournamentId: string) => {
-    // Переход на страницу конкретного турнира
+  useEffect(() => {
+    const fetchTournaments = async () => {
+      const response = await apiRequest('tournaments/all?skip=0&limit=100', 'GET');
+      if (response && response.data) {
+        setTournaments(response.data);
+      }
+    };
+    
+    fetchTournaments();
+  }, []);
+  
+  const handleRowClick = (tournamentId: number) => {
     navigate(`/tournaments/${tournamentId}`);
   };
   
@@ -72,8 +39,8 @@ const Schedule: React.FC = () => {
           <th className={styles.dateColumn}>Дата</th>
           <th className={styles.nameColumn}>Название турнира</th>
           <th className={styles.locationColumn}>Место проведения</th>
-          <th className={styles.refereeColumn}>Главный судья</th>
-          <th className={styles.categoryColumn}>Категория</th>
+          <th className={styles.refereeColumn}>Организатор</th>
+          <th className={styles.categoryColumn}>Тип</th>
         </tr>
         </thead>
         <tbody>
@@ -83,11 +50,11 @@ const Schedule: React.FC = () => {
             onClick={() => handleRowClick(tournament.id)}
             className={`${styles.tournamentRow} ${index % 2 === 1 ? styles.evenRow : ''}`}
           >
-            <td>{tournament.date}</td>
+            <td>{new Date(tournament.date).toLocaleDateString()}</td>
             <td className={styles.nameCell}>{tournament.name}</td>
-            <td>{tournament.location}</td>
-            <td>{tournament.mainReferee}</td>
-            <td>{tournament.category}</td>
+            <td>{tournament.address}</td>
+            <td>{tournament.organizer_name_and_contacts}</td>
+            <td>{tournament.type}</td>
           </tr>
         ))}
         </tbody>
