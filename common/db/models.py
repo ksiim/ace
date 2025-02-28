@@ -325,7 +325,8 @@ class NewsesPublic(SQLModel):
 class CommentBase(SQLModel):
     text: str
     created_at: datetime.datetime = Field(
-        default_factory=datetime.datetime.now)
+        default_factory=datetime.datetime.now
+    )
 
 
 class Comment(CommentBase, table=True):
@@ -347,6 +348,8 @@ class CommentUpdate(CommentBase):
 
 class CommentPublic(CommentBase):
     id: int
+    creator_id: int
+    news_id: int
 
 
 class CommentsPublic(SQLModel):
