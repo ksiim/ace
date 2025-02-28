@@ -184,7 +184,8 @@ class Tournament(TournamentBase, table=True):
         back_populates="tournament",
         sa_relationship=sa_relationship(
             "TournamentParticipant",
-            back_populates="tournament"
+            back_populates="tournament",
+            cascade="all, delete, delete-orphan",
         )
     )
 
@@ -205,6 +206,10 @@ class TournamentCreate(TournamentBase):
 
 class TournamentPublic(TournamentBase):
     id: int
+    owner_id: int
+    sex_id: int
+    category_id: int
+    region_id: int
 
 
 class TournamentsPublic(SQLModel):
@@ -230,7 +235,7 @@ class TournamentParticipant(TournamentParticipantBase, table=True):
     )
     partner: Optional["User"] = Relationship(
         sa_relationship=sa_relationship(
-            "User", foreign_keys="[TournamentParticipant.partner_id]")
+            "User", foreign_keys="[TournamentParticipant.partner_id]"),
     )
     tournament: "Tournament" = Relationship(back_populates="participants")
 
