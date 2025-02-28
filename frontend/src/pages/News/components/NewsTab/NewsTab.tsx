@@ -4,47 +4,14 @@ import styles from './NewsTab.module.scss';
 import { PostType, CommentType } from '../../types.ts';
 import { apiRequest } from '../../../../utils/apiRequest';
 
-// Типы для взаимодействия с API
-interface NewsResponse {
-  data: {
-    id: number;
-    title: string;
-    text: string;
-    photo: string;
-    created_at: string;
-  }[];
-  count: number;
-}
 
-interface CommentResponse {
-  data: {
-    id: number;
-    text: string;
-    created_at: string;
-  }[];
-  count: number;
-}
 
-interface UserData {
-  name: string;
-  surname: string;
-  patronymic: string;
-  admin: boolean;
-  organizer: boolean;
-  end_of_subscription: string;
-  updated_at: string;
-  created_at: string;
-  phone_number: string;
-  email: string;
-  id: number;
-}
 
 const NewsTab: React.FC = () => {
   const [posts, setPosts] = useState<PostType[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [commentText, setCommentText] = useState<string>('');
-  const [, setUserData] = useState<UserData | null>(null);
   
   // Получение новостей при загрузке компонента
   useEffect(() => {
@@ -145,20 +112,7 @@ const NewsTab: React.FC = () => {
   
   
   // Функция получения данных о текущем пользователе
-  const fetchUserData = async (): Promise<UserData | null> => {
-    try {
-      const response = await apiRequest('users/me');
-      
-      if (!response) {
-        throw new Error('Не удалось получить данные пользователя');
-      }
-      
-      return response;
-    } catch (err) {
-      console.error('Ошибка при получении данных пользователя:', err);
-      return null;
-    }
-  };
+  
   
   // Функция добавления комментария
   const handleAddComment = async (postId: number) => {

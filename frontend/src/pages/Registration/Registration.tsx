@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate} from 'react-router-dom';
 import styles from './Registration.module.scss';
 import OTPInput, {OTPInputRef} from '../../components/OTPInput/OTPInput.tsx';
 import {apiRequest} from '../../utils/apiRequest.ts';
@@ -16,6 +16,7 @@ const Registration: React.FC = () => {
     phone: '',
     telegramId: '',
     birthDate: '',
+    password: '',
     verificationCode: ''
   });
   
@@ -25,6 +26,7 @@ const Registration: React.FC = () => {
     fullName: false,
     email: false,
     phone: false,
+    password: false,
     verificationCode: false
   });
   
@@ -36,9 +38,14 @@ const Registration: React.FC = () => {
     validateField('phone', formData.phone);
   }, [formData.phone]);
   
+  useEffect(() => {
+    validateField('password', formData.password);
+  }, [formData.password]);
+  
   const validateField = (fieldName: string, value: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^\+?\d{10,}$/;
+    const passwordRegex = /^.{8,}$/; // At least 8 characters
     
     setErrors(prev => ({
       ...prev,
@@ -46,7 +53,9 @@ const Registration: React.FC = () => {
         ? value !== '' && !emailRegex.test(value)
         : fieldName === 'phone'
           ? value !== '' && !phoneRegex.test(value.replace(/\D/g, ''))
-          : false
+          : fieldName === 'password'
+            ? value !== '' && !passwordRegex.test(value)
+            : false
     }));
   };
   
@@ -65,7 +74,8 @@ const Registration: React.FC = () => {
   const validateForm = () => {
     const emailValid = !errors.email && formData.email !== '';
     const phoneValid = !errors.phone && formData.phone !== '';
-    return validateFullName() && emailValid && phoneValid;
+    const passwordValid = !errors.password && formData.password !== '';
+    return validateFullName() && emailValid && phoneValid && passwordValid;
   };
   
   
@@ -101,7 +111,7 @@ const Registration: React.FC = () => {
     const [surname, name, patronymic] = formData.fullName.split(' ');
     const userData = {
       email: formData.email,
-      password: 'temporaryPassword',
+      password: formData.password,
       name,
       surname,
       patronymic,
@@ -141,8 +151,6 @@ const Registration: React.FC = () => {
     }
   };
   
-  
-  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (step === 1 && validateForm()) {
@@ -152,9 +160,24 @@ const Registration: React.FC = () => {
     }
   };
   
+  const navigateToLogin = () => {
+    navigate('/login');
+  };
+  
   return (
     <div className={styles.formContainer}>
       <form className={styles.form} onSubmit={handleSubmit}>
+        <div className={styles.formHeader}>
+          <h1>Регистрация</h1>
+          <button
+            type="button"
+            className={styles.loginButton}
+            onClick={navigateToLogin}
+          >
+            Уже есть аккаунт? <span className={styles.tologin}>Войти</span>
+          </button>
+        </div>
+        
         <div className={styles.formGroup}>
           <label className={styles.label}>
             Введите Ф.И.О. игрока
@@ -174,6 +197,7 @@ const Registration: React.FC = () => {
         {[
           { label: 'Введите Email', name: 'email', type: 'email', placeholder: 'example@mail.ru', error: errors.email, errorMessage: 'Укажите корректный email' },
           { label: 'Телефон', name: 'phone', type: 'tel', placeholder: '+7 (999)-000-00-00', error: errors.phone, errorMessage: 'Укажите корректный номер телефона' },
+          { label: 'Пароль', name: 'password', type: 'password', placeholder: 'Введите пароль', error: errors.password, errorMessage: 'Пароль должен содержать минимум 8 символов' },
           { label: 'Телеграм ID', name: 'telegramId', type: 'text', placeholder: '111111111' },
           { label: 'Дата рождения игрока', name: 'birthDate', type: 'date' }
         ].map(({ label, name, type, placeholder, error, errorMessage }) => (
@@ -209,7 +233,7 @@ const Registration: React.FC = () => {
         )}
         
         <button type="submit" className={styles.submitButton}
-                disabled={errors.email || errors.phone}>
+                disabled={errors.email || errors.phone || errors.password}>
           {step === 1 ? 'Получить код' : 'Завершить регистрацию'}
         </button>
         

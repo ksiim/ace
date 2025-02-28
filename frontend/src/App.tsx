@@ -7,6 +7,7 @@ import News from './pages/News/News.tsx';
 import Calendar from './pages/Calendar/Calendar.tsx';
 import Rating from './pages/Rating/Rating.tsx';
 import TournamentPage from './pages/Tournament/TournamentPage.tsx';
+import LoginPage from './pages/LoginPage/LoginPage.tsx';
 
 function App() {
 
@@ -14,6 +15,7 @@ function App() {
     <Router>
       <Routes>
         <Route path={'/'} element={<Home/>} />
+        <Route path={'/login'} element={<LoginPage/> } />
         <Route path={'/registration'} element={<Registration/>} />
         <Route path={'/subscription'} element={<Subscription/>} />
         <Route path={'/news'} element={<News/>} />

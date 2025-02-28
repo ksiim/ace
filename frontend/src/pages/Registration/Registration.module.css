@@ -9,6 +9,13 @@
   width: 100%;
 }
 
+.tologin {
+  padding: 5px;
+  background-color: #ff8562;
+  border-radius: 16px;
+  color: white;
+}
+
 .form {
   display: flex;
   flex-direction: column;
@@ -41,7 +48,7 @@
   box-shadow: none;
 }
 .input:focus {
-  border-color: #007bff;
+  border-color: #ff8562;
   outline: none;
 }
 .input.error {
