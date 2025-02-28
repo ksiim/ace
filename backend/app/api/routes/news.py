@@ -130,10 +130,12 @@ async def read_comments_by_news_id(
     count_statement = select(func.count()).where(Comment.news_id == news_id)
     count = (await session.execute(count_statement)).scalar_one_or_none()
 
-    statement = select(Comment).where(Comment.news_id == news_id).offset(skip).limit(limit)
+    statement = select(Comment).where(Comment.news_id ==
+                                      news_id).offset(skip).limit(limit)
     comments = (await session.execute(statement)).scalars().all()
 
     return CommentsPublic(data=comments, count=count)
+
 
 @router.post(
     "/comments/{news_id}",
@@ -149,6 +151,7 @@ async def create_comment(
     """
     comment = await crud.create_comment(session=session, comment_create=comment_create)
     return comment
+
 
 @router.delete(
     "/comments/{comment_id}",
@@ -186,6 +189,5 @@ async def update_comment(
     comment = await session.get(Comment, comment_id)
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
-    comment = await crud.update_comment(session=session, comment=comment, comment_update=comment_update)
+    comment = await crud.update_comment(session=session, db_comment=comment, comment_update=comment_update)
     return comment
-

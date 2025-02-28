@@ -45,9 +45,7 @@ const OTPInput = forwardRef<OTPInputRef, OTPInputProps>(({ onComplete }, ref) =>
     }
   };
 
-
-
-// Обработчик вставки из буфера обмена
+  // Обработчик вставки из буфера обмена
   const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
     event.preventDefault();
     const pasteData = event.clipboardData.getData("text").trim();
@@ -60,7 +58,6 @@ const OTPInput = forwardRef<OTPInputRef, OTPInputProps>(({ onComplete }, ref) =>
     // Устанавливаем фокус на последний инпут
     inputsRef.current[3]?.focus();
   };
-  
   
   return (
     <div className={styles.otpContainer}>

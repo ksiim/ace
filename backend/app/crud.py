@@ -3,7 +3,7 @@ from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.security import get_password_hash, verify_password
-from common.db.models import Comment, CommentCreate, News, NewsCreate, Trainer, TrainerCreate, User, UserCreate
+from common.db.models import Comment, CommentCreate, News, NewsCreate, TournamentParticipant, TournamentParticipantCreate, TournamentParticipantPublic, Trainer, TrainerCreate, TrainerPublic, User, UserCreate
 
 from backend.app.utils import logger
 
@@ -67,7 +67,7 @@ async def update_user(session: AsyncSession, user_in: User, db_user: User) -> An
     return db_user
 
 
-async def update_trainer(*, session: AsyncSession, db_trainer: Trainer, trainer_in: TrainerCreate) -> Trainer:
+async def update_trainer(*, session: AsyncSession, db_trainer: Trainer, trainer_in: TrainerCreate) -> TrainerPublic:
     trainer_data = trainer_in.model_dump(exclude_unset=True)
     db_trainer.sqlmodel_update(trainer_data)
     session.add(db_trainer)
@@ -75,8 +75,14 @@ async def update_trainer(*, session: AsyncSession, db_trainer: Trainer, trainer_
     await session.refresh(db_trainer)
     return db_trainer
 
+
 async def create_news(*, session: AsyncSession, news_create: NewsCreate) -> News:
-    db_obj = News.model_validate(news_create, update={"created_at": news_create.created_at.replace(tzinfo=None)})
+    db_obj = News.model_validate(
+        news_create,
+        update={
+            "created_at": news_create.created_at.replace(tzinfo=None)
+        }
+    )
     session.add(db_obj)
     await session.commit()
     await session.refresh(db_obj)
@@ -94,20 +100,49 @@ async def update_news(*, session: AsyncSession, news: News, news_update: News) -
     await session.refresh(news)
     return news
 
+
 async def create_comment(*, session: AsyncSession, comment_create: CommentCreate) -> Comment:
-    db_obj = Comment.model_validate(comment_create, update={"created_at": comment_create.created_at.replace(tzinfo=None)})
+    db_obj = Comment.model_validate(
+        comment_create,
+        update={
+            "created_at": comment_create.created_at.replace(
+                tzinfo=None
+            )
+        }
+    )
     session.add(db_obj)
     await session.commit()
     await session.refresh(db_obj)
     return db_obj
 
-async def update_comment(*, session: AsyncSession, comment: Comment, comment_update: Comment) -> Comment:
+
+async def update_comment(*, session: AsyncSession, db_comment: Comment, comment_update: Comment) -> Comment:
     comment_data = comment_update.model_dump(exclude_unset=True)
     extra_data = {
         "created_at": comment_update.created_at.replace(tzinfo=None) if comment_update.created_at else None,
     }
-    comment.sqlmodel_update(comment_data, update=extra_data)
-    session.add(comment)
+    db_comment.sqlmodel_update(comment_data, update=extra_data)
+    session.add(db_comment)
     await session.commit()
-    await session.refresh(comment)
-    return comment
+    await session.refresh(db_comment)
+    return db_comment
+
+
+async def create_tournament_participant(session: AsyncSession, tournament_participant_in: TournamentParticipantCreate) -> TournamentParticipantPublic:
+    db_obj = TournamentParticipant.model_validate(tournament_participant_in)
+    session.add(db_obj)
+    await session.commit()
+    await session.refresh(db_obj)
+    return db_obj
+
+
+async def update_tournament_participant(*, session: AsyncSession, db_tournament_participant: TournamentParticipant, tournament_participant_in: TournamentParticipant) -> TournamentParticipantPublic:
+    tournament_participant_data = tournament_participant_in.model_dump(
+        exclude_unset=True
+    )
+    db_tournament_participant.sqlmodel_update(tournament_participant_data)
+    print(db_tournament_participant)
+    session.add(db_tournament_participant)
+    await session.commit()
+    await session.refresh(db_tournament_participant)
+    return db_tournament_participant
