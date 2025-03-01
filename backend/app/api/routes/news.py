@@ -115,7 +115,6 @@ async def delete_news(
 
 @router.get(
     "/comments/{news_id}",
-    dependencies=[Depends(get_current_user)],
     response_model=CommentsPublic,
 )
 async def read_comments_by_news_id(
@@ -130,8 +129,12 @@ async def read_comments_by_news_id(
     count_statement = select(func.count()).where(Comment.news_id == news_id)
     count = (await session.execute(count_statement)).scalar_one_or_none()
 
-    statement = select(Comment).where(Comment.news_id ==
-                                      news_id).offset(skip).limit(limit)
+    statement = (
+        select(Comment)
+        .where(Comment.news_id == news_id)
+        .offset(skip)
+        .limit(limit)
+    )
     comments = (await session.execute(statement)).scalars().all()
 
     return CommentsPublic(data=comments, count=count)
@@ -139,7 +142,6 @@ async def read_comments_by_news_id(
 
 @router.post(
     "/comments/{news_id}",
-    dependencies=[Depends(get_current_user)],
     response_model=Comment,
 )
 async def create_comment(
@@ -155,11 +157,12 @@ async def create_comment(
 
 @router.delete(
     "/comments/{comment_id}",
-    dependencies=[Depends(get_current_active_superuser)],
+    dependencies=[Depends(get_current_user)],
     response_model=Message,
 )
 async def delete_comment(
     session: SessionDep,
+    current_user: CurrentUser,
     comment_id: int,
 ) -> Any:
     """
@@ -168,6 +171,8 @@ async def delete_comment(
     comment = await session.get(Comment, comment_id)
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
+    if comment.creator_id != current_user.id and not current_user.admin:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
     await session.delete(comment)
     await session.commit()
     return Message(message="Comment deleted")
@@ -181,6 +186,7 @@ async def delete_comment(
 async def update_comment(
     session: SessionDep,
     comment_id: int,
+    current_user: CurrentUser,
     comment_update: CommentUpdate,
 ) -> Any:
     """
@@ -189,5 +195,7 @@ async def update_comment(
     comment = await session.get(Comment, comment_id)
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
+    if comment.creator_id != current_user.id and not current_user.admin:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
     comment = await crud.update_comment(session=session, db_comment=comment, comment_update=comment_update)
     return comment
