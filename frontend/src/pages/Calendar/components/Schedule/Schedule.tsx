@@ -18,7 +18,8 @@ const Schedule: React.FC = () => {
   
   useEffect(() => {
     const fetchTournaments = async () => {
-      const response = await apiRequest('tournaments/all?skip=0&limit=100', 'GET');
+      const response = await apiRequest('tournaments/all?skip=0&limit=100', 'GET', undefined, true);
+      console.log(response)
       if (response && response.data) {
         setTournaments(response.data);
       }

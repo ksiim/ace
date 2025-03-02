@@ -22,7 +22,7 @@ const NewsTab: React.FC = () => {
   const fetchNews = async () => {
     try {
       setIsLoading(true);
-      const response = await apiRequest('news');
+      const response = await apiRequest('news', 'GET', undefined, true);
       
       if (!response) {
         throw new Error('Не удалось получить данные');
@@ -59,7 +59,7 @@ const NewsTab: React.FC = () => {
   // Функция получения комментариев для конкретной новости
   const fetchCommentsForNews = async (newsId: number): Promise<CommentType[]> => {
     try {
-      const response = await apiRequest(`news/comments/${newsId}`);
+      const response = await apiRequest(`news/comments/${newsId}`, 'GET', undefined, true);
       
       if (!response) {
         return [];
@@ -79,7 +79,7 @@ const NewsTab: React.FC = () => {
           }
           
           try {
-            const userResponse = await apiRequest(`users/${comment.creator_id}`);
+            const userResponse = await apiRequest(`users/${comment.creator_id}`, 'GET', undefined, true);
             const authorName = userResponse
               ? `${userResponse.surname} ${userResponse.name}`
               : "Неизвестный пользователь";
@@ -119,7 +119,7 @@ const NewsTab: React.FC = () => {
     if (commentText.trim() === '') return;
     
     try {
-      const userResponse = await apiRequest("users/me", "GET");
+      const userResponse = await apiRequest("users/me", "GET", undefined, true);
       
       if (!userResponse || !userResponse.id) {
         throw new Error("Не удалось получить данные пользователя");
@@ -132,7 +132,7 @@ const NewsTab: React.FC = () => {
         news_id: postId
       };
       
-      const response = await apiRequest(`news/comments/${postId}`, "POST", payload);
+      const response = await apiRequest(`news/comments/${postId}`, "POST", payload, true);
       
       if (!response) {
         throw new Error('Не удалось добавить комментарий');

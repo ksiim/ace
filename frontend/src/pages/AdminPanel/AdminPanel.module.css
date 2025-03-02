@@ -1,0 +1,296 @@
+.adminContainer {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  color: #333333;
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #ff8562;
+}
+
+.error {
+  background-color: rgba(211, 47, 47, 0.1);
+  color: #d32f2f;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #d32f2f;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #ff8562;
+  font-size: 1.2rem;
+}
+
+.tabsContainer {
+  display: flex;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.tabButton {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #333333;
+  position: relative;
+}
+.tabButton:hover {
+  color: #ff8562;
+}
+.tabButton.active {
+  color: #ff8562;
+  font-weight: 600;
+}
+.tabButton.active:after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #ff8562;
+}
+
+.tabContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.formContainer {
+  background-color: #f5f5f5;
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+.formContainer h2 {
+  margin-top: 0;
+  font-size: 1.4rem;
+  color: #333333;
+  margin-bottom: 1rem;
+}
+
+.formGroup {
+  margin-bottom: 1rem;
+}
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333333;
+}
+.formGroup input, .formGroup select, .formGroup textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+.formGroup input:focus, .formGroup select:focus, .formGroup textarea:focus {
+  outline: none;
+  border-color: #ff8562;
+}
+.formGroup textarea {
+  resize: vertical;
+}
+
+.formActions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.submitButton {
+  background-color: #ff8562;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+}
+.submitButton:hover {
+  background-color: rgb(255, 93.3694267516, 47);
+}
+
+.cancelButton {
+  background-color: #e0e0e0;
+  color: #333333;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+.cancelButton:hover {
+  background-color: rgb(198.5, 198.5, 198.5);
+}
+
+.tableContainer {
+  margin-top: 1rem;
+}
+.tableContainer h2 {
+  font-size: 1.4rem;
+  color: #333333;
+  margin-bottom: 1rem;
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+.dataTable th, .dataTable td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+.dataTable th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+  color: #333333;
+}
+.dataTable tr:hover {
+  background-color: rgba(245, 245, 245, 0.5);
+}
+
+.status {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+.upcoming {
+  background-color: rgba(33, 150, 243, 0.15);
+  color: #2196f3;
+}
+
+.ongoing {
+  background-color: rgba(255, 152, 0, 0.15);
+  color: #ff9800;
+}
+
+.completed {
+  background-color: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
+}
+
+.cancelled {
+  background-color: rgba(211, 47, 47, 0.15);
+  color: #d32f2f;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.editButton {
+  background-color: #2196f3;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+}
+.editButton:hover {
+  background-color: rgb(11.5384615385, 124.0384615385, 213.4615384615);
+}
+
+.deleteButton {
+  background-color: #d32f2f;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+}
+.deleteButton:hover {
+  background-color: rgb(170.8571428571, 36.1428571429, 36.1428571429);
+}
+
+.saveButton {
+  background-color: #4caf50;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+}
+.saveButton:hover {
+  background-color: rgb(60.5577689243, 139.4422310757, 63.7450199203);
+}
+
+.pointsInput {
+  width: 80px;
+  padding: 0.4rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+.noData {
+  text-align: center;
+  padding: 2rem 0;
+  color: #333333;
+  font-style: italic;
+}
+
+@media (max-width: 992px) {
+  .tabContent {
+    flex-direction: column;
+  }
+}
+@media (max-width: 768px) {
+  .adminContainer {
+    padding: 1rem;
+    margin: 1rem;
+  }
+  .tabsContainer {
+    flex-direction: column;
+    border-bottom: none;
+  }
+  .tabButton {
+    border-bottom: 1px solid #e0e0e0;
+    text-align: left;
+  }
+  .tabButton.active:after {
+    display: none;
+  }
+  .dataTable {
+    font-size: 0.9rem;
+  }
+  .dataTable th, .dataTable td {
+    padding: 0.5rem;
+  }
+  .actionButtons {
+    flex-direction: column;
+  }
+}
+
+/*# sourceMappingURL=AdminPanel.module.css.map */

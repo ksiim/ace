@@ -8,14 +8,18 @@ import Calendar from './pages/Calendar/Calendar.tsx';
 import Rating from './pages/Rating/Rating.tsx';
 import TournamentPage from './pages/Tournament/TournamentPage.tsx';
 import LoginPage from './pages/LoginPage/LoginPage.tsx';
+import Profile from './pages/Profile/Profile.tsx';
+import AdminPanel from './pages/AdminPanel/AdminPanel.tsx';
 
 function App() {
 
   return (
     <Router>
       <Routes>
+        <Route path={'/admin'} element={<AdminPanel/>} />
         <Route path={'/'} element={<Home/>} />
         <Route path={'/login'} element={<LoginPage/> } />
+        <Route path={'/profile'} element={<Profile/>} />
         <Route path={'/registration'} element={<Registration/>} />
         <Route path={'/subscription'} element={<Subscription/>} />
         <Route path={'/news'} element={<News/>} />

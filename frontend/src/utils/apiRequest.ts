@@ -1,16 +1,25 @@
-import { getToken, setAuthHeader } from './serviceToken';
+import { getToken } from './serviceToken';
 
-export const apiRequest = async (endpoint: string, method = "GET", body?: object) => {
+export const apiRequest = async (
+  endpoint: string,
+  method = "POST",
+  body?: object,
+  authRequired = false // Новый параметр для авторизации
+) => {
   try {
-    const token = getToken();
-    if (token) setAuthHeader(token); // Только если токен есть
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    
+    if (authRequired) {
+      const token = getToken();
+      if (!token) throw new Error("Требуется авторизация");
+      headers.Authorization = `Bearer ${token}`;
+    }
     
     const options: RequestInit = {
       method,
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
+      headers,
     };
     
     if (body && ["POST", "PUT", "PATCH"].includes(method)) {

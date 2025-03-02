@@ -1,6 +1,7 @@
-import React from 'react';
-import styles from './Header.module.scss';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import styles from "./Header.module.scss";
+import { useNavigate, useLocation } from "react-router-dom";
+import { getToken } from "../../utils/serviceToken";
 
 interface HeaderProps {
   scrollToBenefits: () => void;
@@ -8,22 +9,39 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ scrollToBenefits }) => {
   const navigate = useNavigate();
-  const location = useLocation(); // Получаем текущий путь
+  const location = useLocation();
+  
+  // Теперь состояние можно обновлять
+  const [isAuthenticated, setIsAuthenticated] = useState(!!getToken());
+  
+  useEffect(() => {
+    const checkAuth = () => setIsAuthenticated(!!getToken());
+    
+    // Проверка при монтировании
+    checkAuth();
+    
+    // Подписка на изменения в localStorage
+    window.addEventListener("storage", checkAuth);
+    
+    return () => window.removeEventListener("storage", checkAuth);
+  }, []);
+  
+  console.log("Авторизован:", isAuthenticated);
   
   const handleAboutClick = () => {
-    if (location.pathname === '/') {
-      scrollToBenefits(); // Если на главной, просто скроллим
+    if (location.pathname === "/") {
+      scrollToBenefits();
     } else {
-      navigate('/'); // Иначе переходим на главную
+      navigate("/");
     }
   };
   
   const menuItems = [
-    { label: 'КАЛЕНДАРЬ', onClick: () => navigate('/schedule') },
-    { label: 'КЛАССИФИКАЦИЯ', onClick: () => navigate('/rating') },
-    { label: 'НОВОСТИ', onClick: () => navigate('/news') },
-    { label: 'ТАРИФЫ', onClick: () => navigate('/subscription') },
-    { label: 'О НАС', onClick: handleAboutClick },
+    { label: "КАЛЕНДАРЬ", onClick: () => navigate("/schedule") },
+    { label: "КЛАССИФИКАЦИЯ", onClick: () => navigate("/rating") },
+    { label: "НОВОСТИ", onClick: () => navigate("/news") },
+    { label: "ТАРИФЫ", onClick: () => navigate("/subscription") },
+    { label: "О НАС", onClick: handleAboutClick },
   ];
   
   return (
@@ -40,17 +58,17 @@ const Header: React.FC<HeaderProps> = ({ scrollToBenefits }) => {
         </div>
         
         <div className={styles.controls}>
-          <button onClick={() => navigate('/registration')}>Регистрация</button>
+          {isAuthenticated ? (
+            <button onClick={() => navigate("/profile")}>Профиль</button>
+          ) : (
+            <button onClick={() => navigate("/registration")}>Регистрация</button>
+          )}
         </div>
       </div>
       
       <nav className={styles.navigation}>
         {menuItems.map((item) => (
-          <button
-            key={item.label}
-            className={styles.nav_link}
-            onClick={item.onClick}
-          >
+          <button key={item.label} className={styles.nav_link} onClick={item.onClick}>
             {item.label}
           </button>
         ))}
