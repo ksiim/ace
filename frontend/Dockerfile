@@ -15,7 +15,6 @@ CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
 # Stage 3: Production (Build)
 FROM base AS build
 COPY . .
-ARG VITE_API_URL
 RUN npm install --legacy-peer-deps && npm run build
 
 # Stage 4: Production (Nginx)
