@@ -57,6 +57,8 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+    env_file:
+      - .env
     ports:
       - "3000:3000"
     environment:
@@ -75,6 +77,8 @@ services:
       target: production
     environment:
        - VITE_API_URL=${VITE_API_URL}
+    env_file:
+      - .env
     volumes:
       - ./frontend:/app
     ports:
