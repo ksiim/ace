@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { saveToken, setAuthHeader } from '../../utils/serviceToken.ts';
-import { apiRequest } from '../../utils/apiRequest.ts'; // Импортируем apiRequest
+import axios from 'axios';
 import styles from './LoginPage.module.scss';
 
 const LoginPage: React.FC = () => {
@@ -65,14 +65,24 @@ const LoginPage: React.FC = () => {
     
     setIsLoading(true);
     
+    const data = new URLSearchParams();
+    data.append('grant_type', 'password');
+    data.append('username', formData.email);
+    data.append('password', formData.password);
+    data.append('scope', '');
+    data.append('client_id', '');  // Если не требуется, можно удалить
+    data.append('client_secret', '');  // Если не требуется, можно удалить
+    
     try {
-      const response = await apiRequest('login/access-token', 'POST', {
-        username: formData.email,
-        password: formData.password
-      }); // Передаем `authRequired: true`, если требуется авторизация
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/login/access-token`, data, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json'
+        }
+      });
       
-      if (response && response.access_token) {
-        const token = response.access_token;
+      const token = response.data.access_token;
+      if (token) {
         saveToken(token);
         setAuthHeader(token);
         navigate('/');
@@ -80,8 +90,13 @@ const LoginPage: React.FC = () => {
         setErrors(prev => ({ ...prev, login: 'Не удалось получить токен авторизации' }));
       }
     } catch (error) {
-      if (error instanceof Error) {
-        setErrors(prev => ({ ...prev, login: error.message || 'Ошибка подключения к серверу' }));
+      if (axios.isAxiosError(error) && error.response) {
+        console.log(error.response.data); // Логирование ответа сервера
+        if (error.response.status === 400) {
+          setErrors(prev => ({ ...prev, login: 'Неверные учетные данные' }));
+        } else {
+          setErrors(prev => ({ ...prev, login: `Ошибка` }));
+        }
       } else {
         setErrors(prev => ({ ...prev, login: 'Ошибка подключения к серверу' }));
       }
@@ -89,6 +104,7 @@ const LoginPage: React.FC = () => {
       setIsLoading(false);
     }
   };
+  
   
   return (
     <div className={styles.loginContainer}>
@@ -131,7 +147,7 @@ const LoginPage: React.FC = () => {
                 disabled={isLoading}
               />
             </label>
-            {errors.password && <div className={styles.errorMessage}>Пароль должен содержать минимум 1 символ</div>}
+            {errors.password && <div className={styles.errorMessage}>Пароль должен содержать минимум 8 символов</div>}
           </div>
           
           <div className={styles.forgotPassword}>
