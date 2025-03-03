@@ -9,6 +9,7 @@ class UserBase(SQLModel):
     name: str = Field(max_length=255, nullable=True)
     surname: str = Field(max_length=255, nullable=True)
     patronymic: str = Field(max_length=255, nullable=True)
+    score: int | None = Field(default=0, nullable=True)
     admin: bool = Field(default=False)
     organizer: bool | None = Field(default=False, nullable=True)
     end_of_subscription: Optional[datetime.datetime] = Field(
