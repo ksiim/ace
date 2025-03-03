@@ -4,6 +4,7 @@ import styles from './Registration.module.scss';
 import OTPInput, {OTPInputRef} from '../../components/OTPInput/OTPInput.tsx';
 import {apiRequest} from '../../utils/apiRequest.ts';
 import {saveToken, setAuthHeader} from '../../utils/serviceToken.ts';
+import axios from 'axios';
 
 const Registration: React.FC = () => {
   const navigate = useNavigate();
@@ -129,7 +130,19 @@ const Registration: React.FC = () => {
       formData.append('username', email);
       formData.append('password', password);
       
-      const response = await apiRequest('login/access-token', 'POST', formData)
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/login/access-token`, formData, {
+        
+        
+        headers: {
+          
+          
+          'Content-Type': 'application/x-www-form-urlencoded',
+          
+          
+        },
+        
+        
+      });
       
       console.log('Ответ от сервера:', response.data);
       
