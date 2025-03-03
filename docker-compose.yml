@@ -21,11 +21,11 @@ services:
       context: .
       dockerfile: backend/Dockerfile.migrations
     environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_SERVER=${POSTGRES_SERVER}
-      - POSTGRES_PORT=${POSTGRES_PORT}
+      POSTGRES_SERVER: ${POSTGRES_SERVER}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     depends_on:
       - db
 
@@ -40,12 +40,12 @@ services:
     env_file:
       - .env
     environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_SERVER=${POSTGRES_SERVER}
-      - POSTGRES_PORT=${POSTGRES_PORT}
-      - GATEWAY_TOKEN=${GATEWAY_TOKEN}
+      POSTGRES_SERVER: ${POSTGRES_SERVER}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      GATEWAY_TOKEN: ${GATEWAY_TOKEN}
     ports:
       - "8000:8000"
 
@@ -62,8 +62,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-       - NODE_ENV=development
-       - VITE_API_URL=${VITE_API_URL}
+      NODE_ENV: development
+      VITE_API_URL: ${VITE_API_URL}
     command: [ "npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000" ]
     depends_on:
       - backend
@@ -76,7 +76,7 @@ services:
       dockerfile: frontend/Dockerfile
       target: production
     environment:
-       - VITE_API_URL=${VITE_API_URL}
+      VITE_API_URL: ${VITE_API_URL}
     env_file:
       - .env
     volumes:
