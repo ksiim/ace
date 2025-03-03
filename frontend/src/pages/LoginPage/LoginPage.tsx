@@ -46,7 +46,7 @@ const LoginPage: React.FC = () => {
     if (name === 'password') {
       setErrors(prev => ({
         ...prev,
-        password: value !== '' && value.length < 8
+        password: value !== '' && value.length < 1
       }));
     }
   };
@@ -131,7 +131,7 @@ const LoginPage: React.FC = () => {
                 disabled={isLoading}
               />
             </label>
-            {errors.password && <div className={styles.errorMessage}>Пароль должен содержать минимум 8 символов</div>}
+            {errors.password && <div className={styles.errorMessage}>Пароль должен содержать минимум 1 символ</div>}
           </div>
           
           <div className={styles.forgotPassword}>
