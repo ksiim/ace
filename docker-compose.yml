@@ -75,10 +75,10 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
       target: production
-    environment:
-      VITE_API_URL: ${VITE_API_URL}
     env_file:
       - .env
+    environment:
+      VITE_API_URL: ${VITE_API_URL}
     volumes:
       - ./frontend:/app
     ports:
