@@ -55,7 +55,7 @@ services:
       dockerfile: frontend/Dockerfile
       target: dev
     volumes:
-      - ./frontend:/app
+      # - ./frontend:/app
       - /app/node_modules
     env_file:
       - .env
