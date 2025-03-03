@@ -82,7 +82,7 @@ const Registration: React.FC = () => {
   const sendVerificationCode = async () => {
     const phone = formData.phone.replace(/\D/g, '');
     const query = new URLSearchParams({ phone_number: phone }).toString();
-    const data = await apiRequest(`users/send_phone_verification_code/?${query}`, 'GET');
+    const data = await apiRequest(`users/send_phone_verification_code/?${query}`, 'GET', undefined);
     
     if (data?.response?.ok && data.response.result?.request_id) {
       setRequestId(data.response.result.request_id);
