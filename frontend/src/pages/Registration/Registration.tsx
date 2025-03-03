@@ -4,7 +4,6 @@ import styles from './Registration.module.scss';
 import OTPInput, {OTPInputRef} from '../../components/OTPInput/OTPInput.tsx';
 import {apiRequest} from '../../utils/apiRequest.ts';
 import {saveToken, setAuthHeader} from '../../utils/serviceToken.ts';
-import axios from 'axios';
 
 const Registration: React.FC = () => {
   const navigate = useNavigate();
@@ -96,7 +95,7 @@ const Registration: React.FC = () => {
     if (!requestId) return;
     
     const query = new URLSearchParams({ request_id: requestId, code: formData.verificationCode }).toString();
-    const success = await apiRequest(`users/verify_code/?${query}`, 'GET');
+    const success = await apiRequest(`users/verify_code/?${query}`, 'GET', undefined);
     console.log('Ответ верификации:', success);
     
     
@@ -130,11 +129,7 @@ const Registration: React.FC = () => {
       formData.append('username', email);
       formData.append('password', password);
       
-      const response = await axios.post('http://localhost:8000/api/v1/login/access-token', formData, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      });
+      const response = await apiRequest('login/access-token', 'POST', formData)
       
       console.log('Ответ от сервера:', response.data);
       
