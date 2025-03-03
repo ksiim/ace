@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { saveToken, setAuthHeader } from '../../utils/serviceToken.ts';
 import { apiRequest } from '../../utils/apiRequest.ts'; // Импортируем apiRequest
-import styles from './LoginPage.module.scss';
+import styles from './Registration.module.scss';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
