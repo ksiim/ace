@@ -6,7 +6,7 @@ RUN corepack enable && npm install --legacy-peer-deps
 
 # Stage 2: Development (Vite)
 FROM base AS dev
-COPY . .
+COPY /frontend .
 RUN npm install --legacy-peer-deps
 ENV PATH="/app/node_modules/.bin:$PATH"
 EXPOSE 3000
