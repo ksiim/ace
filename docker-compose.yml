@@ -51,11 +51,11 @@ services:
 
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: frontend/Dockerfile
       target: dev
     volumes:
-      - ./frontend:/app
+      - /frontend:/app
       - /app/node_modules
     ports:
       - "3000:3000"
@@ -70,13 +70,13 @@ services:
 
   frontend-prod:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: frontend/Dockerfile
       target: production
     environment:
        - VITE_API_URL=${VITE_API_URL}
     volumes:
-      - ./frontend:/app
+      - /frontend:/app
     ports:
       - "80:80"
     depends_on:
