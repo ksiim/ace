@@ -69,7 +69,7 @@ const LoginPage: React.FC = () => {
       const response = await apiRequest('login/access-token', 'POST', {
         username: formData.email,
         password: formData.password
-      }, true); // Передаем `authRequired: true`, если требуется авторизация
+      }); // Передаем `authRequired: true`, если требуется авторизация
       
       if (response && response.access_token) {
         const token = response.access_token;

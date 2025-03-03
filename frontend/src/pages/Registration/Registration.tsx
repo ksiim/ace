@@ -1,158 +1,243 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { saveToken, setAuthHeader } from '../../utils/serviceToken.ts';
-import { apiRequest } from '../../utils/apiRequest.ts'; // Импортируем apiRequest
+import React, {useState, useEffect, useRef} from 'react';
+import { useNavigate} from 'react-router-dom';
 import styles from './Registration.module.scss';
+import OTPInput, {OTPInputRef} from '../../components/OTPInput/OTPInput.tsx';
+import {apiRequest} from '../../utils/apiRequest.ts';
+import {saveToken, setAuthHeader} from '../../utils/serviceToken.ts';
 
-const LoginPage: React.FC = () => {
+const Registration: React.FC = () => {
   const navigate = useNavigate();
+  const otpRef = useRef<OTPInputRef>(null);
   
   const [formData, setFormData] = useState({
+    fullName: '',
     email: '',
-    password: ''
+    phone: '',
+    telegramId: '',
+    birthDate: '',
+    password: '',
+    verificationCode: ''
   });
   
+  const [step, setStep] = useState(1);
+  const [requestId, setRequestId] = useState('');
   const [errors, setErrors] = useState({
+    fullName: false,
     email: false,
+    phone: false,
     password: false,
-    login: ''
+    verificationCode: false
   });
   
-  const [isLoading, setIsLoading] = useState(false);
+  useEffect(() => {
+    validateField('email', formData.email);
+  }, [formData.email]);
   
-  const validateEmail = (email: string): boolean => {
+  useEffect(() => {
+    validateField('phone', formData.phone);
+  }, [formData.phone]);
+  
+  useEffect(() => {
+    validateField('password', formData.password);
+  }, [formData.password]);
+  
+  const validateField = (fieldName: string, value: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    const phoneRegex = /^\+?\d{10,}$/;
+    const passwordRegex = /^.{8,}$/; // At least 8 characters
+    
+    setErrors(prev => ({
+      ...prev,
+      [fieldName]: fieldName === 'email'
+        ? value !== '' && !emailRegex.test(value)
+        : fieldName === 'phone'
+          ? value !== '' && !phoneRegex.test(value.replace(/\D/g, ''))
+          : fieldName === 'password'
+            ? value !== '' && !passwordRegex.test(value)
+            : false
+    }));
+  };
+  
+  const validateFullName = () => {
+    const words = formData.fullName.trim().split(/\s+/);
+    const hasError = words.length !== 3;
+    setErrors(prev => ({ ...prev, fullName: hasError }));
+    return !hasError;
   };
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const validateForm = () => {
+    const emailValid = !errors.email && formData.email !== '';
+    const phoneValid = !errors.phone && formData.phone !== '';
+    const passwordValid = !errors.password && formData.password !== '';
+    return validateFullName() && emailValid && phoneValid && passwordValid;
+  };
+  
+  
+  const sendVerificationCode = async () => {
+    const phone = formData.phone.replace(/\D/g, '');
+    const query = new URLSearchParams({ phone_number: phone }).toString();
+    const data = await apiRequest(`users/send_phone_verification_code/?${query}`, 'GET', undefined);
     
-    // Сбрасываем ошибку входа при изменении данных формы
-    if (errors.login) {
-      setErrors(prev => ({ ...prev, login: '' }));
+    if (data?.response?.ok && data.response.result?.request_id) {
+      setRequestId(data.response.result.request_id);
+      setStep(2);
+    } else {
+      console.error("Ошибка: request_id не получен!");
     }
+  };
+  
+  const verifyCode = async () => {
+    if (!requestId) return;
     
-    // Валидация email
-    if (name === 'email') {
-      setErrors(prev => ({
-        ...prev,
-        email: value !== '' && !validateEmail(value)
-      }));
+    const query = new URLSearchParams({ request_id: requestId, code: formData.verificationCode }).toString();
+    const success = await apiRequest(`users/verify_code/?${query}`, 'GET', undefined);
+    console.log('Ответ верификации:', success);
+    
+    
+    if (success) {
+      await registerUser();
+    } else {
+      setErrors(prev => ({ ...prev, verificationCode: true }));
     }
+  };
+  
+  const registerUser = async () => {
+    const [surname, name, patronymic] = formData.fullName.split(' ');
+    const userData = {
+      email: formData.email,
+      password: formData.password,
+      name,
+      surname,
+      patronymic,
+      phone_number: formData.phone.replace(/\D/g, ''),
+    };
     
-    // Валидация пароля (минимум 8 символов)
-    if (name === 'password') {
-      setErrors(prev => ({
-        ...prev,
-        password: value !== '' && value.length < 8
-      }));
+    const response = await apiRequest('users/signup/', 'POST', userData);
+    if (response) {
+      await login(userData.email, userData.password);
+    }
+  };
+  
+  const login = async (email: string, password: string) => {
+    try {
+      const formData = new URLSearchParams();
+      formData.append('username', email);
+      formData.append('password', password);
+      
+      const response = await apiRequest('login/access-token', 'POST', formData)
+      
+      console.log('Ответ от сервера:', response.data);
+      
+      const token = response.data.access_token;
+      if (token) {
+        saveToken(token);
+        setAuthHeader(token);
+        navigate('/');
+      } else {
+        console.error('Токен не получен');
+      }
+    } catch (error) {
+      console.error('Ошибка авторизации:');
     }
   };
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (formData.email === '' || formData.password === '' || errors.email || errors.password) {
-      setErrors(prev => ({
-        ...prev,
-        email: formData.email === '' || !validateEmail(formData.email),
-        password: formData.password === '' || formData.password.length < 8,
-      }));
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    try {
-      const response = await apiRequest('login/access-token', 'POST', {
-        username: formData.email,
-        password: formData.password
-      });
-      
-      if (response && response.access_token) {
-        const token = response.access_token;
-        saveToken(token);
-        setAuthHeader(token);
-        navigate('/');
-      } else {
-        setErrors(prev => ({ ...prev, login: 'Не удалось получить токен авторизации' }));
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        setErrors(prev => ({ ...prev, login: error.message || 'Ошибка подключения к серверу' }));
-      } else {
-        setErrors(prev => ({ ...prev, login: 'Ошибка подключения к серверу' }));
-      }
-    } finally {
-      setIsLoading(false);
+    if (step === 1 && validateForm()) {
+      await sendVerificationCode();
+    } else if (step === 2 && formData.verificationCode.length === 4) {
+      await verifyCode();
     }
   };
   
+  const navigateToLogin = () => {
+    navigate('/login');
+  };
+  
   return (
-    <div className={styles.loginContainer}>
-      <div className={styles.loginForm}>
-        <h1 className={styles.title}>Вход в аккаунт</h1>
+    <div className={styles.formContainer}>
+      <form className={styles.form} onSubmit={handleSubmit}>
+        <div className={styles.formHeader}>
+          <h1>Регистрация</h1>
+          <button
+            type="button"
+            className={styles.loginButton}
+            onClick={navigateToLogin}
+          >
+            Уже есть аккаунт? <span className={styles.tologin}>Войти</span>
+          </button>
+        </div>
         
-        {errors.login && (
-          <div className={styles.errorAlert}>
-            {errors.login}
+        <div className={styles.formGroup}>
+          <label className={styles.label}>
+            Введите Ф.И.О. игрока
+            <input
+              type="text"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleChange}
+              className={`${styles.input} ${errors.fullName ? styles.error : ''}`}
+              placeholder="Иванов Иван Иванович"
+              required
+            />
+          </label>
+          {errors.fullName && <div className={styles.errorMessage}>Ф.И.О. должно содержать три слова</div>}
+        </div>
+        
+        {[
+          { label: 'Введите Email', name: 'email', type: 'email', placeholder: 'example@mail.ru', error: errors.email, errorMessage: 'Укажите корректный email' },
+          { label: 'Телефон', name: 'phone', type: 'tel', placeholder: '+7 (999)-000-00-00', error: errors.phone, errorMessage: 'Укажите корректный номер телефона' },
+          { label: 'Пароль', name: 'password', type: 'password', placeholder: 'Введите пароль', error: errors.password, errorMessage: 'Пароль должен содержать минимум 8 символов' },
+          { label: 'Телеграм ID', name: 'telegramId', type: 'text', placeholder: '111111111' },
+          { label: 'Дата рождения игрока', name: 'birthDate', type: 'date' }
+        ].map(({ label, name, type, placeholder, error, errorMessage }) => (
+          <div key={name} className={styles.formGroup}>
+            <label className={styles.label}>
+              {label}
+              <input
+                type={type}
+                name={name}
+                value={formData[name as keyof typeof formData]}
+                onChange={handleChange}
+                className={`${styles.input} ${error ? styles.error : ''}`}
+                placeholder={placeholder}
+                required
+              />
+            </label>
+            {error && errorMessage && <div className={styles.errorMessage}>{errorMessage}</div>}
+          </div>
+        ))}
+        
+        {step === 2 && (
+          <div className={styles.otp}>
+            <h2>Введите код из Telegram</h2>
+            <OTPInput ref={otpRef} onComplete={(otp) => setFormData({
+              ...formData,
+              verificationCode: otp
+            })}/>
+            <div className={styles.otp__buttons}>
+              <button onClick={() => otpRef.current?.clear()}>Очистить</button>
+            </div>
+          
           </div>
         )}
         
-        <form onSubmit={handleSubmit}>
-          <div className={styles.formGroup}>
-            <label className={styles.label}>
-              Email
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
-                placeholder="example@mail.ru"
-                disabled={isLoading}
-              />
-            </label>
-            {errors.email && <div className={styles.errorMessage}>Введите корректный email</div>}
-          </div>
-          
-          <div className={styles.formGroup}>
-            <label className={styles.label}>
-              Пароль
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className={`${styles.input} ${errors.password ? styles.inputError : ''}`}
-                placeholder="Введите пароль"
-                disabled={isLoading}
-              />
-            </label>
-            {errors.password && <div className={styles.errorMessage}>Пароль должен содержать минимум 8 символов</div>}
-          </div>
-          
-          <div className={styles.forgotPassword}>
-            <Link to="/forgot-password">Забыли пароль?</Link>
-          </div>
-          
-          <button
-            type="submit"
-            className={styles.loginButton}
-            disabled={isLoading || errors.email || errors.password}
-          >
-            {isLoading ? 'Входим...' : 'Войти'}
-          </button>
-        </form>
+        <button type="submit" className={styles.submitButton}
+                disabled={errors.email || errors.phone || errors.password}>
+          {step === 1 ? 'Получить код' : 'Завершить регистрацию'}
+        </button>
         
-        <div className={styles.registerLink}>
-          <p>Еще нет аккаунта? <Link className={styles.toregister} to="/registration">Зарегистрироваться</Link></p>
-        </div>
-      </div>
+        <p className={styles.consentText}>
+          Нажимая на кнопку, вы даете согласие на обработку персональных данных и соглашаетесь с политикой конфиденциальности.
+        </p>
+      </form>
     </div>
   );
 };
 
-export default LoginPage;
+export default Registration;
