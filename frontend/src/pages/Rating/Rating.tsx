@@ -10,17 +10,19 @@ interface Player {
   city: string;
   points: number;
   tournaments: number;
-  category?: string; // Assuming we have categories based on age groups
+  category?: string; // Категория игрока
 }
 
 const Rating: React.FC = () => {
-  // Sample data based on the image
+  // Обновлённые данные с новыми категориями
   const [players] = useState<Player[]>([
-    { place: 1, name: 'Захарченко Валерия', city: 'Ростов-на-Дону', points: 75, tournaments: 1, category: 'Юниоры' },
-    { place: 2, name: 'Ширяева Александрина', city: 'Ростов-на-Дону', points: 60, tournaments: 1, category: 'Юниоры' },
-    { place: 3, name: 'Ващенко Артем', city: 'Таганрог', points: 45, tournaments: 1, category: 'Дети' },
-    { place: 4, name: 'Шитова Милана', city: 'Таганрог', points: 45, tournaments: 1, category: 'Дети' },
-    { place: 5, name: 'Лукашева Вера', city: 'Ростов-на-Дону', points: 30, tournaments: 1, category: 'Юниоры' },
+    { place: 1, name: 'Захарченко Валерия', city: 'Ростов-на-Дону', points: 75, tournaments: 1, category: 'До 17 лет' },
+    { place: 2, name: 'Ширяева Александрина', city: 'Ростов-на-Дону', points: 60, tournaments: 1, category: 'До 15 лет' },
+    { place: 3, name: 'Ващенко Артем', city: 'Таганрог', points: 45, tournaments: 1, category: 'До 13 лет' },
+    { place: 4, name: 'Шитова Милана', city: 'Таганрог', points: 45, tournaments: 1, category: '9-10 лет' },
+    { place: 5, name: 'Лукашева Вера', city: 'Ростов-на-Дону', points: 30, tournaments: 1, category: 'Зеленый мяч' },
+    { place: 6, name: 'Иванов Иван', city: 'Москва', points: 25, tournaments: 1, category: 'Оранжевый мяч' },
+    { place: 7, name: 'Петров Петр', city: 'Санкт-Петербург', points: 20, tournaments: 1, category: 'Красный мяч' },
   ]);
   
   const [filteredPlayers, setFilteredPlayers] = useState<Player[]>(players);
@@ -28,34 +30,34 @@ const Rating: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedCity, setSelectedCity] = useState<string>('');
   
-  // Get unique categories and cities for filter dropdowns
-  const categories = Array.from(new Set(players.map(player => player.category)));
+  // Уникальные категории и города для фильтров
+  const categories = ['До 17 лет', 'До 15 лет', 'До 13 лет', '9-10 лет', 'Зеленый мяч', 'Оранжевый мяч', 'Красный мяч'];
   const cities = Array.from(new Set(players.map(player => player.city)));
   
   useEffect(() => {
     let result = [...players];
     
-    // Filter by search term (name)
+    // Фильтр по поисковому запросу (имя)
     if (searchTerm) {
       result = result.filter(player =>
         player.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     
-    // Filter by category
+    // Фильтр по категории
     if (selectedCategory) {
       result = result.filter(player => player.category === selectedCategory);
     }
     
-    // Filter by city
+    // Фильтр по городу
     if (selectedCity) {
       result = result.filter(player => player.city === selectedCity);
     }
     
-    // Sort by points (highest first)
+    // Сортировка по очкам (по убыванию)
     result.sort((a, b) => b.points - a.points);
     
-    // Update places after filtering and sorting
+    // Обновление мест после фильтрации и сортировки
     result = result.map((player, index) => ({
       ...player,
       place: index + 1
@@ -66,7 +68,7 @@ const Rating: React.FC = () => {
   
   return (
     <div className={styles.wrapper}>
-      <Header scrollToBenefits={() => {}}/>
+      <Header scrollToBenefits={() => {}} />
       <div className={styles.classificationContainer}>
         <h1 className={styles.title}>Классификация на {new Date().toLocaleDateString('ru-RU')}</h1>
         
@@ -160,7 +162,7 @@ const Rating: React.FC = () => {
           </table>
         </div>
       </div>
-      <Footer/>
+      <Footer />
     </div>
   );
 };

@@ -68,7 +68,7 @@
 }
 .commentSection .commentForm .commentInput:focus {
   outline: none;
-  border-color: #ff8562;
+  border-color: #f95e1b;
 }
 .commentSection .commentForm .commentInput::placeholder {
   color: #aaa;
@@ -76,7 +76,7 @@
 .commentSection .commentForm .commentButton {
   align-self: flex-end;
   padding: 0.625rem 1.25rem;
-  background-color: #ff8562;
+  background-color: #f95e1b;
   color: white;
   border: none;
   border-radius: 6px;

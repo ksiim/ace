@@ -5,15 +5,6 @@ import { SubscriptionPlan } from './PlanCard/PlanCard.tsx';
 
 const plans: SubscriptionPlan[] = [
   {
-    type: 'free',
-    period: 'Бесплатно',
-    features: [
-      { text: 'Доступ к календарю' }
-    ],
-    price: null
-  },
-  
-  {
     type: 'halfyear',
     period: '6 месяцев',
     features: [
