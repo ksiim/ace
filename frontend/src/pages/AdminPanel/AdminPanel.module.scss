@@ -148,6 +148,7 @@ $info-color: #2196f3;
   }
 }
 
+
 .formActions {
   display: flex;
   gap: 1rem;
@@ -230,7 +231,7 @@ $info-color: #2196f3;
 }
 
 .editButton {
-  @include button-style($info-color, $white);
+  @include button-style($primary-color, $white);
   padding: 0.4rem 0.75rem;
   font-size: 0.8rem;
 }
@@ -298,5 +299,60 @@ $info-color: #2196f3;
 
   .actionButtons {
     flex-direction: column;
+  }
+}
+
+.checkboxContainer {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+// Стили для самих чекбоксов
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+  cursor: pointer;
+  // Убираем кастомные стили, которые могут вызывать проблемы
+  appearance: auto;
+  -webkit-appearance: checkbox;
+  border: 1px solid $medium-gray;
+  background: white;
+
+  &:checked {
+    accent-color: $primary-color;
+  }
+}
+
+// Убираем существующие стили класса .checkbox, которые создают проблемы
+.checkbox {
+  // Полностью сбрасываем все стили, которые могли повлиять на отображение
+  all: unset;
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+  cursor: pointer;
+  vertical-align: middle;
+  background: white;
+  border: 1px solid $medium-gray;
+  border-radius: 3px;
+
+  &:checked {
+    background-color: $primary-color;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      width: 5px;
+      height: 10px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      top: 2px;
+      left: 6px;
+      transform: rotate(45deg);
+    }
   }
 }

@@ -26,17 +26,18 @@ export const apiRequest = async (
       options.body = JSON.stringify(body);
     }
     
-    console.log(import.meta.env.VITE_API_URL);
-    
     const response = await fetch(
       `${import.meta.env.VITE_API_URL}/api/v1/${endpoint}`,
       options
     );
     
-    if (!response.ok) throw new Error(`Ошибка: ${response.status}`);
+    if (!response.ok) {
+      return { error: true, status: response.status };
+    }
+    
     return response.json();
   } catch (error) {
     console.error(`Ошибка запроса (${endpoint}):`, error);
-    return null;
+    return { error: true, status: null };
   }
 };

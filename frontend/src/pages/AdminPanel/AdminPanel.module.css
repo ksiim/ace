@@ -200,7 +200,7 @@
 }
 
 .editButton {
-  background-color: #2196f3;
+  background-color: #ff8562;
   color: #ffffff;
   border: none;
   border-radius: 4px;
@@ -212,7 +212,7 @@
   font-size: 0.8rem;
 }
 .editButton:hover {
-  background-color: rgb(11.5384615385, 124.0384615385, 213.4615384615);
+  background-color: rgb(255, 93.3694267516, 47);
 }
 
 .deleteButton {
@@ -291,6 +291,53 @@
   .actionButtons {
     flex-direction: column;
   }
+}
+.checkboxContainer {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+input[type=checkbox] {
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+  cursor: pointer;
+  appearance: auto;
+  -webkit-appearance: checkbox;
+  border: 1px solid #e0e0e0;
+  background: white;
+}
+input[type=checkbox]:checked {
+  accent-color: #ff8562;
+}
+
+.checkbox {
+  all: unset;
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+  cursor: pointer;
+  vertical-align: middle;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 3px;
+}
+.checkbox:checked {
+  background-color: #ff8562;
+  position: relative;
+}
+.checkbox:checked::after {
+  content: "";
+  position: absolute;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  top: 2px;
+  left: 6px;
+  transform: rotate(45deg);
 }
 
 /*# sourceMappingURL=AdminPanel.module.css.map */

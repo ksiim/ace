@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { apiRequest } from "../../utils/apiRequest";
 import styles from "./Profile.module.scss";
 import Header from '../../components/Header/Header.tsx';
+import {useNavigate} from 'react-router-dom';
 
 interface User {
   name: string;
@@ -18,22 +19,30 @@ interface User {
 }
 
 const Profile: React.FC = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
     apiRequest("users/me", "GET", undefined, true)
-    .then((data) => {
-        if (data) {
-          setUser(data);
+      .then((data) => {
+        if (data?.error) {
+          if (data.status === 403) {
+            navigate("/login");
+          } else {
+            setError("Ошибка загрузки данных");
+          }
         } else {
-          setError("Ошибка загрузки данных");
+          setUser(data);
         }
       })
       .catch(() => setError("Ошибка загрузки данных"))
       .finally(() => setLoading(false));
-  }, []);
+  }, [navigate]);
+  
+  
+  
   
   if (loading) return <p className={styles.loading}>Загрузка...</p>;
   if (error) return <p className={styles.error}>{error}</p>;

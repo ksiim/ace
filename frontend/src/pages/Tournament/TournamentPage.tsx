@@ -23,11 +23,13 @@ const TournamentPage: React.FC = () => {
   const { tournamentId } = useParams<{ tournamentId: string }>();
   const [tournament, setTournament] = useState<TournamentPage | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false); // Состояние модального окна
+  const [isRegistering, setIsRegistering] = useState(false); // Состояние отправки запроса
   
   useEffect(() => {
     const fetchTournament = async () => {
       try {
-        const response = await apiRequest(`tournaments/${tournamentId}`, 'GET');
+        const response = await apiRequest(`tournaments/${tournamentId}`, 'GET', undefined, true);
         if (response) {
           setTournament(response);
         }
@@ -40,6 +42,35 @@ const TournamentPage: React.FC = () => {
     
     fetchTournament();
   }, [tournamentId]);
+  
+  const handleRegisterClick = () => {
+    setIsModalOpen(true); // Открыть модальное окно
+  };
+  
+  const handleConfirmRegistration = async () => {
+    setIsRegistering(true);
+    try {
+      const registrationData = {
+        confirmed: true,
+        partner_id: 0, // Партнёр айди по умолчанию 0
+      };
+      const response = await apiRequest('participants/', 'POST', registrationData, true);
+      if (!response.error) {
+        alert('Вы успешно зарегистрировались на турнир!');
+        setIsModalOpen(false); // Закрыть модальное окно
+      } else {
+        alert('Ошибка при регистрации!');
+      }
+    } catch (error) {
+      console.error('Ошибка при отправке запроса на регистрацию:', error);
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+  
+  const handleCancelRegistration = () => {
+    setIsModalOpen(false); // Закрыть модальное окно без регистрации
+  };
   
   const renderContent = () => {
     if (loading) {
@@ -83,14 +114,12 @@ const TournamentPage: React.FC = () => {
             </p>
             <div className={styles.registrationContainer}>
               {tournament.can_register && (
-                <button className={styles.registrationButton}>
+                <button className={styles.registrationButton} onClick={handleRegisterClick}>
                   Регистрация открыта
                 </button>
               )}
               {!tournament.can_register && (
-                <p className={styles.registrationClosed}>
-                  Регистрация закрыта
-                </p>
+                <p className={styles.registrationClosed}>Регистрация закрыта</p>
               )}
             </div>
           </div>
@@ -114,6 +143,26 @@ const TournamentPage: React.FC = () => {
       <Header scrollToBenefits={() => {}} />
       <main className={styles.mainContent}>
         {renderContent()}
+        
+        {isModalOpen && (
+          <div className={styles.modal}>
+            <div className={styles.modalContent}>
+              <h2>Вы хотите записаться на турнир?</h2>
+              <div className={styles.modalButtons}>
+                <button
+                  onClick={handleConfirmRegistration}
+                  disabled={isRegistering}
+                  className={styles.confirmButton}
+                >
+                  {isRegistering ? 'Регистрируем...' : 'Да'}
+                </button>
+                <button onClick={handleCancelRegistration} className={styles.cancelButton}>
+                  Нет
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
