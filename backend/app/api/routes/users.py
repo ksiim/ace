@@ -16,7 +16,7 @@ from backend.app.api.deps import (
 )
 from backend.app.core.config import GATEWAY_TOKEN, SUPERUSER_EMAIL, SUPERUSER_PASSWORD
 from backend.app.core.security import get_password_hash, verify_password
-from common.db.models import Message, UpdatePassword, User, UserCreate, UserPublic, UserRegister, UserUpdate, UserUpdateMe, UsersPublic
+from common.db.models import Message, UpdatePassword, User, UserCreate, UserFio, UserPublic, UserRegister, UserUpdate, UserUpdateMe, UsersPublic
 
 
 router = APIRouter()
@@ -68,6 +68,16 @@ def read_user_me(current_user: CurrentUser) -> Any:
     Get current user.
     """
     return current_user
+
+@router.get('/{user_id}/fio', response_model=UserFio)
+async def read_user_fio(session: SessionDep, user_id: int) -> Any:
+    """
+    Retrieve user's full name by id.
+    """
+    user = await session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return UserFio(name=user.name, surname=user.surname, patronymic=user.patronymic)
 
 @router.delete("/me", response_model=Message)
 async def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:

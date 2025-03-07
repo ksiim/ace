@@ -64,6 +64,11 @@ class User(UserBase, table=True):
     hashed_password: str | None = Field(default=None, nullable=True)
 
     tournaments: List["Tournament"] = Relationship(back_populates="owner")
+    
+class UserFio(SQLModel):
+    name: str
+    surname: str
+    patronymic: str
 
 
 class UsersPublic(SQLModel):
