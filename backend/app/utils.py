@@ -1,7 +1,9 @@
+from email.mime.text import MIMEText
 import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+import smtplib
 from typing import Any
 
 import emails  # type: ignore
@@ -35,7 +37,7 @@ async def send_email(
     email_to: str,
     subject: str = "",
     html_content: str = "",
-) -> None:
+) -> Any:
     message = emails.Message(
         subject=subject,
         html=html_content,
@@ -44,6 +46,7 @@ async def send_email(
     smtp_options = {"host": SMTP_HOST, "port": SMTP_PORT}
     smtp_options["user"] = SMTP_USER
     smtp_options["password"] = SMTP_PASSWORD
+    smtp_options["tls"] = True
     response = message.send(to=email_to, smtp=smtp_options)
     logger.info(f"send email result: {response}")
 
@@ -63,6 +66,27 @@ async def generate_reset_password_email(email_to: str, email: str, token: str) -
         },
     )
     return EmailData(html_content=html_content, subject=subject)
+
+async def generate_password_reset_token(email: str) -> str:
+    delta = timedelta(hours=EMAIL_RESET_TOKEN_EXPIRE_HOURS)
+    now = datetime.now(timezone.utc)
+    expires = now + delta
+    exp = expires.timestamp()
+    encoded_jwt = jwt.encode(
+        {"exp": exp, "nbf": now, "sub": email},
+        SECRET_KEY,
+        algorithm="HS256",
+    )
+    return encoded_jwt
+
+
+async def verify_password_reset_token(token: str) -> str | None:
+    try:
+        decoded_token = jwt.decode(
+            token, SECRET_KEY, algorithms=["HS256"])
+        return str(decoded_token["sub"])
+    except InvalidTokenError:
+        return None
 
 
 async def generate_new_account_email(
