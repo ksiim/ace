@@ -385,3 +385,37 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=40)
+    
+
+class TransactionBase(SQLModel):
+    amount: int
+    payment_link: str
+    operation_id: str
+    months: int
+    status: str
+    
+    created_at: datetime.datetime = Field(
+        default_factory=datetime.datetime.now
+    )
+    updated_at: datetime.datetime = Field(
+        default_factory=datetime.datetime.now
+    )
+    
+
+class Transaction(TransactionBase, table=True):
+    __tablename__ = "transactions"
+    
+    
+    id: Optional[int] = Field(primary_key=True, default=None)
+    
+    user_id: int = Field(foreign_key="users.id")
+    
+
+class TransactionCreate(TransactionBase):
+    user_id: int
+    
+    
+class TransactionPublic(TransactionBase):
+    id: int
+    user_id: int
+    

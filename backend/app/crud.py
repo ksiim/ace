@@ -3,7 +3,18 @@ from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.security import get_password_hash, verify_password
-from common.db.models import Comment, CommentCreate, News, NewsCreate, TournamentParticipant, TournamentParticipantCreate, TournamentParticipantPublic, Trainer, TrainerCreate, TrainerPublic, User, UserCreate
+from common.db.models import (
+    Comment, CommentCreate,
+    News, NewsCreate,
+    TournamentParticipant,
+    TournamentParticipantCreate,
+    TournamentParticipantPublic,
+    Trainer, TrainerCreate,
+    TrainerPublic,
+    Transaction, TransactionCreate,
+    TransactionPublic,
+    User, UserCreate
+)
 
 from backend.app.utils import logger
 
@@ -146,3 +157,16 @@ async def update_tournament_participant(*, session: AsyncSession, db_tournament_
     await session.commit()
     await session.refresh(db_tournament_participant)
     return db_tournament_participant
+
+async def create_transaction(session: AsyncSession, transaction_in: TransactionCreate) -> TransactionPublic:
+    db_obj = Transaction.model_validate(
+        transaction_in,
+        update={
+            "created_at": transaction_in.created_at.replace(tzinfo=None),
+            "updated_at": transaction_in.updated_at.replace(tzinfo=None)
+        }
+    )
+    session.add(db_obj)
+    await session.commit()
+    await session.refresh(db_obj)
+    return db_obj
