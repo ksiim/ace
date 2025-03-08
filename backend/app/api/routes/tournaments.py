@@ -11,7 +11,7 @@ from backend.app.api.deps import (
     get_current_active_superuser,
     get_current_user,
 )
-from common.db.models import Category, Message, Region, Sex, Tournament, TournamentCreate, TournamentPublic, TournamentUpdate, TournamentsPublic
+from common.db.models import Category, Message, Region, Sex, Tournament, TournamentCreate, TournamentParticipant, TournamentParticipantsPublic, TournamentPublic, TournamentUpdate, TournamentsPublic
 
 
 router = APIRouter()
@@ -122,6 +122,30 @@ async def read_tournament(
     if tournament is None:
         raise HTTPException(status_code=404, detail="Tournament not found")
     return tournament
+
+@router.get(
+    '/{tournament_id}/participants',
+    dependencies=[Depends(get_current_user)],
+    response_model=TournamentParticipantsPublic,
+)
+async def get_participants_by_tournament_id(
+    session: SessionDep,
+    tournament_id: int,
+    skip: int = 0,
+    limit: int = 100
+) -> TournamentParticipantsPublic:
+    """
+    Retrieve tournament participants by tournament id.
+    """
+    count_statement = select(func.count()).where(
+        TournamentParticipant.tournament_id == tournament_id)
+    count = (await session.execute(count_statement)).scalar_one_or_none()
+
+    statement = select(TournamentParticipant).where(
+        TournamentParticipant.tournament_id == tournament_id).offset(skip).limit(limit)
+    participants = (await session.execute(statement)).scalars().all()
+
+    return TournamentParticipantsPublic(data=participants, count=count)
 
 @router.put(
     '/{tournament_id}',

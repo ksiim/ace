@@ -14,7 +14,7 @@ from backend.app.api.deps import (
 from common.db.models import (
     Message, TournamentParticipant, TournamentParticipantCreate,
     TournamentParticipantPublic, TournamentParticipantUpdate,
-    TournamentParticipantsPublic
+    TournamentParticipantsPublic, User
 )
 
 router = APIRouter()
@@ -79,6 +79,13 @@ async def create_tournament_participant(
     """
     Create a new tournament participant.
     """
+    user = await session.get(User, participant_in.user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if participant_in.partner_id:
+        partner = await session.get(User, participant_in.partner_id)
+        if not partner:
+            raise HTTPException(status_code=404, detail="Partner not found")
     participant = await crud.create_tournament_participant(session, participant_in)
     return participant
 
