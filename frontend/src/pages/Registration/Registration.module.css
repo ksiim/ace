@@ -9,8 +9,12 @@
   width: 100%;
 }
 
+.formHeader h1 {
+  margin-bottom: 5px;
+}
+
 .tologin {
-  padding: 5px;
+  padding: 8px;
   background-color: #f95e1b;
   border-radius: 16px;
   color: white;
@@ -31,12 +35,13 @@
   gap: 8px;
 }
 
-.label {
+.labelWrapper {
   display: flex;
   flex-direction: column;
   width: 100%;
   font-weight: 300;
   color: #000000;
+  gap: 8px;
 }
 
 .input {
@@ -44,6 +49,7 @@
   padding: 10px;
   font-size: 16px;
   border: 1px solid #000000;
+  border-radius: 15px;
   transition: border-color 0.3s;
   box-shadow: none;
 }

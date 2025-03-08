@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { apiRequest } from "../../utils/apiRequest";
 import TournamentManagement from "./components/TournamentManagement/TournamentManagement.tsx";
 import UserManagement from "./components/UserManagement/UserManagement.tsx";
+import TrainersManagement
+  from './components/TrainersManagement/TrainersManagement.tsx';
 import styles from "./AdminPanel.module.scss";
 
 interface Tournament {
@@ -165,6 +167,15 @@ const AdminPanel: React.FC = () => {
             Управление пользователями
           </button>
         )}
+        
+        {currentUser.admin && (
+          <button
+            className={`${styles.tabButton} ${activeTab === "trainers" ? styles.active : ""}`}
+            onClick={() => setActiveTab("trainers")}
+          >
+            Управление тренерами
+          </button>
+        )}
       </div>
       
       {activeTab === "tournaments" && (
@@ -178,6 +189,12 @@ const AdminPanel: React.FC = () => {
       {activeTab === "users" && currentUser.admin && (
         <UserManagement
           currentUser={currentUser}
+          onError={handleErrorMessage}
+        />
+      )}
+      
+      {activeTab === "trainers" && currentUser.admin && (
+        <TrainersManagement
           onError={handleErrorMessage}
         />
       )}

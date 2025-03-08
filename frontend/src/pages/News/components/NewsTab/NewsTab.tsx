@@ -3,19 +3,19 @@ import Post from '../Post/Post';
 import styles from './NewsTab.module.scss';
 import { PostType, CommentType } from '../../types.ts';
 import { apiRequest } from '../../../../utils/apiRequest';
-
-
-
+import { useNavigate } from 'react-router-dom';
 
 const NewsTab: React.FC = () => {
   const [posts, setPosts] = useState<PostType[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [commentText, setCommentText] = useState<string>('');
+  const [isAdmin, setIsAdmin] = useState<boolean>(false); // состояние для админа
+  const navigate = useNavigate();
   
   // Получение новостей при загрузке компонента
   useEffect(() => {
     fetchNews();
+    checkIfAdmin();
   }, []);
   
   // Функция получения всех новостей
@@ -23,17 +23,13 @@ const NewsTab: React.FC = () => {
     try {
       setIsLoading(true);
       const response = await apiRequest('news', 'GET', undefined, true);
-      
       if (!response) {
         throw new Error('Не удалось получить данные');
       }
-      
       // Преобразуем данные из API в формат PostType
       const formattedPosts: PostType[] = await Promise.all(
         response.data.map(async (newsItem: any) => {
-          // Получаем комментарии для каждой новости
           const comments = await fetchCommentsForNews(newsItem.id);
-          
           return {
             id: newsItem.id,
             author: "ACE", // Предполагаем, что автор всегда ACE
@@ -45,7 +41,6 @@ const NewsTab: React.FC = () => {
           };
         })
       );
-      
       setPosts(formattedPosts);
       setError(null);
     } catch (err) {
@@ -60,12 +55,7 @@ const NewsTab: React.FC = () => {
   const fetchCommentsForNews = async (newsId: number): Promise<CommentType[]> => {
     try {
       const response = await apiRequest(`news/comments/${newsId}`, 'GET', undefined, true);
-      
-      if (!response) {
-        return [];
-      }
-      
-      // Получаем данные о пользователях
+      if (!response) return [];
       const commentsWithAuthors = await Promise.all(
         response.data.map(async (comment: any) => {
           if (!comment.creator_id) {
@@ -77,14 +67,13 @@ const NewsTab: React.FC = () => {
               date: comment.created_at.split('T')[0],
             };
           }
-          
           try {
-            const userResponse = await apiRequest(`users/${comment.creator_id}`, 'GET', undefined, true);
+            const userResponse = await apiRequest(`users/${comment.creator_id}/fio`, 'GET', undefined);
             const authorName = userResponse
               ? `${userResponse.surname} ${userResponse.name}`
               : "Неизвестный пользователь";
-            
             return {
+              creator_id: comment.creator_id,
               id: comment.id,
               author: authorName,
               text: comment.text,
@@ -101,7 +90,6 @@ const NewsTab: React.FC = () => {
           }
         })
       );
-      
       return commentsWithAuthors;
     } catch (err) {
       console.error(`Ошибка при загрузке комментариев для новости ID ${newsId}:`, err);
@@ -109,51 +97,77 @@ const NewsTab: React.FC = () => {
     }
   };
   
-  
-  
-  // Функция получения данных о текущем пользователе
-  
+  // Функция получения данных о текущем пользователе и проверка, является ли он администратором
+  const checkIfAdmin = async () => {
+    try {
+      const userResponse = await apiRequest('users/me', 'GET', undefined, true);
+      if (userResponse && userResponse.admin) {
+        setIsAdmin(true);
+      }
+    } catch (err) {
+      console.error('Ошибка при получении данных пользователя:', err);
+    }
+  };
   
   // Функция добавления комментария
+  const [commentTexts, setCommentTexts] = useState<{ [key: number]: string }>({});
+  
+  const handleCommentTextChange = (postId: number, text: string) => {
+    setCommentTexts(prev => ({ ...prev, [postId]: text }));
+  };
+  
   const handleAddComment = async (postId: number) => {
-    if (commentText.trim() === '') return;
+    if (!commentTexts[postId]?.trim()) return;
     
     try {
       const userResponse = await apiRequest("users/me", "GET", undefined, true);
-      
-      if (!userResponse || !userResponse.id) {
-        throw new Error("Не удалось получить данные пользователя");
-      }
+      if (!userResponse || !userResponse.id) throw new Error("Не удалось получить данные пользователя");
       
       const payload = {
-        text: commentText,
+        text: commentTexts[postId],
         created_at: new Date().toISOString(),
         creator_id: userResponse.id,
         news_id: postId
       };
       
       const response = await apiRequest(`news/comments/${postId}`, "POST", payload, true);
-      
-      if (!response) {
-        throw new Error('Не удалось добавить комментарий');
-      }
+      if (!response) throw new Error('Не удалось добавить комментарий');
       
       const updatedComments = await fetchCommentsForNews(postId);
       
       setPosts(posts.map(post =>
-        post.id === postId
-          ? { ...post, comments: updatedComments }
-          : post
+        post.id === postId ? { ...post, comments: updatedComments } : post
       ));
       
-      setCommentText('');
+      // Очищаем текст комментария только для данного поста
+      setCommentTexts(prev => ({ ...prev, [postId]: '' }));
+      
     } catch (err) {
       console.error('Ошибка при добавлении комментария:', err);
-      alert('Не удалось добавить комментарий. Проверьте данные и попробуйте снова.');
+      alert('Не удалось добавить комментарий. Попробуйте снова.');
     }
   };
   
   
+  // Функция редактирования новости
+  const handleEditNews = (newsId: number) => {
+    navigate(`/create-news/${newsId}`);  // Переходим на страницу редактирования новости с id
+  };
+  
+  // Функция удаления новости
+  const handleDeleteNews = async (newsId: number) => {
+    try {
+      const response = await apiRequest(`news/${newsId}`, 'DELETE', undefined, true);
+      if (!response) {
+        throw new Error('Не удалось удалить новость');
+      }
+      // Обновляем список новостей после удаления
+      setPosts(posts.filter(post => post.id !== newsId));
+    } catch (err) {
+      console.error('Ошибка при удалении новости:', err);
+      alert('Не удалось удалить новость. Попробуйте снова.');
+    }
+  };
   
   if (isLoading) {
     return <div className={styles.loading}>Загрузка новостей...</div>;
@@ -166,18 +180,45 @@ const NewsTab: React.FC = () => {
   return (
     <div className={styles.newsTab}>
       <h1 className={styles.title}>Лента новостей</h1>
+      
+      {isAdmin && (
+        <button
+          className={styles.createNewsButton}
+          onClick={() => navigate('/create-news')}
+        >
+          Создать новость <strong>+</strong>
+        </button>
+      )}
+      
       {posts.length === 0 ? (
         <p className={styles.emptyMessage}>Новости отсутствуют</p>
       ) : (
         <div className={styles.posts}>
           {posts.map(post => (
-            <Post
-              key={post.id}
-              post={post}
-              commentText={commentText}
-              onCommentTextChange={setCommentText}
-              onAddComment={handleAddComment}
-            />
+            <div key={post.id} className={styles.postItem}>
+              <Post
+                post={post}
+                commentText={commentTexts[post.id] || ""}
+                onCommentTextChange={(text) => handleCommentTextChange(post.id, text)}
+                onAddComment={() => handleAddComment(post.id)}
+              />
+              {isAdmin && (
+                <div className={styles.adminButtons}>
+                  <button
+                    className={styles.editButton}
+                    onClick={() => handleEditNews(post.id)}
+                  >
+                    Редактировать
+                  </button>
+                  <button
+                    className={styles.deleteButton}
+                    onClick={() => handleDeleteNews(post.id)}
+                  >
+                    Удалить
+                  </button>
+                </div>
+              )}
+            </div>
           ))}
         </div>
       )}

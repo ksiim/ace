@@ -1,9 +1,9 @@
-import React, {useState, useEffect, useRef} from 'react';
-import { useNavigate} from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from './Registration.module.scss';
-import OTPInput, {OTPInputRef} from '../../components/OTPInput/OTPInput.tsx';
-import {apiRequest} from '../../utils/apiRequest.ts';
-import {saveToken, setAuthHeader} from '../../utils/serviceToken.ts';
+import OTPInput, { OTPInputRef } from '../../components/OTPInput/OTPInput.tsx';
+import { apiRequest } from '../../utils/apiRequest.ts';
+import { saveToken, setAuthHeader } from '../../utils/serviceToken.ts';
 import axios from 'axios';
 
 const Registration: React.FC = () => {
@@ -27,7 +27,8 @@ const Registration: React.FC = () => {
     email: false,
     phone: false,
     password: false,
-    verificationCode: false
+    verificationCode: false,
+    telegramId: false // Добавлена ошибка для telegramId
   });
   
   useEffect(() => {
@@ -42,10 +43,15 @@ const Registration: React.FC = () => {
     validateField('password', formData.password);
   }, [formData.password]);
   
+  useEffect(() => {
+    validateField('telegramId', formData.telegramId); // Добавлена проверка для telegramId
+  }, [formData.telegramId]);
+  
   const validateField = (fieldName: string, value: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^\+?\d{10,}$/;
     const passwordRegex = /^.{8,}$/; // At least 8 characters
+    const telegramIdValid = value.length === 9; // Проверка на длину Telegram ID
     
     setErrors(prev => ({
       ...prev,
@@ -55,7 +61,9 @@ const Registration: React.FC = () => {
           ? value !== '' && !phoneRegex.test(value.replace(/\D/g, ''))
           : fieldName === 'password'
             ? value !== '' && !passwordRegex.test(value)
-            : false
+            : fieldName === 'telegramId'
+              ? value !== '' && !telegramIdValid // Для telegramId проверяется длина
+              : false
     }));
   };
   
@@ -68,16 +76,28 @@ const Registration: React.FC = () => {
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    if (name === 'phone') {
+      // Убираем все символы, кроме цифр, и добавляем +7, если его нет в начале
+      let cleanedValue = value.replace(/\D/g, ''); // Убираем все нецифровые символы
+      
+      if (cleanedValue.length > 0 && !cleanedValue.startsWith('7')) {
+        cleanedValue = '7' + cleanedValue; // Добавляем 7 в начале, если его нет
+      }
+      
+      setFormData(prev => ({ ...prev, [name]: `+7 ${cleanedValue.slice(1)}` }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
   
   const validateForm = () => {
     const emailValid = !errors.email && formData.email !== '';
     const phoneValid = !errors.phone && formData.phone !== '';
     const passwordValid = !errors.password && formData.password !== '';
-    return validateFullName() && emailValid && phoneValid && passwordValid;
+    const telegramIdValid = !errors.telegramId && formData.telegramId !== ''; // Проверка на telegramId
+    return validateFullName() && emailValid && phoneValid && passwordValid && telegramIdValid; // Добавлена проверка для telegramId
   };
-  
   
   const sendVerificationCode = async () => {
     const phone = formData.phone.replace(/\D/g, '');
@@ -98,7 +118,6 @@ const Registration: React.FC = () => {
     const query = new URLSearchParams({ request_id: requestId, code: formData.verificationCode }).toString();
     const success = await apiRequest(`users/verify_code/?${query}`, 'GET', undefined);
     console.log('Ответ верификации:', success);
-    
     
     if (success) {
       await registerUser();
@@ -131,17 +150,9 @@ const Registration: React.FC = () => {
       formData.append('password', password);
       
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/login/access-token`, formData, {
-        
-        
         headers: {
-          
-          
           'Content-Type': 'application/x-www-form-urlencoded',
-          
-          
         },
-        
-        
       });
       
       console.log('Ответ от сервера:', response.data);
@@ -187,18 +198,19 @@ const Registration: React.FC = () => {
         </div>
         
         <div className={styles.formGroup}>
-          <label className={styles.label}>
-            Введите Ф.И.О. игрока
-            <input
-              type="text"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
-              className={`${styles.input} ${errors.fullName ? styles.error : ''}`}
-              placeholder="Иванов Иван Иванович"
-              required
-            />
-          </label>
+          <div className={styles.labelWrapper}>
+            <label className={styles.label}>
+              Введите Ф.И.О. игрока</label>
+          </div>
+          <input
+            type="text"
+            name="fullName"
+            value={formData.fullName}
+            onChange={handleChange}
+            className={`${styles.input} ${errors.fullName ? styles.error : ''}`}
+            placeholder="Иванов Иван Иванович"
+            required
+          />
           {errors.fullName && <div className={styles.errorMessage}>Ф.И.О. должно содержать три слова</div>}
         </div>
         
@@ -206,25 +218,26 @@ const Registration: React.FC = () => {
           { label: 'Введите Email', name: 'email', type: 'email', placeholder: 'example@mail.ru', error: errors.email, errorMessage: 'Укажите корректный email' },
           { label: 'Телефон', name: 'phone', type: 'tel', placeholder: '+7 (999)-000-00-00', error: errors.phone, errorMessage: 'Укажите корректный номер телефона' },
           { label: 'Пароль', name: 'password', type: 'password', placeholder: 'Введите пароль', error: errors.password, errorMessage: 'Пароль должен содержать минимум 8 символов' },
-          { label: 'Телеграм ID', name: 'telegramId', type: 'text', placeholder: '111111111' },
+          { label: 'Телеграм ID', name: 'telegramId', type: 'text', placeholder: '111111111', error: errors.telegramId, errorMessage: 'Телеграм ID должен содержать 9 символов' },
           { label: 'Дата рождения игрока', name: 'birthDate', type: 'date' }
         ].map(({ label, name, type, placeholder, error, errorMessage }) => (
           <div key={name} className={styles.formGroup}>
-            <label className={styles.label}>
-              {label}
-              <input
-                type={type}
-                name={name}
-                value={formData[name as keyof typeof formData]}
-                onChange={handleChange}
-                className={`${styles.input} ${error ? styles.error : ''}`}
-                placeholder={placeholder}
-                required
-              />
-            </label>
+            <div className={styles.labelWrapper}>
+              <label className={styles.label}>{label}</label>
+            </div>
+            <input
+              type={type}
+              name={name}
+              value={formData[name as keyof typeof formData]}
+              onChange={handleChange}
+              className={`${styles.input} ${error ? styles.error : ''}`}
+              placeholder={placeholder}
+              required
+            />
             {error && errorMessage && <div className={styles.errorMessage}>{errorMessage}</div>}
           </div>
         ))}
+        
         
         {step === 2 && (
           <div className={styles.otp}>
@@ -236,12 +249,11 @@ const Registration: React.FC = () => {
             <div className={styles.otp__buttons}>
               <button onClick={() => otpRef.current?.clear()}>Очистить</button>
             </div>
-          
           </div>
         )}
         
         <button type="submit" className={styles.submitButton}
-                disabled={errors.email || errors.phone || errors.password}>
+                disabled={errors.email || errors.phone || errors.password || errors.telegramId}>
           {step === 1 ? 'Получить код' : 'Завершить регистрацию'}
         </button>
         

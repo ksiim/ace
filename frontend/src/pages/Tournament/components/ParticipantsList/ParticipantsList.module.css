@@ -1,0 +1,60 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  list-style: none;
+}
+
+.tournamentParticipants h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 1.5rem;
+}
+.tournamentParticipants .participantList {
+  padding: 0;
+}
+.tournamentParticipants .participantList .participantItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid #ddd;
+}
+.tournamentParticipants .participantList .participantItem .participantName {
+  font-size: 16px;
+  font-weight: 500;
+}
+.tournamentParticipants .participantList .participantItem .confirmButton {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.tournamentParticipants .participantList .participantItem .confirmButton:hover {
+  background-color: #45a049;
+}
+.tournamentParticipants .participantList .participantItem .confirmButton:active {
+  background-color: #3e8e41;
+}
+.tournamentParticipants .participantList .participantItem .confirmButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+.tournamentParticipants .participantList .participantItem .participantStatus {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+.tournamentParticipants .participantList .participantItem .participantStatus.confirmed {
+  color: #38a169;
+}
+.tournamentParticipants .participantList .participantItem .participantStatus.notConfirmed {
+  color: #e53e3e;
+}
+
+/*# sourceMappingURL=ParticipantsList.module.css.map */

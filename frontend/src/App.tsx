@@ -10,6 +10,8 @@ import TournamentPage from './pages/Tournament/TournamentPage.tsx';
 import LoginPage from './pages/LoginPage/LoginPage.tsx';
 import Profile from './pages/Profile/Profile.tsx';
 import AdminPanel from './pages/AdminPanel/AdminPanel.tsx';
+import CreateNews from './pages/CreateNews/CreateNews.tsx';
+import Trainers from './pages/Trainers/Trainers.tsx';
 
 function App() {
 
@@ -17,6 +19,7 @@ function App() {
     <Router>
       <Routes>
         <Route path={'/admin'} element={<AdminPanel/>} />
+        <Route path={'/create-news/:newsId?'} element={<CreateNews/>} />
         <Route path={'/'} element={<Home/>} />
         <Route path={'/login'} element={<LoginPage/> } />
         <Route path={'/profile'} element={<Profile/>} />
@@ -24,6 +27,7 @@ function App() {
         <Route path={'/subscription'} element={<Subscription/>} />
         <Route path={'/news'} element={<News/>} />
         <Route path={'/schedule'} element={<Calendar/>} />
+        <Route path={'/trainers'} element={<Trainers/>}/>
         <Route path="/tournaments/:tournamentId" element={<TournamentPage />} />
         <Route path={'/rating'} element={<Rating/>} />
       </Routes>

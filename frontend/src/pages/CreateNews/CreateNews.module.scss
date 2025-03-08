@@ -1,0 +1,141 @@
+// Переменные
+$primary-color: #f95e1b;
+$white: #ffffff;
+$light-gray: #f5f5f5;
+$medium-gray: #e0e0e0;
+$dark-gray: #333333;
+$shadow-color: rgba(0, 0, 0, 0.1);
+
+// Миксины
+@mixin card-shadow {
+  box-shadow: 0 4px 6px $shadow-color;
+}
+
+@mixin input-style {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid $medium-gray;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.3s ease;
+
+  &:focus {
+    border-color: $primary-color;
+  }
+
+  &::placeholder {
+    color: $dark-gray;
+  }
+}
+
+@mixin button-style {
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: darken($primary-color, 10%);
+  }
+
+  &:disabled {
+    background-color: $medium-gray;
+    cursor: not-allowed;
+  }
+}
+
+// Стили для создания новостей
+.createNews {
+  padding: 20px;
+  background-color: $light-gray;
+  border-radius: 10px;
+  @include card-shadow;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+
+}
+
+.title {
+  font-size: 2rem;
+  color: $dark-gray;
+  text-align: center;
+  margin-bottom: 20px;
+  position: relative;
+  padding-bottom: 0.5rem;
+
+  &:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background-color: $primary-color;
+    border-radius: 3px;
+  }
+}
+
+.error {
+  color: #f44336;
+  background-color: rgba(244, 67, 54, 0.1);
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+// Стили для формы
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.input, .textarea {
+  @include input-style;
+}
+
+.textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.submitButton {
+  background-color: $primary-color;
+  color: $white;
+  @include button-style;
+}
+
+.submitButton:disabled {
+  background-color: $medium-gray;
+}
+
+// Адаптивность
+@media (max-width: 768px) {
+  .createNews {
+    padding: 1rem;
+    margin: 1rem;
+  }
+
+  .title {
+    font-size: 1.6rem;
+  }
+
+  .input, .textarea {
+    font-size: 14px;
+  }
+
+  .submitButton {
+    font-size: 14px;
+  }
+}
+
+.content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}

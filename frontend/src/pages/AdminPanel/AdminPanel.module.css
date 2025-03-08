@@ -102,7 +102,14 @@
   margin-bottom: 1rem;
 }
 
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+}
+
 .formGroup {
+  width: 100%;
   margin-bottom: 1rem;
 }
 .formGroup label {
@@ -142,6 +149,7 @@
   cursor: pointer;
   font-weight: 500;
   padding: 0.75rem 1.5rem;
+  border-radius: 15px;
 }
 .submitButton:hover {
   background-color: rgb(255, 93.3694267516, 47);

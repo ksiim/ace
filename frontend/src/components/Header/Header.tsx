@@ -67,6 +67,7 @@ const Header: React.FC<HeaderProps> = ({ scrollToBenefits }) => {
     { label: "НОВОСТИ", onClick: () => navigate("/news") },
     { label: "ТАРИФЫ", onClick: () => navigate("/subscription") },
     { label: "О НАС", onClick: handleAboutClick },
+    { label: "ТРЕНЕРЫ", onClick: () => {navigate('trainers')}}
   ];
   
   return (

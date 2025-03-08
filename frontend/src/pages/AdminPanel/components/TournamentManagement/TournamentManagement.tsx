@@ -167,6 +167,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     setNewTournament({...tournament});
   };
   
+  
   const handleUpdateTournament = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -180,9 +181,8 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             prevTournaments.map(t => t.id === editTournamentId ? { ...t, ...data } : t)
           );
           
-          // Теперь обновляем состояние родительского компонента с помощью callback
+          // Обновляем родительский компонент
           onTournamentsUpdate(prevTournaments => {
-            // Убедимся, что prevTournaments - это массив
             if (!Array.isArray(prevTournaments)) return [data];
             
             return prevTournaments.map(t => t.id === editTournamentId ? { ...t, ...data } : t);
@@ -205,9 +205,9 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             address: "",
             prize_fund: 0,
             owner_id: currentUser.id,
-            sex_id: 0, // Поставь нужное значение для sex_id (мужчины = 2, женщины = 3)
-            category_id: 0, // Нужно будет подставить актуальную категорию
-            region_id: 0 // Нужно будет подставить актуальный регион
+            sex_id: newTournament.sex_id || 0, // Используем текущее значение sex_id
+            category_id: newTournament.category_id || 0, // Текущее значение категории
+            region_id: newTournament.region_id || 0 // Текущее значение региона
           });
         } else {
           onError("Ошибка обновления турнира");
@@ -217,8 +217,8 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
         console.error("Ошибка при обновлении турнира:", err);
         onError("Ошибка обновления турнира");
       });
-    
   };
+  
   
   const cancelEdit = () => {
     setEditTournamentId(null);
@@ -266,15 +266,19 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
           
           <div className={styles.formGroup}>
             <label htmlFor="type">Тип турнира</label>
-            <input
-              type="text"
+            <select
               id="type"
               name="type"
               value={newTournament.type || ''}
               onChange={handleTournamentInputChange}
               required
-            />
+            >
+              <option value="">Выберите тип</option>
+              <option value="solo">Одиночный</option>
+              <option value="duo">Парный</option>
+            </select>
           </div>
+          
           
           {/* Добавляем выбор пола */}
           <div className={styles.formGroup}>
@@ -282,7 +286,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             <select
               id="sex_id"
               name="sex_id"
-              value={newTournament.sex_id || ''}
+              value={newTournament.sex_id || ''}  // Ensure default empty value if no selection
               onChange={handleTournamentInputChange}
               required
             >
@@ -291,6 +295,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
               <option value="3">Женщины</option>
             </select>
           </div>
+          
           
           {/* Добавляем выбор категории */}
           <div className={styles.formGroup}>

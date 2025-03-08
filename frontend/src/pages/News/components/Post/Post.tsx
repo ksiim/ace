@@ -42,7 +42,7 @@ const Post: React.FC<PostProps> = ({
       
       <CommentSection
         postId={post.id}
-        comments={post.comments}
+        father_comments={post.comments}
         commentText={commentText}
         onCommentTextChange={onCommentTextChange}
         onAddComment={() => onAddComment(post.id)}

@@ -1,8 +1,10 @@
 export interface CommentType {
   id: number;
+  creator_id?: number;
   author: string;
   text: string;
   date: string;
+  news_id: number;
 }
 
 export interface PostType {

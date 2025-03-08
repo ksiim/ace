@@ -110,6 +110,11 @@ const LoginPage: React.FC = () => {
     <div className={styles.loginContainer}>
       <div className={styles.loginForm}>
         <h1 className={styles.title}>Вход в аккаунт</h1>
+        <div className={styles.registerLink}>
+          <p>Еще нет аккаунта? <Link className={styles.toregister}
+                                     to="/registration">Зарегистрироваться</Link>
+          </p>
+        </div>
         
         {errors.login && (
           <div className={styles.errorAlert}>
@@ -119,35 +124,43 @@ const LoginPage: React.FC = () => {
         
         <form onSubmit={handleSubmit}>
           <div className={styles.formGroup}>
-            <label className={styles.label}>
-              Email
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
-                placeholder="example@mail.ru"
-                disabled={isLoading}
-              />
-            </label>
-            {errors.email && <div className={styles.errorMessage}>Введите корректный email</div>}
+            <div className={styles.labelWrapper}>
+              <label className={styles.label}>
+                Email
+              </label>
+            </div>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
+              placeholder="example@mail.ru"
+              disabled={isLoading}
+            />
+            {errors.email &&
+							<div className={styles.errorMessage}>Введите корректный
+								email</div>}
           </div>
           
           <div className={styles.formGroup}>
-            <label className={styles.label}>
-              Пароль
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className={`${styles.input} ${errors.password ? styles.inputError : ''}`}
-                placeholder="Введите пароль"
-                disabled={isLoading}
-              />
-            </label>
-            {errors.password && <div className={styles.errorMessage}>Пароль должен содержать минимум 8 символов</div>}
+            <div className={styles.labelWrapper}>
+              <label className={styles.label}>
+                Пароль
+              </label>
+            </div>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className={`${styles.input} ${errors.password ? styles.inputError : ''}`}
+              placeholder="Введите пароль"
+              disabled={isLoading}
+            />
+            {errors.password &&
+							<div className={styles.errorMessage}>Пароль должен содержать
+								минимум 8 символов</div>}
           </div>
           
           <div className={styles.forgotPassword}>
@@ -162,10 +175,6 @@ const LoginPage: React.FC = () => {
             {isLoading ? 'Входим...' : 'Войти'}
           </button>
         </form>
-        
-        <div className={styles.registerLink}>
-          <p>Еще нет аккаунта? <Link className={styles.toregister} to="/registration">Зарегистрироваться</Link></p>
-        </div>
       </div>
     </div>
   );

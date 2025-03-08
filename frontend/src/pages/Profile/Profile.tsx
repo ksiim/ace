@@ -11,7 +11,7 @@ interface User {
   patronymic: string;
   admin: boolean;
   organizer: boolean;
-  end_of_subscription: string;
+  end_of_subscription: string | null; // Можем ожидать null для конца подписки
   updated_at: string;
   created_at: string;
   phone_number: string;
@@ -30,7 +30,7 @@ const Profile: React.FC = () => {
       .then((data) => {
         if (data?.error) {
           if (data.status === 403) {
-            navigate("/login");
+            navigate("/login", { replace: true });
           } else {
             setError("Ошибка загрузки данных");
           }
@@ -44,7 +44,7 @@ const Profile: React.FC = () => {
   
   const handleLogout = () => {
     removeToken();
-    navigate("/login");
+    navigate("/login", { replace: true });
   };
   
   if (loading) return <p className={styles.loading}>Загрузка...</p>;
@@ -63,8 +63,9 @@ const Profile: React.FC = () => {
           <p>Email: {user.email}</p>
           <p>Телефон: {user.phone_number}</p>
           <p>Дата регистрации: {new Date(user.created_at).toLocaleDateString()}</p>
-          <p>Подписка до: {new Date(user.end_of_subscription).toLocaleDateString()}</p>
-          <p>Обновлено: {new Date(user.updated_at).toLocaleString()}</p>
+          {user.end_of_subscription && (
+            <p>Подписка до: {new Date(user.end_of_subscription).toLocaleDateString()}</p>
+          )}
           <p>Роль: {user.admin ? "Администратор" : user.organizer ? "Организатор" : "Пользователь"}</p>
         </div>
         
@@ -79,7 +80,7 @@ const Profile: React.FC = () => {
             Выйти из профиля
           </button>
         </div>
-       
+      
       </div>
     </>
   );

@@ -3,11 +3,12 @@ import { useParams } from 'react-router-dom';
 import { apiRequest } from '../../utils/apiRequest.ts';
 import styles from './TournamentPage.module.scss';
 import Header from '../../components/Header/Header.tsx';
+import ParticipantsList from './components/ParticipantsList/ParticipantsList.tsx';
 
 interface TournamentPage {
   id: number;
   name: string;
-  type: string;
+  type: string; // solo | duo
   is_child: boolean;
   photo: string;
   organizer_name_and_contacts: string;
@@ -19,12 +20,52 @@ interface TournamentPage {
   prize_fund: number;
 }
 
+interface User {
+  name: string;
+  surname: string;
+  patronymic: string;
+  admin: boolean;
+  organizer: boolean;
+  end_of_subscription: string;
+  updated_at: string;
+  created_at: string;
+  phone_number: string;
+  email: string;
+  id: number;
+}
+
+interface Participant {
+  id: number;
+  confirmed: boolean;
+  user_id: number;
+  partner_id: number | null;
+  participant_name: string;
+  tournament_id: number;
+}
+
 const TournamentPage: React.FC = () => {
   const { tournamentId } = useParams<{ tournamentId: string }>();
   const [tournament, setTournament] = useState<TournamentPage | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false); // Состояние модального окна
-  const [isRegistering, setIsRegistering] = useState(false); // Состояние отправки запроса
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [userData, setUserData] = useState<User | null>(null);
+  const [partnerId, setPartnerId] = useState<string>('');
+  const [partnerData, setPartnerData] = useState<User | null>(null);
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  
+  const loadParticipants = async () => {
+    if (!tournament) return;
+    
+    try {
+      const response = await apiRequest(`tournaments/${tournament.id}/participants`, 'GET', undefined, true);
+      if (response && !response.error) {
+        setParticipants(response.data);
+      }
+    } catch (error) {
+      console.error('Ошибка при загрузке списка участников:', error);
+    }
+  };
   
   useEffect(() => {
     const fetchTournament = async () => {
@@ -43,23 +84,84 @@ const TournamentPage: React.FC = () => {
     fetchTournament();
   }, [tournamentId]);
   
+  useEffect(() => {
+    if (tournament) {
+      loadParticipants();
+    }
+  }, [tournament]);
+  
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await apiRequest('users/me', 'GET', undefined, true);
+        setUserData(response);
+      } catch (error) {
+        console.error('Ошибка при загрузке данных о пользователе:', error);
+      }
+    };
+    
+    fetchUserData();
+  }, []);
+  
   const handleRegisterClick = () => {
-    setIsModalOpen(true); // Открыть модальное окно
+    setIsModalOpen(true);
   };
   
   const handleConfirmRegistration = async () => {
     setIsRegistering(true);
     try {
-      const registrationData = {
-        confirmed: true,
-        partner_id: 0, // Партнёр айди по умолчанию 0
-      };
-      const response = await apiRequest('participants/', 'POST', registrationData, true);
-      if (!response.error) {
-        alert('Вы успешно зарегистрировались на турнир!');
-        setIsModalOpen(false); // Закрыть модальное окно
-      } else {
-        alert('Ошибка при регистрации!');
+      if (userData && tournament) {
+        // Получаем участников турнира
+        const participantsResponse = await apiRequest(`tournaments/${tournament.id}/participants`, 'GET', undefined, true);
+        
+        // Ищем участие текущего пользователя
+        const existingParticipant = participantsResponse.data.find(
+          (participant: any) => participant.user_id === userData.id
+        );
+        
+        // Проверка, является ли текущий пользователь партнёром кого-либо
+        const isAlreadyPartner = participantsResponse.data.some(
+          (participant: any) => participant.partner_id === userData.id
+        );
+        
+        if (isAlreadyPartner) {
+          alert('Вы уже являетесь партнёром другого участника!');
+          return; // Прекращаем дальнейшее выполнение
+        }
+        
+        const registrationData = {
+          tournament_id: tournament.id,
+          user_id: userData.id,
+          confirmed: false,
+          partner_id: partnerId ? parseInt(partnerId) : null,
+          participant_name: partnerId
+            ? `${userData.surname} ${userData.name} ${userData.patronymic}\ ${partnerData?.surname} ${partnerData?.name} ${partnerData?.patronymic}`
+            : `${userData.surname} ${userData.name} ${userData.patronymic}`,
+        };
+        
+        if (existingParticipant) {
+          // Если участие уже существует, обновляем его
+          const participantId = existingParticipant.id;
+          const updateResponse = await apiRequest(`participants/${participantId}`, 'PUT', registrationData, true);
+          
+          if (!updateResponse.error) {
+            alert('Ваше участие в турнире обновлено!');
+            await loadParticipants(); // Перезагружаем список участников
+          } else {
+            alert('Ошибка при обновлении участия!');
+          }
+        } else {
+          // Если участия нет, создаем новое
+          const response = await apiRequest('participants/', 'POST', registrationData, true);
+          if (!response.error) {
+            alert('Вы успешно зарегистрировались на турнир!');
+            await loadParticipants(); // Перезагружаем список участников
+          } else {
+            alert('Ошибка при регистрации!');
+          }
+        }
+        
+        setIsModalOpen(false);
       }
     } catch (error) {
       console.error('Ошибка при отправке запроса на регистрацию:', error);
@@ -68,8 +170,42 @@ const TournamentPage: React.FC = () => {
     }
   };
   
+  
   const handleCancelRegistration = () => {
-    setIsModalOpen(false); // Закрыть модальное окно без регистрации
+    setIsModalOpen(false);
+  };
+  
+  const handlePartnerIdChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const partnerId = event.target.value;
+    setPartnerId(partnerId);
+    
+    // Если партнёр добавлен, получаем его данные
+    if (partnerId) {
+      try {
+        const response = await apiRequest(`users/${partnerId}/fio`, 'GET', undefined, true);
+        if (response) {
+          setPartnerData(response);
+        } else {
+          setPartnerData(null); // Если партнёр не найден, сбрасываем данные
+        }
+      } catch (error) {
+        console.error('Ошибка при загрузке данных партнёра:', error);
+        setPartnerData(null); // Обнуляем данные при ошибке
+      }
+    } else {
+      setPartnerData(null); // Сбрасываем данные, если поле пустое
+    }
+  };
+  
+  
+  // Обработчик для подтверждения участника
+  const handleParticipantConfirm = async () => {
+    try {
+      // После успешного подтверждения перезагружаем список
+      await loadParticipants();
+    } catch (error) {
+      console.error('Ошибка при обновлении статуса участника:', error);
+    }
   };
   
   const renderContent = () => {
@@ -95,7 +231,7 @@ const TournamentPage: React.FC = () => {
               {new Date(tournament.date).toLocaleDateString()}
             </p>
             <p className={styles.tournamentType}>
-              <strong>Тип:</strong> {tournament.type}
+              <strong>Тип турнира:</strong> {tournament.type === "solo" ? "Одиночный" : "Парный"}
             </p>
             <p className={styles.tournamentAddress}>
               <strong>Место проведения:</strong> {tournament.address}
@@ -115,7 +251,7 @@ const TournamentPage: React.FC = () => {
             <div className={styles.registrationContainer}>
               {tournament.can_register && (
                 <button className={styles.registrationButton} onClick={handleRegisterClick}>
-                  Регистрация открыта
+                  Зарегистрироваться
                 </button>
               )}
               {!tournament.can_register && (
@@ -134,6 +270,12 @@ const TournamentPage: React.FC = () => {
             </div>
           )}
         </div>
+        
+        <ParticipantsList
+          tournamentId={tournament.id}
+          participants={participants}
+          onParticipantConfirm={handleParticipantConfirm}
+        />
       </div>
     );
   };
@@ -148,6 +290,22 @@ const TournamentPage: React.FC = () => {
           <div className={styles.modal}>
             <div className={styles.modalContent}>
               <h2>Вы хотите записаться на турнир?</h2>
+              {tournament?.type === 'duo' && (
+                <div className={styles.modalInput}>
+                  <label htmlFor="partnerId">ID партнёра:</label>
+                  <input
+                    type="text"
+                    id="partnerId"
+                    value={partnerId}
+                    onChange={handlePartnerIdChange}
+                    placeholder="Введите ID партнёра"
+                  />
+                  {partnerData && partnerData.surname && partnerData.name && partnerData.patronymic && (
+                    <p>Партнёр: {partnerData.surname} {partnerData.name} {partnerData.patronymic}</p>
+                  )}
+                
+                </div>
+              )}
               <div className={styles.modalButtons}>
                 <button
                   onClick={handleConfirmRegistration}
