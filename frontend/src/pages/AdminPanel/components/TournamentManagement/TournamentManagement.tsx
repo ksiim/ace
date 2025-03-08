@@ -75,7 +75,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   // Загружаем турниры, категории и регионы при монтировании компонента
   useEffect(() => {
     // Загрузка турниров
-    apiRequest("tournaments/all", "GET", undefined, true)
+    apiRequest("tournaments/", "GET", undefined, true)
       .then((data) => {
         if (data && data.data) {
           setTournaments(data.data);

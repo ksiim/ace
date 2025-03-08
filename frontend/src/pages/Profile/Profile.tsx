@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { apiRequest } from "../../utils/apiRequest";
 import styles from "./Profile.module.scss";
 import Header from '../../components/Header/Header.tsx';
-import {useNavigate} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { removeToken } from "../../utils/serviceToken.ts";
 
 interface User {
   name: string;
@@ -41,8 +42,10 @@ const Profile: React.FC = () => {
       .finally(() => setLoading(false));
   }, [navigate]);
   
-  
-  
+  const handleLogout = () => {
+    removeToken();
+    navigate("/login");
+  };
   
   if (loading) return <p className={styles.loading}>Загрузка...</p>;
   if (error) return <p className={styles.error}>{error}</p>;
@@ -59,13 +62,24 @@ const Profile: React.FC = () => {
           </p>
           <p>Email: {user.email}</p>
           <p>Телефон: {user.phone_number}</p>
-          <p>Дата
-            регистрации: {new Date(user.created_at).toLocaleDateString()}</p>
-          <p>Подписка
-            до: {new Date(user.end_of_subscription).toLocaleDateString()}</p>
+          <p>Дата регистрации: {new Date(user.created_at).toLocaleDateString()}</p>
+          <p>Подписка до: {new Date(user.end_of_subscription).toLocaleDateString()}</p>
           <p>Обновлено: {new Date(user.updated_at).toLocaleString()}</p>
           <p>Роль: {user.admin ? "Администратор" : user.organizer ? "Организатор" : "Пользователь"}</p>
         </div>
+        
+        <div className={styles.bottomButtons}>
+          {(user.admin || user.organizer) && (
+            <button className={styles.adminButton} onClick={() => navigate("/admin")}>
+              Перейти в админ-панель
+            </button>
+          )}
+          
+          <button className={styles.logoutButton} onClick={handleLogout}>
+            Выйти из профиля
+          </button>
+        </div>
+       
       </div>
     </>
   );

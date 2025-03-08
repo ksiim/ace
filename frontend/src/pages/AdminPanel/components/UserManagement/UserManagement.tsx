@@ -14,7 +14,7 @@ interface User {
   end_of_subscription: string;
   created_at: string;
   updated_at: string;
-  points?: number;
+  score?: number;
 }
 
 interface UserManagementProps {
@@ -22,14 +22,23 @@ interface UserManagementProps {
   onError: (error: string) => void;
 }
 
+type UserRole = "Администратор" | "Организатор" | "Пользователь";
+
 const UserManagement: React.FC<UserManagementProps> = ({
                                                          currentUser,
                                                          onError
                                                        }) => {
   const [users, setUsers] = useState<User[]>([]);
-  const [editUserData, setEditUserData] = useState<{ userId: number | null, points: number | null }>({
+  const [editUserData, setEditUserData] = useState<{
+    userId: number | null;
+    points: number | null;
+    editingRole: boolean;
+    role: UserRole | null;
+  }>({
     userId: null,
-    points: null
+    points: null,
+    editingRole: false,
+    role: null
   });
   
   // Загрузка данных пользователей при монтировании компонента
@@ -45,19 +54,131 @@ const UserManagement: React.FC<UserManagementProps> = ({
       .catch(() => onError("Ошибка при загрузке пользователей"));
   }, []);
   
+  const getUserRole = (user: User): UserRole => {
+    if (user.admin) return "Администратор";
+    if (user.organizer) return "Организатор";
+    return "Пользователь";
+  };
+  
+  const getRoleValues = (role: UserRole): { admin: boolean; organizer: boolean } => {
+    switch (role) {
+      case "Администратор":
+        return { admin: true, organizer: false };
+      case "Организатор":
+        return { admin: false, organizer: true };
+      case "Пользователь":
+      default:
+        return { admin: false, organizer: false };
+    }
+  };
+  
   const handleUpdateUserPoints = (userId: number, points: number) => {
-    apiRequest(`users/${userId}`, "PUT", { points }, true)
+    const user = users.find(u => u.id === userId);
+    if (!user) {
+      onError("Пользователь не найден");
+      return;
+    }
+    
+    apiRequest(`users/${userId}`, "PUT", {
+      name: user.name,
+      surname: user.surname,
+      patronymic: user.patronymic,
+      admin: user.admin,
+      organizer: user.organizer,
+      phone_number: user.phone_number,
+      email: user.email,
+      score: points,
+      end_of_subscription: user.end_of_subscription,
+      created_at: user.created_at,
+      updated_at: new Date().toISOString()
+    }, true)
       .then((data) => {
         if (data) {
           setUsers(prevUsers =>
-            prevUsers.map(u => u.id === userId ? { ...u, points: data.points } : u)
+            prevUsers.map(u => u.id === userId ? { ...u, score: data.score } : u)
           );
-          setEditUserData({ userId: null, points: null });
+          setEditUserData({
+            userId: null,
+            points: null,
+            editingRole: false,
+            role: null
+          });
         } else {
           onError("Ошибка обновления очков пользователя");
         }
       })
       .catch(() => onError("Ошибка обновления очков пользователя"));
+  };
+  
+  const handleUpdateUserRole = (userId: number, role: UserRole) => {
+    const user = users.find(u => u.id === userId);
+    if (!user) {
+      onError("Пользователь не найден");
+      return;
+    }
+    
+    const roleValues = getRoleValues(role);
+    
+    apiRequest(`users/${userId}`, "PUT", {
+      name: user.name,
+      surname: user.surname,
+      patronymic: user.patronymic,
+      admin: roleValues.admin,
+      organizer: roleValues.organizer,
+      phone_number: user.phone_number,
+      email: user.email,
+      score: user.score || 0,
+      end_of_subscription: user.end_of_subscription,
+      created_at: user.created_at,
+      updated_at: new Date().toISOString()
+    }, true)
+      .then((data) => {
+        if (data) {
+          setUsers(prevUsers =>
+            prevUsers.map(u => u.id === userId ? {
+              ...u,
+              admin: roleValues.admin,
+              organizer: roleValues.organizer
+            } : u)
+          );
+          setEditUserData({
+            userId: null,
+            points: null,
+            editingRole: false,
+            role: null
+          });
+        } else {
+          onError("Ошибка обновления роли пользователя");
+        }
+      })
+      .catch(() => onError("Ошибка обновления роли пользователя"));
+  };
+  
+  const handleEditRole = (user: User) => {
+    setEditUserData({
+      userId: user.id,
+      points: null,
+      editingRole: true,
+      role: getUserRole(user)
+    });
+  };
+  
+  const handleEditPoints = (user: User) => {
+    setEditUserData({
+      userId: user.id,
+      points: user.score || 0,
+      editingRole: false,
+      role: null
+    });
+  };
+  
+  const handleCancelEdit = () => {
+    setEditUserData({
+      userId: null,
+      points: null,
+      editingRole: false,
+      role: null
+    });
   };
   
   return (
@@ -86,15 +207,26 @@ const UserManagement: React.FC<UserManagementProps> = ({
                 <td>{user.email}</td>
                 <td>{user.phone_number}</td>
                 <td>
-                  {user.admin
-                    ? "Администратор"
-                    : user.organizer
-                      ? "Организатор"
-                      : "Пользователь"}
+                  {editUserData.userId === user.id && editUserData.editingRole ? (
+                    <select
+                      value={editUserData.role || getUserRole(user)}
+                      onChange={(e) => setEditUserData({
+                        ...editUserData,
+                        role: e.target.value as UserRole
+                      })}
+                      className={styles.roleSelect}
+                    >
+                      <option value="Администратор">Администратор</option>
+                      <option value="Организатор">Организатор</option>
+                      <option value="Пользователь">Пользователь</option>
+                    </select>
+                  ) : (
+                    getUserRole(user)
+                  )}
                 </td>
                 <td>{new Date(user.end_of_subscription).toLocaleDateString()}</td>
                 <td>
-                  {editUserData.userId === user.id ? (
+                  {editUserData.userId === user.id && !editUserData.editingRole ? (
                     <input
                       type="number"
                       value={editUserData.points || 0}
@@ -105,7 +237,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
                       className={styles.pointsInput}
                     />
                   ) : (
-                    user.points || 0
+                    user.score || 0
                   )}
                 </td>
                 <td>
@@ -115,30 +247,38 @@ const UserManagement: React.FC<UserManagementProps> = ({
                         <>
                           <button
                             className={styles.saveButton}
-                            onClick={() => handleUpdateUserPoints(
-                              user.id,
-                              editUserData.points || 0
-                            )}
+                            onClick={() => {
+                              if (editUserData.editingRole && editUserData.role) {
+                                handleUpdateUserRole(user.id, editUserData.role);
+                              } else if (editUserData.points !== null) {
+                                handleUpdateUserPoints(user.id, editUserData.points);
+                              }
+                            }}
                           >
                             Сохранить
                           </button>
                           <button
                             className={styles.cancelButton}
-                            onClick={() => setEditUserData({ userId: null, points: null })}
+                            onClick={handleCancelEdit}
                           >
                             Отменить
                           </button>
                         </>
                       ) : (
-                        <button
-                          className={styles.editButton}
-                          onClick={() => setEditUserData({
-                            userId: user.id,
-                            points: user.points || 0
-                          })}
-                        >
-                          Изменить очки
-                        </button>
+                        <>
+                          <button
+                            className={styles.editButton}
+                            onClick={() => handleEditPoints(user)}
+                          >
+                            Изменить очки
+                          </button>
+                          <button
+                            className={styles.editButton}
+                            onClick={() => handleEditRole(user)}
+                          >
+                            Изменить роль
+                          </button>
+                        </>
                       )}
                     </div>
                   )}

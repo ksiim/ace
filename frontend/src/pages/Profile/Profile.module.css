@@ -97,5 +97,24 @@
     font-size: 1.2rem !important;
   }
 }
+.bottomButtons {
+  display: flex;
+  gap: 10px;
+}
+
+.logoutButton, .adminButton {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #f95e1b;
+  color: white;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.logoutButton:hover, .adminButton:hover {
+  background-color: #c9302c;
+}
 
 /*# sourceMappingURL=Profile.module.css.map */

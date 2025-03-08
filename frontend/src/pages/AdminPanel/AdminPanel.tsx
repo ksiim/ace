@@ -121,6 +121,12 @@ const AdminPanel: React.FC = () => {
     setError(message);
   };
   
+  const handleLogout = () => {
+    // Очистка токена и редирект на главную страницу
+    localStorage.removeItem("authToken");
+    window.location.href = "/";
+  };
+  
   if (!currentUser) {
     return <div className={styles.loading}>Загрузка...</div>;
   }
@@ -135,7 +141,12 @@ const AdminPanel: React.FC = () => {
   
   return (
     <div className={styles.adminContainer}>
-      <h1 className={styles.title}>Панель администратора</h1>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Панель администратора</h1>
+        <button className={styles.logoutButton} onClick={handleLogout}>
+          Выход
+        </button>
+      </div>
       
       {error && <div className={styles.error}>{error}</div>}
       
