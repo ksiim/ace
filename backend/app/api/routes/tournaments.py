@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import or_, update
 from sqlmodel import col, delete, func, select
 
+from backend.app.crud import tournament as tournament_crud
+
 from backend.app.api.deps import (
     CurrentUser,
     SessionDep,
@@ -80,19 +82,7 @@ async def create_tournament(
     """
     await validate_tournament_inputs(session, tournament_in)
     
-    tournament = Tournament.model_validate(
-        tournament_in,
-        update={
-            "owner_id": tournament_in.owner_id,
-            "region_id": tournament_in.region_id,
-            "category_id": tournament_in.category_id,
-            "sex_id": tournament_in.sex_id,
-            "date": tournament_in.date.replace(tzinfo=None),
-        },
-    )
-    session.add(tournament)
-    await session.commit()
-    await session.refresh(tournament)
+    tournament = await tournament_crud.create_tournament(session, tournament_in)
     return tournament
 
 async def validate_tournament_inputs(session, tournament_in):
@@ -164,14 +154,9 @@ async def update_tournament(
     if not current_user.admin and current_user.id != tournament_in.owner_id:
         raise HTTPException(status_code=403, detail="User not authorized to update this tournament")
     
-    tournament = await session.get(Tournament, tournament_id)
-    update_dict = tournament_in.model_dump(exclude_unset=True)
-    update_dict["date"] = update_dict["date"].replace(tzinfo=None)
-    tournament.sqlmodel_update(update_dict)
-    session.add(tournament)
-    await session.commit()
-    await session.refresh(tournament)
+    tournament = await tournament_crud.update_tournament(session, tournament_id, tournament_in)
     return tournament
+
 
 @router.delete(
     '/{tournament_id}',
