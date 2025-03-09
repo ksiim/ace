@@ -9,12 +9,12 @@ from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core import security
-from backend.app.core.config import API_V1_STR, SECRET_KEY
+from backend.app.core.config import settings
 from common.db.database import async_engine
 from common.db.models import TokenPayload, User
 
 reusable_oauth2 = OAuth2PasswordBearer(
-    tokenUrl=f"{API_V1_STR}/login/access-token"
+    tokenUrl=f"{settings.API_V1_STR}/login/access-token"
 )
 
 
@@ -29,7 +29,7 @@ TokenDep = Annotated[str, Depends(reusable_oauth2)]
 async def get_current_user(session: SessionDep, token: TokenDep) -> User:
     try:
         payload = jwt.decode(
-            token, SECRET_KEY, algorithms=[security.ALGORITHM]
+            token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
         )
         token_data = TokenPayload(**payload)
     except (InvalidTokenError, ValidationError):

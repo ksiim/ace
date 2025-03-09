@@ -2,7 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from backend.app.api.main import api_router
-from backend.app.core.config import API_V1_STR
+from backend.app.core.config import settings
+
 
 app = FastAPI()
 
@@ -14,5 +15,5 @@ app.add_middleware(
     allow_headers=["*"],  # Разреши все заголовки
 )
 
-app.include_router(api_router, prefix=API_V1_STR)
+app.include_router(api_router, prefix=settings.API_V1_STR)
 

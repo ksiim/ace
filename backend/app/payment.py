@@ -2,15 +2,14 @@ import asyncio
 import json
 import aiohttp
 
-from backend.app.core.config import CUSTOMER_CODE, JWT_TOKEN, MERCHANT_ID
-
+from backend.app.core.config import settings
 
 class Payment:
     
     base_url = "https://enter.tochka.com/uapi"
-    jwt_token = JWT_TOKEN
-    customer_code = CUSTOMER_CODE
-    merchant_id = MERCHANT_ID
+    jwt_token = settings.JWT_TOKEN
+    customer_code = settings.CUSTOMER_CODE
+    merchant_id = settings.MERCHANT_ID
     
     async def get_customers_list(self):
         url = f"{self.base_url}/open-banking/v1.0/customers"

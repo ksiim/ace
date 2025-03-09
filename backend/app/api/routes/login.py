@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from backend.app.api.deps import CurrentUser, SessionDep
 from backend.app.core import security
-from backend.app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES
+from backend.app.core.config import settings
 from backend.app.utils import generate_password_reset_token, generate_reset_password_email, send_email, verify_password_reset_token, logger
 from common.db.models import Message, NewPassword, Token, User, UserPublic
 import backend.app.crud.user as user_crud
@@ -27,7 +27,7 @@ async def login_access_token(
     )
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect email or password")
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return Token(
         access_token=await security.create_access_token(
             user.id, expires_delta=access_token_expires
@@ -51,7 +51,7 @@ async def recover_password(email: str, session: SessionDep) -> Message:
     email_data = await generate_reset_password_email(
         email_to=user.email, email=email, token=password_reset_token
     )
-    result = await send_email(
+    await send_email(
         email_to=user.email,
         subject=email_data.subject,
         html_content=email_data.html_content,

@@ -14,7 +14,7 @@ from backend.app.api.deps import (
     SessionDep,
     get_current_active_superuser,
 )
-from backend.app.core.config import GATEWAY_TOKEN, SUPERUSER_EMAIL, SUPERUSER_PASSWORD
+from backend.app.core.config import settings
 from backend.app.core.security import get_password_hash, verify_password
 from common.db.models import Message, UpdatePassword, User, UserCreate, UserFio, UserPublic, UserRegister, UserUpdate, UserUpdateMe, UsersPublic
 
@@ -54,8 +54,8 @@ async def create_super_user(
     Create a super user
     """
     user = User(
-        email=SUPERUSER_EMAIL,
-        hashed_password=await get_password_hash(SUPERUSER_PASSWORD),
+        email=settings.SUPERUSER_EMAIL,
+        hashed_password=await get_password_hash(settings.SUPERUSER_PASSWORD),
         admin=True,
     )
     session.add(user)
@@ -221,7 +221,7 @@ async def send_phone_verification_code(session: SessionDep, phone_number: str) -
     json_body = json.dumps(json_body)
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {GATEWAY_TOKEN}",
+        "Authorization": f"Bearer {settings.GATEWAY_TOKEN}",
     }
     async with httpx.AsyncClient() as client:
         response = await client.post(url, data=json_body, headers=headers)
@@ -242,7 +242,7 @@ async def check_verification_status(session: SessionDep, request_id: str, code: 
     json_body = json.dumps(json_body)
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {GATEWAY_TOKEN}",
+        "Authorization": f"Bearer {settings.GATEWAY_TOKEN}",
     }
     async with httpx.AsyncClient() as client:
         response = await client.post(url, data=json_body, headers=headers)
