@@ -219,11 +219,10 @@ async def read_news_photos(
     """
     Retrieve news photos
     """
-    # count_statement = select(func.count()).where(Comment.news_id == news_id)
-    # count = (await session.execute(count_statement)).scalar_one_or_none()
+    count_statement = select(func.count()).where(Comment.news_id == news_id)
+    count = (await session.execute(count_statement)).scalar_one_or_none()
 
-    # statement = select(NewsPhoto).where(NewsPhoto.news_id == news_id)
-    statement = select(NewsPhoto)
+    statement = select(NewsPhoto).where(NewsPhoto.news_id == news_id)
     news_photos = (await session.execute(statement)).scalars().all()
 
-    return NewsPhotosPublic(data=news_photos, count=0)
+    return NewsPhotosPublic(data=news_photos, count=count)
