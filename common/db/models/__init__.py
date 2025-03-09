@@ -17,6 +17,7 @@ from .category import Category, CategoryBase, CategoryCreate, CategoryPublic, Ca
 from .trainer import Trainer, TrainerBase, TrainerCreate, TrainerUpdate, TrainerPublic, TrainersPublic
 from .news import News, NewsBase, NewsCreate, NewsUpdate, NewsPublic, NewsesPublic
 from .comment import Comment, CommentBase, CommentCreate, CommentUpdate, CommentPublic, CommentsPublic
+from .news_photo import NewsPhoto, NewsPhotoBase, NewsPhotoCreate, NewsPhotoPublic, NewsPhotosPublic
 from .transaction import Transaction, TransactionBase, TransactionCreate, TransactionPublic
 from .base import Message, Token, TokenPayload, NewPassword
 
@@ -34,5 +35,6 @@ __all__ = [
     "News", "NewsBase", "NewsCreate", "NewsUpdate", "NewsPublic", "NewsesPublic",
     "Comment", "CommentBase", "CommentCreate", "CommentUpdate", "CommentPublic", "CommentsPublic",
     "Transaction", "TransactionBase", "TransactionCreate", "TransactionPublic",
-    "Message", "Token", "TokenPayload", "NewPassword"
+    "Message", "Token", "TokenPayload", "NewPassword",
+    "NewsPhoto", "NewsPhotoBase", "NewsPhotoCreate", "NewsPhotoPublic", "NewsPhotosPublic"
 ]

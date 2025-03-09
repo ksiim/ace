@@ -6,7 +6,6 @@ from sqlmodel import Field, SQLModel
 class NewsBase(SQLModel):
     title: str
     text: str
-    photo: str
     created_at: datetime.datetime = Field(
         default_factory=datetime.datetime.now)
 
@@ -19,6 +18,7 @@ class News(NewsBase, table=True):
 
 
 class NewsCreate(NewsBase):
+    photo_paths: List[str]
     creator_id: int
 
 

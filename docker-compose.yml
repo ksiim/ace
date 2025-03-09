@@ -34,6 +34,8 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     container_name: fastapi_backend
+    volumes:
+      - uploads:/app/uploads
     restart: always
     depends_on:
       - db
@@ -78,6 +80,8 @@ services:
       target: production
       args:
         - VITE_API_URL=${VITE_API_URL}
+    volumes:
+      - uploads:/usr/share/nginx/html/uploads
     env_file:
       - .env
     environment:
@@ -114,7 +118,9 @@ services:
     restart: unless-stopped
     volumes:
       - ./bot:/app/bot
+      - uploads:/app/uploads
 
 volumes:
   postgres_data:
   rabbitmq_data:
+  uploads:

@@ -5,14 +5,20 @@ from sqlalchemy import or_, update
 from sqlmodel import col, delete, func, select
 
 
-from backend.app import crud
+from backend.app.crud import news as news_crud
+from backend.app.crud import comment as comment_crud
 from backend.app.api.deps import (
     CurrentUser,
     SessionDep,
     get_current_active_superuser,
     get_current_user,
 )
-from common.db.models import Comment, CommentCreate, CommentUpdate, CommentsPublic, Message, News, NewsCreate, NewsPublic, NewsUpdate, NewsesPublic
+from common.db.models import (
+    Comment, CommentCreate, CommentUpdate, CommentsPublic,
+    Message, News, NewsCreate, NewsPublic, NewsUpdate,
+    NewsesPublic
+)
+from common.db.models.news_photo import NewsPhoto, NewsPhotosPublic
 
 
 router = APIRouter()
@@ -70,7 +76,7 @@ async def create_news(
     """
     Create new news
     """
-    news = await crud.create_news(session=session, news_create=news_create)
+    news = await news_crud.create_news(session=session, news_create=news_create)
     return news
 
 
@@ -90,7 +96,7 @@ async def update_news(
     news = await session.get(News, news_id)
     if not news:
         raise HTTPException(status_code=404, detail="News not found")
-    news = await crud.update_news(session=session, news=news, news_update=news_update)
+    news = await news_crud.update_news(session=session, news=news, news_update=news_update)
     return news
 
 
@@ -152,7 +158,7 @@ async def create_comment(
     """
     Create new comment
     """
-    comment = await crud.create_comment(session=session, comment_create=comment_create)
+    comment = await comment_crud.create_comment(session=session, comment_create=comment_create)
     return comment
 
 
@@ -198,5 +204,26 @@ async def update_comment(
         raise HTTPException(status_code=404, detail="Comment not found")
     if comment.creator_id != current_user.id and not current_user.admin:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    comment = await crud.update_comment(session=session, db_comment=comment, comment_update=comment_update)
+    comment = await comment_crud.update_comment(session=session, db_comment=comment, comment_update=comment_update)
     return comment
+
+@router.get(
+    "/{news_id}/photos",
+    dependencies=[Depends(get_current_user)],
+    response_model=NewsPhotosPublic,
+)
+async def read_news_photos(
+    session: SessionDep,
+    news_id: int,
+) -> Any:
+    """
+    Retrieve news photos
+    """
+    # count_statement = select(func.count()).where(Comment.news_id == news_id)
+    # count = (await session.execute(count_statement)).scalar_one_or_none()
+
+    # statement = select(NewsPhoto).where(NewsPhoto.news_id == news_id)
+    statement = select(NewsPhoto)
+    news_photos = (await session.execute(statement)).scalars().all()
+
+    return NewsPhotosPublic(data=news_photos, count=0)

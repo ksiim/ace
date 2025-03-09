@@ -7,7 +7,7 @@ from alembic import context
 
 from common.db.models import (
     User, Tournament, TournamentParticipant, Sex, Region, Category,
-    Trainer, News, Comment, Transaction
+    Trainer, News, Comment, Transaction, NewsPhoto
 )
 
 # this is the Alembic Config object, which provides

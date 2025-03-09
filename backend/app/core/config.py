@@ -26,5 +26,6 @@ class Settings(BaseSettings):
     SUPERUSER_PASSWORD: str
     PROJECT_NAME: str
     FRONTEND_HOST: str
+    UPLOAD_DIR: str
 
 settings = Settings()

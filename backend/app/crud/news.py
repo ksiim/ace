@@ -1,18 +1,36 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from common.db.models.news import News, NewsCreate
+from common.db.models.news_photo import NewsPhoto
 
 
 async def create_news(*, session: AsyncSession, news_create: NewsCreate) -> News:
+    photo_paths = news_create.photo_paths
+        
     db_obj = News.model_validate(
         news_create,
         update={
             "created_at": news_create.created_at.replace(tzinfo=None)
         }
     )
+        
     session.add(db_obj)
     await session.commit()
     await session.refresh(db_obj)
+    
+    for i, photo_path in enumerate(photo_paths):
+        if not photo_path:
+            raise ValueError("Photo path is empty")
+        photo = NewsPhoto(
+            photo_path=photo_path,
+            order_num=i,
+            news_id=db_obj.id
+        )
+        session.add(photo)
+        
+    await session.commit()
+    await session.refresh(db_obj)
+        
     return db_obj
 
 

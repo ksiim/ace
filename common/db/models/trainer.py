@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 
 class TrainerBase(SQLModel):
     name: str
-    photo: str
+    photo_path: Optional[str] = Field(default=None, nullable=True)
     description: str
     phone: Optional[str] = None
     address: Optional[str] = None

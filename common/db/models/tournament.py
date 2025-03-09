@@ -14,7 +14,7 @@ class TournamentBase(SQLModel):
     name: str
     type: str
     is_child: bool = Field(default=False)
-    photo: str = Field(default=None)
+    photo_path: str = Field(default=None, nullable=True)
     organizer_name_and_contacts: Optional[str] = None
     organizer_requisites: Optional[str] = None
     date: Optional[datetime.datetime] = None
