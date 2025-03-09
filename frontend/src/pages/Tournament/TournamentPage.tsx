@@ -103,6 +103,27 @@ const TournamentPage: React.FC = () => {
     fetchUserData();
   }, []);
   
+  useEffect(() => {
+    if (!tournament) return; // Проверка, что tournament не null
+    
+    const tournamentDate = new Date(tournament.date);
+    const today = new Date();
+    
+    const diffTime = tournamentDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays > 14 && tournament.can_register) {
+      setTournament((prev) => {
+        if (!prev) return prev; // Защита от null
+        
+        return { ...prev, can_register: false } as TournamentPage; // Приведение к нужному типу
+      });
+    }
+  }, [tournament]);
+  
+  
+  
+  
   const handleRegisterClick = () => {
     setIsModalOpen(true);
   };

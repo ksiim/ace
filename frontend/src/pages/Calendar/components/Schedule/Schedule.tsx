@@ -19,7 +19,6 @@ const Schedule: React.FC = () => {
   useEffect(() => {
     const fetchTournaments = async () => {
       const response = await apiRequest('tournaments/all?skip=0&limit=100', 'GET', undefined, true);
-      console.log(response)
       if (response && response.data) {
         setTournaments(response.data);
       }
@@ -55,7 +54,7 @@ const Schedule: React.FC = () => {
             <td className={styles.nameCell}>{tournament.name}</td>
             <td>{tournament.address}</td>
             <td>{tournament.organizer_name_and_contacts}</td>
-            <td>{tournament.type}</td>
+            <td>{tournament.type === "solo" ? "Одиночный" : "Парный"}</td>
           </tr>
         ))}
         </tbody>
