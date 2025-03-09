@@ -1,5 +1,5 @@
-// Post/Post.tsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { apiRequest } from '../../../../utils/apiRequest.ts';
 import styles from './Post.module.scss';
 import CommentSection from '../CommentSection/CommentSection';
 import { PostType } from '../../types';
@@ -11,12 +11,35 @@ interface PostProps {
   onAddComment: (postId: number) => void;
 }
 
-const Post: React.FC<PostProps> = ({
-                                     post,
-                                     commentText,
-                                     onCommentTextChange,
-                                     onAddComment
-                                   }) => {
+const Post: React.FC<PostProps> = ({ post, commentText, onCommentTextChange, onAddComment }) => {
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  
+  useEffect(() => {
+    const fetchPhotos = async () => {
+      try {
+        const response = await apiRequest(`news/${post.id}/photos`, 'GET', undefined, true);
+        if (!response.error) {
+          setPhotos(response.data.map((photo: { photo_path: string }) => photo.photo_path));
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки фото:', error);
+      }
+    };
+    
+    fetchPhotos();
+  }, [post.id]);
+  
+  const goToNextSlide = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % photos.length);
+  };
+  
+  const goToPreviousSlide = () => {
+    setCurrentIndex((prevIndex) =>
+      prevIndex === 0 ? photos.length - 1 : prevIndex - 1
+    );
+  };
+  
   return (
     <article className={styles.post}>
       <header className={styles.header}>
@@ -29,13 +52,29 @@ const Post: React.FC<PostProps> = ({
       
       <div className={styles.content}>
         <p>{post.content}</p>
-        {post.imageUrl && (
-          <div className={styles.imageContainer}>
-            <img
-              src={post.imageUrl}
-              alt={`Image for ${post.title}`}
-              className={styles.image}
-            />
+        {photos.length > 0 && (
+          <div className={styles.slider}>
+            <button
+              className={styles.sliderButton}
+              onClick={goToPreviousSlide}
+              aria-label="Предыдущее фото"
+            >
+              &lt;
+            </button>
+            <div className={styles.imageContainer}>
+              <img
+                src={photos[currentIndex]}
+                alt={`Фото ${currentIndex + 1}`}
+                className={styles.image}
+              />
+            </div>
+            <button
+              className={styles.sliderButton}
+              onClick={goToNextSlide}
+              aria-label="Следующее фото"
+            >
+              &gt;
+            </button>
           </div>
         )}
       </div>

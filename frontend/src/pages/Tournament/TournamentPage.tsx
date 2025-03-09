@@ -8,9 +8,9 @@ import ParticipantsList from './components/ParticipantsList/ParticipantsList.tsx
 interface TournamentPage {
   id: number;
   name: string;
-  type: string; // solo | duo
+  type: string;
   is_child: boolean;
-  photo: string;
+  photo_path: string;
   organizer_name_and_contacts: string;
   organizer_requisites: string;
   date: string;
@@ -18,6 +18,10 @@ interface TournamentPage {
   can_register: boolean;
   address: string;
   prize_fund: number;
+  owner_id: number;
+  sex_id: number;
+  category_id: number;
+  region_id: number;
 }
 
 interface User {
@@ -281,10 +285,10 @@ const TournamentPage: React.FC = () => {
             </div>
           </div>
           
-          {tournament.photo && (
+          {tournament.photo_path && (
             <div className={styles.imageContainer}>
               <img
-                src={tournament.photo}
+                src={tournament.photo_path}
                 alt={tournament.name}
                 className={styles.tournamentImage}
               />

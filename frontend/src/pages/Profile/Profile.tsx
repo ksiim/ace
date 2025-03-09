@@ -77,7 +77,7 @@ const Profile: React.FC = () => {
           )}
           
           <button className={styles.logoutButton} onClick={handleLogout}>
-            Выйти из профиля
+            Выйти
           </button>
         </div>
       

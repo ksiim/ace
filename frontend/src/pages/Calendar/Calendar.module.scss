@@ -4,3 +4,15 @@
   box-sizing: border-box;
   font-family: 'Manrope', sans-serif;
 }
+
+.wrapper {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+}
+
+.tableContainer {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+

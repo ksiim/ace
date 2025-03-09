@@ -3,18 +3,14 @@ import { apiRequest } from '../../utils/apiRequest';
 import styles from './CreateNews.module.scss';
 import { useNavigate, useParams } from 'react-router-dom';
 
-interface NewsData {
-  title: string;
-  text: string;
-  photo: string;
-}
 
 const CreateNews: React.FC = () => {
   const [title, setTitle] = useState<string>('');
   const [text, setText] = useState<string>('');
-  const [photo, setPhoto] = useState<string>('');
+  const [photoPaths, setPhotoPaths] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [uploadProgress, setUploadProgress] = useState<boolean>(false);
   const { newsId } = useParams();  // Получаем ID новости, если редактируем
   const navigate = useNavigate();
   
@@ -44,7 +40,17 @@ const CreateNews: React.FC = () => {
             console.log('Данные новости:', newsResponse); // Логируем полученные данные
             setTitle(newsResponse.title);
             setText(newsResponse.text);
-            setPhoto(newsResponse.photo);
+            
+            // Обработка существующих фотографий
+            if (newsResponse.photo_paths && Array.isArray(newsResponse.photo_paths)) {
+              setPhotoPaths(newsResponse.photo_paths);
+            } else if (newsResponse.photo_path) {
+              // Для обратной совместимости, если есть только одно фото
+              setPhotoPaths([newsResponse.photo_path]);
+            } else if (newsResponse.photo) {
+              // Для еще более старой версии
+              setPhotoPaths([newsResponse.photo]);
+            }
           }
         } catch (err) {
           console.error('Ошибка при загрузке новости:', err);
@@ -54,10 +60,63 @@ const CreateNews: React.FC = () => {
     }
   }, [navigate, newsId]);
   
+  // Функция для обработки загрузки файлов
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    setUploadProgress(true);
+    
+    // Создаем массив промисов для одновременной загрузки всех файлов
+    const uploadPromises = Array.from(files).map(file => {
+      // Проверка на изображение
+      if (!file.type.startsWith("image/")) {
+        setError("Загружать можно только изображения");
+        return Promise.reject("Неверный тип файла");
+      }
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      return apiRequest("photos/", "POST", formData, true)
+        .then((data) => {
+          if (data && data.file_path) {
+            // Изменяем путь
+            return `http://localhost${(data.file_path).slice(4)}`;
+          } else {
+            throw new Error("Ошибка загрузки фото");
+          }
+        });
+    });
+    
+    // Ждем завершения всех загрузок
+    Promise.all(uploadPromises)
+      .then((newPaths) => {
+        // Фильтруем только успешные загрузки и добавляем к существующим
+        const validPaths = newPaths.filter(path => path);
+        setPhotoPaths(prev => [...prev, ...validPaths]);
+        setError(null);
+      })
+      .catch((err) => {
+        console.error("Ошибка при загрузке файлов:", err);
+        setError("Произошла ошибка при загрузке некоторых файлов");
+      })
+      .finally(() => {
+        setUploadProgress(false);
+        // Сбрасываем input для возможности повторной загрузки тех же файлов
+        e.target.value = '';
+      });
+  };
+  
+  // Функция для удаления фото
+  const handleRemovePhoto = (indexToRemove: number) => {
+    setPhotoPaths(prevPaths => prevPaths.filter((_, index) => index !== indexToRemove));
+  };
+  
   // Функция для создания или обновления новости
   const handleSubmit = async () => {
-    if (!title || !text || !photo) {
-      setError('Пожалуйста, заполните все поля.');
+    if (!title || !text || (!newsId && photoPaths.length === 0)) {
+      setError('Пожалуйста, заполните все поля и загрузите хотя бы одно фото.');
       return;
     }
     
@@ -69,18 +128,31 @@ const CreateNews: React.FC = () => {
         throw new Error('Не удалось получить данные пользователя');
       }
       
-      const payload: NewsData = {
-        title,
-        text,
-        photo,
-      };
+      let payload;
+      if (newsId) {
+        // Формат для редактирования новости
+        payload = {
+          title,
+          text,
+          created_at: new Date().toISOString(),
+        };
+      } else {
+        // Формат для создания новости
+        payload = {
+          title,
+          text,
+          created_at: new Date().toISOString(),
+          photo_paths: photoPaths,
+          creator_id: userResponse.id,
+        };
+      }
+      
+      console.log(payload);
       
       let response;
       if (newsId) {
-        // Обновляем новость
         response = await apiRequest(`news/${newsId}`, 'PUT', payload, true);
       } else {
-        // Создаём новость
         response = await apiRequest('news', 'POST', payload, true);
       }
       
@@ -116,19 +188,65 @@ const CreateNews: React.FC = () => {
             placeholder="Текст новости"
             className={styles.textarea}
           />
-          <input
-            type="text"
-            value={photo}
-            onChange={(e) => setPhoto(e.target.value)}
-            placeholder="Ссылка на фото"
-            className={styles.input}
-          />
+          
+          <div className={styles.formGroup}>
+            <label htmlFor="photos">Фотографии новости</label>
+            
+            {/* Кастомная кнопка выбора файлов */}
+            <label htmlFor="photos" className={styles.fileInputLabel}>
+              Выберите файлы
+            </label>
+            
+            <input
+              type="file"
+              id="photos"
+              name="photos"
+              onChange={handleFileChange}
+              className={styles.fileInput}
+              multiple
+              accept="image/*"
+            />
+            
+            {uploadProgress &&
+							<div className={styles.uploadProgress}>Загрузка файлов...</div>}
+            
+            {photoPaths.length > 0 && (
+              <div className={styles.photoGallery}>
+                {photoPaths.map((path, index) => (
+                  <div key={index} className={styles.photoItem}>
+                    <div className={styles.thumbnailContainer}>
+                      <img
+                        src={path}
+                        alt={`Фото ${index + 1}`}
+                        className={styles.thumbnail}
+                        style={{
+                          width: '80px',
+                          height: '60px',
+                          objectFit: 'cover'
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className={styles.removeButton}
+                        onClick={() => handleRemovePhoto(index)}
+                        title="Удалить фото"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          
+          
           <button
             onClick={handleSubmit}
-            disabled={isLoading}
+            disabled={isLoading || uploadProgress}
             className={styles.submitButton}
           >
-            {isLoading ? 'Создание/Обновление новости...' : newsId ? 'Обновить новость' : 'Создать новость'}
+            {isLoading ? 'Обработка...' : newsId ? 'Обновить новость' : 'Создать новость'}
           </button>
         </div>
       </div>

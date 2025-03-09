@@ -3,13 +3,11 @@ import { getToken } from './serviceToken';
 export const apiRequest = async (
   endpoint: string,
   method = "POST",
-  body?: object,
-  authRequired = false // Новый параметр для авторизации
+  body?: object | FormData,
+  authRequired = false
 ) => {
   try {
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
+    const headers: Record<string, string> = {};
     
     if (authRequired) {
       const token = getToken();
@@ -22,8 +20,15 @@ export const apiRequest = async (
       headers,
     };
     
-    if (body && ["POST", "PUT", "PATCH"].includes(method)) {
-      options.body = JSON.stringify(body);
+    if (body) {
+      if (body instanceof FormData) {
+        // For FormData, don't set Content-Type header (browser will set it)
+        options.body = body;
+      } else if (["POST", "PUT", "PATCH"].includes(method)) {
+        // For JSON data
+        headers["Content-Type"] = "application/json";
+        options.body = JSON.stringify(body);
+      }
     }
     
     const response = await fetch(

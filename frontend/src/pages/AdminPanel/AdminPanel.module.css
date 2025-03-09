@@ -385,4 +385,15 @@ select:disabled:hover {
   box-shadow: none;
 }
 
+.roleSelect {
+  border: 2px solid #ff8562;
+  padding: 5px;
+  border-radius: 15px;
+  transition: border-color 0.2s ease-in-out;
+}
+.roleSelect:focus {
+  border-color: #ff8562;
+  outline: none;
+}
+
 /*# sourceMappingURL=AdminPanel.module.css.map */

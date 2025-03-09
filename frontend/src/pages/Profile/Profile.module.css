@@ -99,6 +99,7 @@
 }
 .bottomButtons {
   display: flex;
+  justify-content: space-between;
   gap: 10px;
 }
 
@@ -115,6 +116,10 @@
 }
 .logoutButton:hover, .adminButton:hover {
   background-color: #c9302c;
+}
+
+.logoutButton {
+  margin-left: auto;
 }
 
 /*# sourceMappingURL=Profile.module.css.map */

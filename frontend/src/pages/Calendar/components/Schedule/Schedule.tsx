@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import styles from './Schedule.module.css';
+import styles from './Schedule.module.scss';
 import { apiRequest } from '../../../../utils/apiRequest';
 
 interface Tournament {
@@ -10,6 +10,15 @@ interface Tournament {
   address: string;
   organizer_name_and_contacts: string;
   type: string;
+  photo_path: string;
+  organizer_requisites: string;
+  price: number;
+  can_register: boolean;
+  prize_fund: number;
+  owner_id: number;
+  sex_id: number;
+  category_id: number;
+  region_id: number;
 }
 
 const Schedule: React.FC = () => {
