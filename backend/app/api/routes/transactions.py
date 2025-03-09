@@ -5,7 +5,7 @@ from fastapi.responses import HTMLResponse
 
 from backend.app.api.deps import CurrentUser, SessionDep, get_current_user
 from backend.app.core import security
-import backend.app.crud as crud
+from backend.app.crud import transaction as transaction_crud
 from backend.app.payment import Payment
 from common.db.models import Transaction, TransactionCreate, TransactionPublic
 
@@ -40,7 +40,7 @@ async def create_transaction(
         status="CREATED",
     )
     
-    transaction = await crud.create_transaction(session, transaction_in)
+    transaction = await transaction_crud.create_transaction(session, transaction_in)
     return transaction
 
 @router.get(

@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import or_, update
 from sqlmodel import col, delete, func, select
 
-from backend.app import crud
 from backend.app.api.deps import (
     CurrentUser,
     SessionDep,

@@ -1,0 +1,64 @@
+from typing import List, Optional, TYPE_CHECKING
+from pydantic import EmailStr
+from sqlmodel import Field, Relationship, SQLModel
+import datetime
+
+if TYPE_CHECKING:
+    from .tournament import Tournament
+
+class UserBase(SQLModel):
+    name: str = Field(max_length=255, nullable=True)
+    surname: str = Field(max_length=255, nullable=True)
+    patronymic: str = Field(max_length=255, nullable=True)
+    score: int | None = Field(default=0, nullable=True)
+    admin: bool = Field(default=False)
+    organizer: bool | None = Field(default=False, nullable=True)
+    end_of_subscription: Optional[datetime.datetime] = Field(default=None, nullable=True)
+    updated_at: Optional[datetime.datetime] = Field(default_factory=datetime.datetime.now, nullable=True)
+    created_at: Optional[datetime.datetime] = Field(default_factory=datetime.datetime.now, nullable=True)
+    phone_number: Optional[str] = Field(default=None, nullable=True)
+    email: EmailStr = Field(max_length=255, nullable=True)
+
+class UserCreate(UserBase):
+    password: str = Field(min_length=8, max_length=40)
+
+class UserRegister(SQLModel):
+    email: EmailStr
+    password: str
+    name: str
+    surname: str
+    patronymic: str
+    phone_number: str
+
+class UserUpdate(UserBase):
+    email: Optional[EmailStr] = Field(default=None, max_length=255)
+    updated_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
+
+class UserUpdateMe(SQLModel):
+    name: Optional[str] = Field(default=None, max_length=255)
+    surname: Optional[str] = Field(default=None, max_length=255)
+    patronymic: Optional[str] = Field(default=None, max_length=255)
+    email: Optional[EmailStr] = Field(default=None, max_length=255)
+
+class UpdatePassword(SQLModel):
+    current_password: str = Field(min_length=8, max_length=40)
+    new_password: str = Field(min_length=8, max_length=40)
+
+class UserPublic(UserBase):
+    id: int
+
+class UserFio(SQLModel):
+    name: str
+    surname: str
+    patronymic: str
+
+class User(UserBase, table=True):
+    __tablename__ = 'users'
+    id: Optional[int] = Field(primary_key=True, default=None)
+    hashed_password: Optional[str] = Field(default=None, nullable=True)
+
+    tournaments: List["Tournament"] = Relationship(back_populates="owner")
+
+class UsersPublic(SQLModel):
+    data: List[UserPublic]
+    count: int

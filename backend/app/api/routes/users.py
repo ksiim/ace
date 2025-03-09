@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import or_, update
 from sqlmodel import col, delete, func, select
 
-from backend.app import crud
+from backend.app.crud import user as user_crud
 from backend.app.api.deps import (
     CurrentUser,
     SessionDep,
@@ -97,14 +97,14 @@ async def register_user(session: SessionDep, user_in: UserRegister) -> Any:
     """
     Create new user without the need to be logged in.
     """
-    user = await crud.get_user_by_email(session=session, email=user_in.email)
+    user = await user_crud.get_user_by_email(session=session, email=user_in.email)
     if user:
         raise HTTPException(
             status_code=400,
             detail="The user with this email already exists in the system",
         )
     user_create = UserCreate.model_validate(user_in)
-    user = await crud.create_user(session=session, user_create=user_create)
+    user = await user_crud.create_user(session=session, user_create=user_create)
     return user
 
 
@@ -136,7 +136,7 @@ async def update_user_me(
     """
 
     if user_in.email:
-        existing_user = await crud.get_user_by_email(session=session, email=user_in.email)
+        existing_user = await user_crud.get_user_by_email(session=session, email=user_in.email)
         if existing_user and existing_user.id != current_user.id:
             raise HTTPException(
                 status_code=409, detail="User with this email already exists"
@@ -185,7 +185,7 @@ async def update_user_by_id(
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     
-    user = await crud.update_user(session=session, db_user=db_user, user_in=user_in)
+    user = await user_crud.update_user(session=session, db_user=db_user, user_in=user_in)
     return user
 
 @router.patch("/me/password", response_model=Message)

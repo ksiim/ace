@@ -9,7 +9,7 @@ from backend.app.core import security
 from backend.app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES
 from backend.app.utils import generate_password_reset_token, generate_reset_password_email, send_email, verify_password_reset_token, logger
 from common.db.models import Message, NewPassword, Token, User, UserPublic
-import backend.app.crud as crud
+import backend.app.crud.user as user_crud
 
 
 router = APIRouter(tags=["login"])
@@ -22,7 +22,7 @@ async def login_access_token(
     """
     OAuth2 compatible token login, get an access token for future requests
     """
-    user = await crud.authenticate(
+    user = await user_crud.authenticate(
         session=session, email=form_data.username, password=form_data.password
     )
     if not user:
@@ -40,7 +40,7 @@ async def recover_password(email: str, session: SessionDep) -> Message:
     """
     Password Recovery
     """
-    user = await crud.get_user_by_email(session=session, email=email)
+    user = await user_crud.get_user_by_email(session=session, email=email)
 
     if not user:
         raise HTTPException(

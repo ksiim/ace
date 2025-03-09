@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import or_, update
 from sqlmodel import col, delete, func, select
 
-from backend.app import crud
+from backend.app.crud import participant as participant_crud
 from backend.app.api.deps import (
     CurrentUser,
     SessionDep,
@@ -12,7 +12,7 @@ from backend.app.api.deps import (
     get_current_user,
 )
 from common.db.models import (
-    Message, TournamentParticipant, TournamentParticipantCreate,
+    TournamentParticipant, TournamentParticipantCreate,
     TournamentParticipantPublic, TournamentParticipantUpdate,
     TournamentParticipantsPublic, User
 )
@@ -86,7 +86,7 @@ async def create_tournament_participant(
         partner = await session.get(User, participant_in.partner_id)
         if not partner:
             raise HTTPException(status_code=404, detail="Partner not found")
-    participant = await crud.create_tournament_participant(session, participant_in)
+    participant = await participant_crud.create_tournament_participant(session, participant_in)
     return participant
 
 
@@ -109,7 +109,7 @@ async def update_tournament_participant(
         raise HTTPException(
             status_code=404, detail="Tournament participant not found")
 
-    participant = await crud.update_tournament_participant(
+    participant = await participant_crud.update_tournament_participant(
         session=session,
         db_tournament_participant=participant,
         tournament_participant_in=participant_in

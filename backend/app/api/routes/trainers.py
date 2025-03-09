@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import or_, update
 from sqlmodel import col, delete, func, select
 
-from backend.app import crud
+from backend.app.crud import trainer as trainer_crud
 from backend.app.api.deps import (
     CurrentUser,
     SessionDep,
@@ -68,7 +68,7 @@ async def create_trainer(
     """
     Create new trainer
     """
-    trainer = await crud.create_trainer(session=session, trainer_create=trainer_in)
+    trainer = await trainer_crud.create_trainer(session=session, trainer_create=trainer_in)
     return trainer
 
 
@@ -87,7 +87,7 @@ async def update_trainer(
     db_trainer = await session.get(Trainer, trainer_id)
     if not db_trainer:
         raise HTTPException(status_code=404, detail="Trainer not found")
-    db_trainer = await crud.update_trainer(session=session, db_trainer=db_trainer, trainer_in=trainer_in)
+    db_trainer = await trainer_crud.update_trainer(session=session, db_trainer=db_trainer, trainer_in=trainer_in)
     return db_trainer
 
 
