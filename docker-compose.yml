@@ -37,6 +37,7 @@ services:
     restart: always
     depends_on:
       - db
+      - rabbitmq
     env_file:
       - .env
     environment:
@@ -46,6 +47,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       GATEWAY_TOKEN: ${GATEWAY_TOKEN}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: "5672"
     ports:
       - "8000:8000"
 
@@ -64,11 +67,9 @@ services:
     environment:
       NODE_ENV: development
       VITE_API_URL: ${VITE_API_URL}
-    command: [ "npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000" ]
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
     depends_on:
       - backend
-
-
 
   frontend-prod:
     build:
@@ -84,7 +85,36 @@ services:
     ports:
       - "80:80"
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest  # Можно настроить через .env
+      RABBITMQ_DEFAULT_PASS: guest  # По умолчанию, лучше изменить в продакшене
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
 
+  bot:
+    build:
+      context: .
+      dockerfile: bot/Dockerfile
+    container_name: telegram_bot
+    depends_on:
+      - rabbitmq 
+    env_file:
+      - .env
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: "5672"
+    restart: unless-stopped
+    volumes:
+      - ./bot:/app/bot
 
 volumes:
   postgres_data:
+  rabbitmq_data:

@@ -6,6 +6,14 @@
         },
     ],
     "settings": {
-    
+        "files.exclude": {
+            "**/.git": true,
+            "**/__pycache__": true,
+            "**/.venv": true,
+            "**/.svn": true,
+            "**/.hg": true,
+            "**/.DS_Store": true,
+            "**/Thumbs.db": true
+        }
     }
 }

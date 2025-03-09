@@ -9,3 +9,12 @@ services:
       sh -c "uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload"
     ports:
       - "8000:8000"
+
+  bot:
+    volumes:
+      - ./bot:/app/bot
+      - ./common:/app/common
+    environment:
+      - ENV=development
+    command: >
+      sh -c "python bot/main.py"

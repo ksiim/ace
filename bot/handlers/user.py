@@ -5,10 +5,7 @@ from aiogram.types import (
     Message, CallbackQuery, FSInputFile
 )
 
-from bot import dp, bot
-
-from models.dbs.orm import Orm
-from models.dbs.models import *
+from dispatcher import bot, dp
 
 from .callbacks import *
 from .markups import *
@@ -18,7 +15,6 @@ from .states import *
 async def start_message_handler(message: Message, state: FSMContext):
     await state.clear()
     
-    await Orm.create_user(message)
     await send_start_message(message)
     
 async def send_start_message(message: Message):
@@ -30,7 +26,7 @@ async def send_start_message(message: Message):
 @dp.message(Command('id'))
 async def id_message_handler(message: Message):
     await message.answer(
-        text=f"Ваш ID: <code>{message.from_user.id}</code",
+        text=f"Ваш ID: <code>{message.from_user.id}</code>",
         parse_mode='HTML'
     )
     

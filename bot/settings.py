@@ -2,8 +2,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    bot_token: str
+    BOT_TOKEN: str
     rabbitmq_url: str = "amqp://guest:guest@rabbitmq:5672/"
+    ENV: str
 
     model_config = SettingsConfigDict(
         env_file=".env",
