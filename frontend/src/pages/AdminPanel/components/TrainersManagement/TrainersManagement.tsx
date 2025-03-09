@@ -10,7 +10,7 @@ interface Region {
 interface Trainer {
   id: number;
   name: string;
-  photo: string;
+  photo_path: string;
   description: string;
   phone: string;
   address: string;
@@ -26,7 +26,7 @@ const TrainerManagement: React.FC<TrainerManagementProps> = ({ onError }) => {
   const [formData, setFormData] = useState<Trainer>({
     id: 0,
     name: "",
-    photo: "",
+    photo_path: "",
     description: "",
     phone: "",
     address: "",
@@ -58,13 +58,42 @@ const TrainerManagement: React.FC<TrainerManagementProps> = ({ onError }) => {
       .catch(() => onError("Ошибка при загрузке регионов"));
   }, []);
   
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Проверка на изображение
+      if (!file.type.startsWith("image/")) {
+        onError("Загружать можно только изображения");
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      apiRequest("photos/", "POST", formData, true)
+        .then((data) => {
+          if (data && data.file_path) {
+            // Изменяем путь
+            const correctPath = `http://localhost${(data.file_path).slice(4)}`;
+            setFormData(prev => ({
+              ...prev,
+              photo_path: correctPath // Сохраняем исправленный путь
+            }));
+          } else {
+            onError("Ошибка загрузки фото");
+          }
+        })
+        .catch(() => onError("Ошибка загрузки фото"));
+    }
+  };
+  
   const handleCreateTrainer = () => {
     apiRequest("trainers/", "POST", formData, true)
       .then((data) => {
         if (data) {
           setTrainers(prevTrainers => [...prevTrainers, data]);
           // Reset form
-          setFormData({ id: 0, name: "", photo: "", description: "", phone: "", address: "", region_id: 0 });
+          setFormData({ id: 0, name: "", photo_path: "", description: "", phone: "", address: "", region_id: 0 });
         } else {
           onError("Ошибка при создании тренера");
         }
@@ -85,7 +114,7 @@ const TrainerManagement: React.FC<TrainerManagementProps> = ({ onError }) => {
             prevTrainers.map((trainer) => trainer.id === formData.id ? formData : trainer)
           );
           // Reset form and exit edit mode
-          setFormData({ id: 0, name: "", photo: "", description: "", phone: "", address: "", region_id: 0 });
+          setFormData({ id: 0, name: "", photo_path: "", description: "", phone: "", address: "", region_id: 0 });
           setIsEditMode(false);
         } else {
           onError("Ошибка при обновлении тренера");
@@ -104,7 +133,7 @@ const TrainerManagement: React.FC<TrainerManagementProps> = ({ onError }) => {
   
   const handleCancelEdit = () => {
     // Reset form and exit edit mode
-    setFormData({ id: 0, name: "", photo: "", description: "", phone: "", address: "", region_id: 0 });
+    setFormData({ id: 0, name: "", photo_path: "", description: "", phone: "", address: "", region_id: 0 });
     setIsEditMode(false);
   };
   
@@ -133,14 +162,25 @@ const TrainerManagement: React.FC<TrainerManagementProps> = ({ onError }) => {
               name="name"
             />
           </div>
+          
           <div className={styles.formGroup}>
+            <label htmlFor="photo">Фото тренера</label>
             <input
-              type="text"
-              placeholder="Фото"
-              value={formData.photo}
-              onChange={handleInputChange}
+              type="file"
+              id="photo"
               name="photo"
+              onChange={handleFileChange}
             />
+            {formData.photo_path && (
+              <div className={styles.previewImage}>
+                <img
+                  src={formData.photo_path}
+                  alt="Предпросмотр"
+                  style={{width: '80px', height: '80px', borderRadius: '15px', marginTop:'10px'}}
+                />
+              </div>
+            
+            )}
           </div>
           
           <div className={styles.formGroup}>
@@ -218,7 +258,7 @@ const TrainerManagement: React.FC<TrainerManagementProps> = ({ onError }) => {
               <tr key={trainer.id}>
                 <td>{trainer.id}</td>
                 <td>{trainer.name}</td>
-                <td><img src={trainer.photo} alt={trainer.name} width={50} height={50}/></td>
+                <td><img src={trainer.photo_path} alt={trainer.name} width={50} height={50}/></td>
                 <td>{trainer.description}</td>
                 <td>{trainer.phone}</td>
                 <td>{trainer.address}</td>

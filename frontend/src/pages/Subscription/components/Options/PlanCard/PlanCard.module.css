@@ -77,4 +77,33 @@
   background: rgb(255, 99.3734177215, 71.5);
 }
 
+.transactionContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.statusText {
+  text-align: center;
+  margin: 0;
+  font-weight: 500;
+}
+
+.errorText {
+  color: #e53935;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.secondaryButton {
+  background-color: transparent;
+  border: 1px solid currentColor;
+  color: #333;
+}
+.secondaryButton:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
 /*# sourceMappingURL=PlanCard.module.css.map */

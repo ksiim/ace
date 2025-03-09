@@ -11,16 +11,16 @@
   margin: 0 auto;
   padding: 20px 0;
   overflow-x: auto;
-  display: flex;
-  justify-content: center;
+  text-align: center;
 }
 
 .Schedule {
-  width: 100%;
+  width: auto;
   max-width: 960px;
   border-collapse: collapse;
   font-family: "Manrope", Arial, sans-serif;
   font-weight: 300;
+  margin: 0 auto;
 }
 .Schedule th {
   padding: 20px;

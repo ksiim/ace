@@ -161,6 +161,11 @@ const NewsTab: React.FC = () => {
       if (!response) {
         throw new Error('Не удалось удалить новость');
       }
+      // Сохраняем удаленные новости в localStorage
+      const deletedNews = JSON.parse(localStorage.getItem('deletedNews') || '[]');
+      deletedNews.push(newsId);
+      localStorage.setItem('deletedNews', JSON.stringify(deletedNews));
+      
       // Обновляем список новостей после удаления
       setPosts(posts.filter(post => post.id !== newsId));
     } catch (err) {
@@ -168,6 +173,16 @@ const NewsTab: React.FC = () => {
       alert('Не удалось удалить новость. Попробуйте снова.');
     }
   };
+  
+  useEffect(() => {
+    fetchNews();
+    checkIfAdmin();
+    
+    // Проверяем, есть ли удаленные новости, чтобы исключить их из загрузки
+    const deletedNews = JSON.parse(localStorage.getItem('deletedNews') || '[]');
+    setPosts(prevPosts => prevPosts.filter(post => !deletedNews.includes(post.id)));
+  }, []);
+  
   
   if (isLoading) {
     return <div className={styles.loading}>Загрузка новостей...</div>;

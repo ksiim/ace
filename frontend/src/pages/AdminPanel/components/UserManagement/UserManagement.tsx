@@ -224,7 +224,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
                     getUserRole(user)
                   )}
                 </td>
-                <td>{new Date(user.end_of_subscription).toLocaleDateString()}</td>
+                <td>{user.end_of_subscription && new Date(user.end_of_subscription).getTime() !== 0 ? new Date(user.end_of_subscription).toLocaleDateString() : ' '}</td>
                 <td>
                   {editUserData.userId === user.id && !editUserData.editingRole ? (
                     <input

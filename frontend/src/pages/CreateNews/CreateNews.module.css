@@ -1,3 +1,4 @@
+@charset "UTF-8";
 .createNews {
   padding: 20px;
   background-color: #f5f5f5;
@@ -104,6 +105,71 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
+}
+
+.fileInput {
+  display: none; /* Скрываем стандартный input */
+}
+
+/* Кастомный стиль для кнопки выбора файлов */
+.fileInputLabel {
+  margin-left: 8px;
+  display: inline-block;
+  padding: 8px;
+  color: white;
+  background-color: rgba(249, 94, 27, 0.5);
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 15px;
+  transition: background-color 0.3s;
+}
+
+.fileInputLabel:hover {
+  background-color: #f95e1b;
+}
+
+.uploadProgress {
+  font-size: 14px;
+  color: #888;
+  margin-top: 10px;
+}
+
+/* Галерея фотографий */
+.photoGallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.photoItem {
+  position: relative;
+}
+
+.thumbnailContainer {
+  position: relative;
+}
+
+.thumbnail {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.removeButton {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  padding: 2px 5px;
+  cursor: pointer;
+}
+
+.removeButton:hover {
+  background: rgba(0, 0, 0, 0.7);
 }
 
 /*# sourceMappingURL=CreateNews.module.css.map */

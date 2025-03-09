@@ -11,7 +11,7 @@ interface Tournament {
   name: string;
   type: string;
   is_child: boolean;
-  photo: string;
+  photo_path: string;
   organizer_name_and_contacts: string;
   organizer_requisites: string;
   date: string;

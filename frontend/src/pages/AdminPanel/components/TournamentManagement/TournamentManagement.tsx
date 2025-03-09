@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { apiRequest } from "../../../../utils/apiRequest.ts";
 import styles from "../../AdminPanel.module.scss";
 
@@ -7,7 +7,7 @@ interface Tournament {
   name: string;
   type: string;
   is_child: boolean;
-  photo: string;
+  photo_path: string;
   organizer_name_and_contacts: string;
   organizer_requisites: string;
   date: string;
@@ -56,7 +56,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     name: "",
     type: "",
     is_child: false,
-    photo: "",
+    photo_path: "",
     organizer_name_and_contacts: "",
     organizer_requisites: "",
     date: new Date().toISOString(),
@@ -72,9 +72,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   
   const [editTournamentId, setEditTournamentId] = useState<number | null>(null);
   
-  // Загружаем турниры, категории и регионы при монтировании компонента
   useEffect(() => {
-    // Загрузка турниров
     apiRequest("tournaments/", "GET", undefined, true)
       .then((data) => {
         if (data && data.data) {
@@ -85,7 +83,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       })
       .catch(() => onError("Ошибка загрузки турниров"));
     
-    // Загрузка категорий
     apiRequest("categories/", "GET", undefined, true)
       .then((data) => {
         if (data && data.data) {
@@ -96,7 +93,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       })
       .catch(() => onError("Ошибка загрузки категорий"));
     
-    // Загрузка регионов
     apiRequest("regions/", "GET", undefined, true)
       .then((data) => {
         if (data && data.data) {
@@ -110,7 +106,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   
   const handleTournamentInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    
     setNewTournament(prev => ({
       ...prev,
       [name]: type === 'number' ? Number(value) :
@@ -119,27 +114,52 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     }));
   };
   
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Проверка на изображение
+      if (!file.type.startsWith("image/")) {
+        onError("Загружать можно только изображения");
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      apiRequest("photos/", "POST", formData, true)
+        .then((data) => {
+          if (data && data.file_path) {
+            // Изменяем путь
+            const correctPath = `http://localhost${(data.file_path).slice(4)}`;
+            setNewTournament(prev => ({
+              ...prev,
+              photo_path: correctPath // Сохраняем исправленный путь
+            }));
+          } else {
+            onError("Ошибка загрузки фото");
+          }
+        })
+        .catch(() => onError("Ошибка загрузки фото"));
+    }
+  };
+  
+  
+  
   const handleCreateTournament = (e: React.FormEvent) => {
     e.preventDefault();
-    
     apiRequest("tournaments/", "POST", newTournament, true)
       .then((data) => {
         if (data) {
-          // Update internal component state first
           setTournaments(prevTournaments => [...prevTournaments, data]);
-          
-          // Now update the parent component's state using the callback
           onTournamentsUpdate(prevTournaments => {
-            // Make sure prevTournaments is an array, if not return a new array with just the new tournament
             return Array.isArray(prevTournaments) ? [...prevTournaments, data] : [data];
           });
           
-          // Reset form
           setNewTournament({
             name: "",
             type: "",
             is_child: false,
-            photo: "",
+            photo_path: "",
             organizer_name_and_contacts: "",
             organizer_requisites: "",
             date: new Date().toISOString(),
@@ -162,71 +182,13 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       });
   };
   
-  const startEditTournament = (tournament: Tournament) => {
-    setEditTournamentId(tournament.id);
-    setNewTournament({...tournament});
-  };
-  
-  
-  const handleUpdateTournament = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!editTournamentId) return;
-    
-    apiRequest(`tournaments/${editTournamentId}`, "PUT", newTournament, true)
-      .then((data) => {
-        if (data) {
-          // Обновляем внутреннее состояние компонента
-          setTournaments(prevTournaments =>
-            prevTournaments.map(t => t.id === editTournamentId ? { ...t, ...data } : t)
-          );
-          
-          // Обновляем родительский компонент
-          onTournamentsUpdate(prevTournaments => {
-            if (!Array.isArray(prevTournaments)) return [data];
-            
-            return prevTournaments.map(t => t.id === editTournamentId ? { ...t, ...data } : t);
-          });
-          
-          // Сброс состояния для редактируемого турнира
-          setEditTournamentId(null);
-          
-          // Сброс значений нового турнира
-          setNewTournament({
-            name: "",
-            type: "",
-            is_child: false,
-            photo: "",
-            organizer_name_and_contacts: "",
-            organizer_requisites: "",
-            date: new Date().toISOString(),
-            price: 0,
-            can_register: true,
-            address: "",
-            prize_fund: 0,
-            owner_id: currentUser.id,
-            sex_id: newTournament.sex_id || 0, // Используем текущее значение sex_id
-            category_id: newTournament.category_id || 0, // Текущее значение категории
-            region_id: newTournament.region_id || 0 // Текущее значение региона
-          });
-        } else {
-          onError("Ошибка обновления турнира");
-        }
-      })
-      .catch((err) => {
-        console.error("Ошибка при обновлении турнира:", err);
-        onError("Ошибка обновления турнира");
-      });
-  };
-  
-  
   const cancelEdit = () => {
     setEditTournamentId(null);
     setNewTournament({
       name: "",
       type: "",
       is_child: false,
-      photo: "",
+      photo_path: "",
       organizer_name_and_contacts: "",
       organizer_requisites: "",
       date: new Date().toISOString(),
@@ -241,9 +203,58 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     });
   };
   
+  const startEditTournament = (tournament: Tournament) => {
+    setEditTournamentId(tournament.id);
+    setNewTournament({...tournament});
+  };
+  
   const canEditTournament = (tournament: Tournament) => {
     if (!currentUser) return false;
     return currentUser.admin || (currentUser.organizer && tournament.owner_id === currentUser.id);
+  };
+  
+  const handleUpdateTournament = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editTournamentId) return;
+    
+    apiRequest(`tournaments/${editTournamentId}`, "PUT", newTournament, true)
+      .then((data) => {
+        if (data) {
+          setTournaments(prevTournaments =>
+            prevTournaments.map(t => t.id === editTournamentId ? { ...t, ...data } : t)
+          );
+          onTournamentsUpdate(prevTournaments => {
+            return Array.isArray(prevTournaments)
+              ? prevTournaments.map(t => t.id === editTournamentId ? { ...t, ...data } : t)
+              : [data];
+          });
+          
+          setEditTournamentId(null);
+          setNewTournament({
+            name: "",
+            type: "",
+            is_child: false,
+            photo_path: "",
+            organizer_name_and_contacts: "",
+            organizer_requisites: "",
+            date: new Date().toISOString(),
+            price: 0,
+            can_register: true,
+            address: "",
+            prize_fund: 0,
+            owner_id: currentUser.id,
+            sex_id: 0,
+            category_id: 0,
+            region_id: 0
+          });
+        } else {
+          onError("Ошибка обновления турнира");
+        }
+      })
+      .catch((err) => {
+        console.error("Ошибка при обновлении турнира:", err);
+        onError("Ошибка обновления турнира");
+      });
   };
   
   return (
@@ -360,6 +371,24 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
           </div>
           
           <div className={styles.formGroup}>
+            <label htmlFor="photo" className={styles.fileLabel}>
+              Выбрать файл
+              <span
+                className={`${styles.fileName} ${newTournament.photo_path ? '' : styles.noFile}`}>
+      {newTournament.photo_path ? 'Файл выбран' : 'Нет файла'}
+    </span>
+              <input
+                type="file"
+                id="photo"
+                name="photo"
+                className={styles.fileInput}
+                onChange={handleFileChange}
+              />
+            </label>
+          </div>
+          
+          
+          <div className={styles.formGroup}>
             <label htmlFor="price">Цена</label>
             <input
               type="number"
@@ -417,6 +446,19 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             />
           </div>
           
+          <div className={styles.formGroup}>
+            <label htmlFor="organizer_requisites">Реквизиты
+              организатора</label>
+            <input
+              type="text"
+              id="organizer_requisites"
+              name="organizer_requisites"
+              value={newTournament.organizer_requisites || ''}
+              onChange={handleTournamentInputChange}
+            />
+          </div>
+          
+          
           <div className={styles.formActions}>
             <button type="submit" className={styles.submitButton}>
               {editTournamentId ? 'Обновить турнир' : 'Создать турнир'}
@@ -435,7 +477,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
         </form>
       </div>
       
-      {/* Render tournament list */}
       <div className={styles.tableContainer}>
         <h2>Список турниров</h2>
         {tournaments.length > 0 ? (

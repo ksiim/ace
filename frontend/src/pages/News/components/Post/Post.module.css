@@ -6,7 +6,6 @@
   transition: transform 0.2s ease;
 }
 .post:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 .post .header {
@@ -49,6 +48,43 @@
   overflow: hidden;
 }
 .post .content .imageContainer .image {
+  display: block;
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+}
+.post .content .slider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.post .content .slider .sliderButton {
+  color: rgba(0, 0, 0, 0.4);
+  border: none;
+  font-size: 2rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+.post .content .slider .sliderButton:hover {
+  color: rgba(0, 0, 0, 0.8);
+}
+.post .content .slider .sliderButton:first-child {
+  left: 10px;
+}
+.post .content .slider .sliderButton:last-child {
+  right: 10px;
+}
+.post .content .slider .imageContainer {
+  max-width: 100%;
+  overflow: hidden;
+  text-align: center;
+}
+.post .content .slider .image {
   display: block;
   width: 100%;
   max-height: 400px;

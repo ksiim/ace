@@ -226,6 +226,9 @@ form{
   }
 }
 
+
+
+
 // Статусы
 .status {
   display: inline-block;
@@ -402,4 +405,19 @@ select:disabled {
 select:disabled:hover {
   box-shadow: none;
 }
+
+
+.roleSelect {
+  border: 2px solid $primary-color;
+  padding: 5px;
+  border-radius: 15px;
+  transition: border-color 0.2s ease-in-out;
+
+  &:focus {
+    border-color: $primary-color; // Синий цвет обводки
+    outline: none;
+  }
+}
+
+
 

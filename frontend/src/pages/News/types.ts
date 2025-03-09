@@ -13,6 +13,6 @@ export interface PostType {
   date: string;
   title: string;
   content: string;
-  imageUrl?: string;
+  photo_paths: string[];
   comments: CommentType[];
 }
