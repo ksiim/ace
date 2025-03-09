@@ -16,7 +16,7 @@ class Comment(CommentBase, table=True):
     id: Optional[int] = Field(primary_key=True, default=None)
 
     creator_id: int = Field(foreign_key="users.id")
-    news_id: int = Field(foreign_key="news.id")
+    news_id: int = Field(foreign_key="news.id", ondelete="CASCADE")
 
 
 class CommentCreate(CommentBase):

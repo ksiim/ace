@@ -103,7 +103,7 @@ async def update_news(
 @router.delete(
     "/{news_id}",
     dependencies=[Depends(get_current_active_superuser)],
-    response_model=NewsPublic,
+    response_model=Message,
 )
 async def delete_news(
     session: SessionDep,
@@ -115,9 +115,11 @@ async def delete_news(
     news = await session.get(News, news_id)
     if not news:
         raise HTTPException(status_code=404, detail="News not found")
-    session.delete(news)
+    await session.delete(news)
     await session.commit()
-    return news
+    return Message(
+        message="News deleted"
+    )
 
 
 @router.get(
