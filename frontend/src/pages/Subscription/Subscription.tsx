@@ -12,9 +12,11 @@ const Subscription:React.FC = () => {
   return (
     <div className={styles.wrapper}>
       <Header scrollToBenefits={() => {}}/>
-      <Options/>
-      <SubscriptionBenefits/>
-      <SubscriptionBanner/>
+      <div className={styles.pageContent}>
+        <Options/>
+        <SubscriptionBenefits/>
+        <SubscriptionBanner/>
+      </div>
       <Footer/>
     </div>
   );

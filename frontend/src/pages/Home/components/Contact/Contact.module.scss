@@ -1,8 +1,12 @@
 .wrapper {
   width: 100%;
-  padding: 80px 40px;
+  padding: 80px 40px; // Отступы для ПК
   background-color: #FFF5F3;
   font-family: 'Manrope', sans-serif;
+
+  @media (max-width: 768px) {
+    padding: 60px 20px; // Уменьшаем отступы для мобильных устройств
+  }
 }
 
 .content {
@@ -13,60 +17,91 @@
 .header {
   text-align: center;
   max-width: 800px;
-  margin: 0 auto 60px;
+  margin: 0 auto 60px; // Отступы для ПК
+
+  @media (max-width: 768px) {
+    margin-bottom: 40px; // Уменьшаем отступы для мобильных устройств
+  }
 }
 
 .title {
-  font-size: 36px;
+  font-size: 36px; // Размер шрифта для ПК
   font-weight: 700;
-  margin-bottom: 24px;
+  margin-bottom: 24px; // Отступы для ПК
   line-height: 1.2;
+
+  @media (max-width: 768px) {
+    font-size: 28px; // Уменьшаем размер шрифта для мобильных устройств
+    margin-bottom: 16px; // Уменьшаем отступы
+  }
 }
 
 .description {
-  font-size: 16px;
+  font-size: 16px; // Размер шрифта для ПК
   line-height: 1.6;
   color: #333;
+
+  @media (max-width: 768px) {
+    font-size: 14px; // Уменьшаем размер шрифта для мобильных устройств
+  }
 }
 
 .contact_container {
   display: flex;
-  gap: 60px;
+  gap: 60px; // Отступы для ПК
   justify-content: space-between;
   align-items: flex-start;
+
+  @media (max-width: 768px) {
+    flex-direction: column; // Меняем направление на колонку для мобильных устройств
+    gap: 40px; // Уменьшаем отступы
+  }
 }
 
 .contact_info {
   flex: 1;
-  max-width: 400px;
+  max-width: 400px; // Ширина для ПК
+
+  @media (max-width: 768px) {
+    max-width: 100%; // Занимаем всю ширину на мобильных устройствах
+  }
 }
 
 .email_link {
   display: block;
-  font-size: 20px;
+  font-size: 20px; // Размер шрифта для ПК
   color: #333;
   text-decoration: none;
-  margin-bottom: 24px;
+  margin-bottom: 24px; // Отступы для ПК
 
   &:hover {
     color: #f95e1b;
   }
+
+  @media (max-width: 768px) {
+    font-size: 18px; // Уменьшаем размер шрифта для мобильных устройств
+    margin-bottom: 16px; // Уменьшаем отступы
+  }
 }
 
 .social_text {
-  font-size: 14px;
+  font-size: 14px; // Размер шрифта для ПК
   color: #666;
-  margin-bottom: 16px;
+  margin-bottom: 16px; // Отступы для ПК
+
+  @media (max-width: 768px) {
+    font-size: 12px; // Уменьшаем размер шрифта для мобильных устройств
+  }
 }
 
 .social_links {
   display: flex;
-  gap: 16px;
+  gap: 16px; // Отступы для ПК
 }
 
 .social_link {
-  width: 40px;
-  height: 40px;
+  width: 40px; // Размер иконки для ПК
+  height: 40px; // Размер иконки для ПК
   display: flex;
   align-items: center;
   justify-content: center;
@@ -80,44 +115,62 @@
   }
 
   .icon {
-    width: 20px;
-    height: 20px;
+    width: 20px; // Размер иконки для ПК
+    height: 20px; // Размер иконки для ПК
+  }
+
+  @media (max-width: 768px) {
+    width: 36px; // Уменьшаем размер иконки для мобильных устройств
+    height: 36px; // Уменьшаем размер иконки для мобильных устройств
+
+    .icon {
+      width: 18px; // Уменьшаем размер иконки для мобильных устройств
+      height: 18px; // Уменьшаем размер иконки для мобильных устройств
+    }
   }
 }
 
 .form {
   flex: 1;
-  max-width: 600px;
+  max-width: 600px; // Ширина для ПК
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 16px; // Отступы для ПК
+
+  @media (max-width: 768px) {
+    max-width: 100%; // Занимаем всю ширину на мобильных устройствах
+  }
 }
 
 .input, .textarea {
   width: 100%;
-  padding: 12px 16px;
+  padding: 12px 16px; // Отступы для ПК
   border: 1px solid #ddd;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 14px; // Размер шрифта для ПК
 
   &:focus {
     outline: none;
     border-color: #f95e1b;
   }
+
+  @media (max-width: 768px) {
+    font-size: 12px; // Уменьшаем размер шрифта для мобильных устройств
+  }
 }
 
 .textarea {
-  min-height: 120px;
+  min-height: 120px; // Высота для ПК
   resize: vertical;
 }
 
 .submit_button {
   background-color: #f95e1b;
   color: white;
-  padding: 12px 32px;
+  padding: 12px 32px; // Отступы для ПК
   border: none;
   border-radius: 32px;
-  font-size: 16px;
+  font-size: 16px; // Размер шрифта для ПК
   cursor: pointer;
   transition: background-color 0.2s ease;
   align-self: flex-start;
@@ -125,27 +178,9 @@
   &:hover {
     background-color: darken(#f95e1b, 10%);
   }
-}
 
-@media (max-width: 768px) {
-  .wrapper {
-    padding: 60px 20px;
-  }
-
-  .title {
-    font-size: 28px;
-  }
-
-  .contact_container {
-    flex-direction: column;
-    gap: 40px;
-  }
-
-  .contact_info {
-    max-width: 100%;
-  }
-
-  .submit_button {
-    width: 100%;
+  @media (max-width: 768px) {
+    width: 100%; // Занимаем всю ширину на мобильных устройствах
+    font-size: 14px; // Уменьшаем размер шрифта для мобильных устройств
   }
 }

@@ -1,8 +1,16 @@
 .wrapper {
   width: 100%;
-  padding: 135px 0;
+  padding: 135px 0; // Отступы для ПК
   background-color: #FFF5F3;
   font-family: 'Manrope', sans-serif;
+
+  @media (max-width: 1024px) {
+    padding: 60px 20px; // Уменьшаем отступы для планшетов
+  }
+
+  @media (max-width: 640px) {
+    padding: 40px 20px; // Уменьшаем отступы для мобильных
+  }
 }
 
 .content {
@@ -15,86 +23,109 @@
 
 .header {
   text-align: center;
-  max-width: 800px;
+  max-width: 800px; // Ширина для ПК
+
+  @media (max-width: 1024px) {
+    max-width: 100%; // Занимаем всю ширину на планшетах и мобильных
+  }
 }
 
 .title {
-  font-size: 40px;
+  font-size: 40px; // Размер шрифта для ПК
   font-weight: 700;
-  margin-bottom: 40px;
+  margin-bottom: 40px; // Отступы для ПК
   line-height: 1.2;
+
+  @media (max-width: 640px) {
+    font-size: 28px; // Уменьшаем размер шрифта для мобильных
+    margin-bottom: 20px; // Уменьшаем отступы
+  }
 }
 
 .description {
-  width: 560px;
-  font-size: 20px;
+  width: 560px; // Ширина для ПК
+  font-size: 20px; // Размер шрифта для ПК
   line-height: 1.6;
   color: #333;
-  margin: 0 auto 90px;
+  margin: 0 auto 90px; // Отступы для ПК
+
+  @media (max-width: 1024px) {
+    width: 100%; // Занимаем всю ширину на планшетах и мобильных
+    font-size: 18px; // Уменьшаем размер шрифта
+    margin-bottom: 40px; // Уменьшаем отступы
+  }
+
+  @media (max-width: 640px) {
+    font-size: 16px; // Уменьшаем размер шрифта для мобильных
+    margin-bottom: 20px; // Уменьшаем отступы
+  }
 }
 
 .features_grid {
   display: flex;
-  align-items: center;
-  flex-direction: column;
-  gap: 65px;
+  flex-direction: column; // Колонка для всех устройств
+  gap: 65px; // Отступы для ПК
+
+  @media (max-width: 640px) {
+    gap: 32px; // Уменьшаем отступы для мобильных
+  }
 }
 
 .feature_item {
-  width: 760px;
+  width: 760px; // Ширина для ПК
   display: flex;
-  gap:30px;
+  gap: 30px; // Отступы для ПК
   align-items: flex-start;
+
+  @media (max-width: 1024px) {
+    width: 100%; // Занимаем всю ширину на планшетах и мобильных
+    flex-direction: column; // Меняем направление на колонку
+    align-items: center; // Выравниваем элементы по центру
+    text-align: center; // Выравниваем текст по центру
+    gap: 16px; // Уменьшаем отступы
+  }
 }
 
 .content_wrapper {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 14px; // Отступы для ПК
+
+  @media (max-width: 640px) {
+    gap: 8px; // Уменьшаем отступы для мобильных
+  }
 }
 
 .icon_wrapper {
-  margin-bottom: 20px;
+  margin-bottom: 20px; // Отступы для ПК
 
   .icon {
-    width: 65px;
-    height: 65px;
+    width: 65px; // Размер иконки для ПК
+    height: 65px; // Размер иконки для ПК
     color: #f95e1b;
+
+    @media (max-width: 640px) {
+      width: 50px; // Уменьшаем размер иконки для мобильных
+      height: 50px; // Уменьшаем размер иконки для мобильных
+    }
   }
 }
 
 .feature_title {
-  font-size: 20px;
+  font-size: 20px; // Размер шрифта для ПК
   font-weight: 600;
+
+  @media (max-width: 640px) {
+    font-size: 18px; // Уменьшаем размер шрифта для мобильных
+  }
 }
 
 .feature_description {
-  font-size: 18px;
+  font-size: 18px; // Размер шрифта для ПК
   line-height: 1.6;
   color: #666;
-}
 
-@media (max-width: 968px) {
-  .features_grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
-  .wrapper {
-    padding: 60px 20px;
-  }
-
-  .title {
-    font-size: 28px;
-  }
-
-  .features_grid {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-
-  .header {
-    margin-bottom: 40px;
+  @media (max-width: 640px) {
+    font-size: 16px; // Уменьшаем размер шрифта для мобильных
   }
 }

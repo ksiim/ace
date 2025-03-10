@@ -1,93 +1,95 @@
-* {
-  padding: 0;
-  margin: 0;
-  box-sizing: border-box;
-}
-
 .wrapper {
   width: 100%;
-  padding: 60px 351.5px 135px;
+  padding: 60px 351.5px 135px; // Отступы для ПК
   background-color: white;
   font-family: 'Manrope', sans-serif;
   font-weight: 300;
+
+  @media (max-width: 1024px) {
+    padding: 60px 20px; // Уменьшаем отступы для планшетов
+  }
+
+  @media (max-width: 640px) {
+    padding: 40px 20px; // Уменьшаем отступы для мобильных устройств
+  }
 }
 
 .content {
   max-width: 1200px;
   display: flex;
-  gap: 40px;
+  gap: 40px; // Отступы для ПК
   align-items: center;
+
+  @media (max-width: 1024px) {
+    flex-direction: column; // Меняем направление на колонку для планшетов и мобильных
+    text-align: center; // Выравниваем текст по центру
+    gap: 20px; // Уменьшаем отступы
+  }
 }
 
 .text_content {
   flex: 1;
-  max-width: 560px;
+  max-width: 560px; // Ширина для ПК
+
+  @media (max-width: 1024px) {
+    max-width: 100%; // Занимаем всю ширину на планшетах и мобильных
+  }
 }
 
 .title {
-  font-size: 36px;
+  font-size: 36px; // Размер шрифта для ПК
   font-weight: 700;
-  margin-bottom: 24px;
+  margin-bottom: 24px; // Отступы для ПК
   line-height: 51.66px;
+
+  @media (max-width: 640px) {
+    font-size: 28px; // Уменьшаем размер шрифта для мобильных
+    line-height: 1.4; // Уменьшаем высоту строки
+    margin-bottom: 16px; // Уменьшаем отступы
+  }
 }
 
 .description {
-  font-size: 18px;
+  font-size: 18px; // Размер шрифта для ПК
   line-height: 31px;
   color: #000000;
+
+  @media (max-width: 640px) {
+    font-size: 16px; // Уменьшаем размер шрифта для мобильных
+    line-height: 1.6; // Уменьшаем высоту строки
+  }
 }
 
 .images_grid {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(2, 1fr); // Сетка 2x2 для ПК
+  gap: 20px; // Отступы для ПК
   max-width: 460px;
+
+  @media (max-width: 1024px) {
+    max-width: 100%; // Занимаем всю ширину на планшетах и мобильных
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr; // Одна колонка для мобильных
+    gap: 10px; // Уменьшаем отступы
+  }
 }
 
 .image_1,
 .image_2,
 .image_3,
 .image_4 {
-  width: 220px;
-  height: 220px;
+  width: 220px; // Размер для ПК
+  height: 220px; // Размер для ПК
   object-fit: cover;
   border-radius: 16px;
-}
 
-@media (max-width: 1024px) {
-  .content {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .text_content {
-    max-width: 100%;
-  }
-
-  .images_grid {
-    max-width: 100%;
+  @media (max-width: 640px) {
+    width: 100%; // Занимаем всю ширину на мобильных
+    height: auto; // Автоматическая высота для сохранения пропорций
+    max-height: 200px; // Ограничиваем максимальную высоту
+    border-radius: 8px; // Уменьшаем радиус скругления
   }
 }
-
-@media (max-width: 640px) {
-  .wrapper {
-    padding: 40px 20px;
-  }
-
-  .title {
-    font-size: 36px;
-  }
-
-  .images_grid {
-    grid-template-columns: 1fr;
-  }
-
-  .image_1,
-  .image_2,
-  .image_3,
-  .image_4 {
-    height: 200px;
-  }
-}
-

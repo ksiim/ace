@@ -12,6 +12,7 @@ import Profile from './pages/Profile/Profile.tsx';
 import AdminPanel from './pages/AdminPanel/AdminPanel.tsx';
 import CreateNews from './pages/CreateNews/CreateNews.tsx';
 import Trainers from './pages/Trainers/Trainers.tsx';
+import ResetPasswordPage from './pages/ResetPasswordPage/ResetPasswordPage.tsx';
 
 function App() {
 
@@ -22,6 +23,7 @@ function App() {
         <Route path={'/create-news/:newsId?'} element={<CreateNews/>} />
         <Route path={'/'} element={<Home/>} />
         <Route path={'/login'} element={<LoginPage/> } />
+        <Route path={"/reset-password"} element={<ResetPasswordPage />} />
         <Route path={'/profile'} element={<Profile/>} />
         <Route path={'/registration'} element={<Registration/>} />
         <Route path={'/subscription'} element={<Subscription/>} />
@@ -30,6 +32,7 @@ function App() {
         <Route path={'/trainers'} element={<Trainers/>}/>
         <Route path="/tournaments/:tournamentId" element={<TournamentPage />} />
         <Route path={'/rating'} element={<Rating/>} />
+        <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
     </Router>
   )

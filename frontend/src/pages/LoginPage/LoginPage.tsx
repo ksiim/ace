@@ -105,6 +105,23 @@ const LoginPage: React.FC = () => {
     }
   };
   
+  const handleForgotPassword = async () => {
+    if (!formData.email || errors.email) {
+      setErrors(prev => ({ ...prev, email: true }));
+      return;
+    }
+    
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/v1/login/password-recovery/${formData.email}`
+      );
+      alert(response.data.message); // Можно заменить на модальное окно
+    } catch (error) {
+      alert("Ошибка отправки запроса");
+    }
+  };
+  
+  
   
   return (
     <div className={styles.loginContainer}>
@@ -163,9 +180,14 @@ const LoginPage: React.FC = () => {
 								минимум 8 символов</div>}
           </div>
           
-          <div className={styles.forgotPassword}>
-            <Link to="/forgot-password">Забыли пароль?</Link>
-          </div>
+          <button
+            type="button"
+            className={styles.forgotPasswordButton}
+            onClick={handleForgotPassword}
+          >
+            Забыли пароль?
+          </button>
+          
           
           <button
             type="submit"

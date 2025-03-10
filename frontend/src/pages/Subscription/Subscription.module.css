@@ -5,4 +5,25 @@
   font-family: "Manrope", sans-serif;
 }
 
+.wrapper {
+  min-height: 100vh;
+  position: relative;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.pageContent {
+  padding-top: 50px;
+  padding-bottom: 50px;
+  width: 100%;
+}
+
+/* For smaller screens */
+@media (max-width: 768px) {
+  .pageContent {
+    padding-top: 50px; /* Same as mobile header height */
+    padding-bottom: 50px; /* Same as mobile nav height */
+  }
+}
+
 /*# sourceMappingURL=Subscription.module.css.map */

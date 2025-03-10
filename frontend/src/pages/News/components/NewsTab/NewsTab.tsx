@@ -23,25 +23,29 @@ const NewsTab: React.FC = () => {
     try {
       setIsLoading(true);
       const response = await apiRequest('news', 'GET', undefined, true);
-      if (!response) {
-        throw new Error('Не удалось получить данные');
-      }
-      // Преобразуем данные из API в формат PostType
+      if (!response) throw new Error('Не удалось получить данные');
+      
       const formattedPosts: PostType[] = await Promise.all(
         response.data.map(async (newsItem: any) => {
           const comments = await fetchCommentsForNews(newsItem.id);
           return {
             id: newsItem.id,
-            author: "ACE", // Предполагаем, что автор всегда ACE
-            date: newsItem.created_at.split('T')[0], // Форматируем дату
+            author: "ACE",
+            date: newsItem.created_at, // Оставляем полный ISO формат
             title: newsItem.title,
             content: newsItem.text,
             imageUrl: newsItem.photo,
-            comments: comments
+            comments: comments,
           };
         })
       );
-      setPosts(formattedPosts);
+      
+      // Сортировка по дате (ISO формат сохраняет корректный порядок)
+      const sortedPosts = formattedPosts.sort((a, b) =>
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+      
+      setPosts(sortedPosts);
       setError(null);
     } catch (err) {
       console.error('Ошибка при загрузке новостей:', err);
@@ -50,6 +54,8 @@ const NewsTab: React.FC = () => {
       setIsLoading(false);
     }
   };
+  
+  
   
   // Функция получения комментариев для конкретной новости
   const fetchCommentsForNews = async (newsId: number): Promise<CommentType[]> => {

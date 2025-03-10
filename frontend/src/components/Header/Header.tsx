@@ -179,9 +179,6 @@ const Header: React.FC<HeaderProps> = ({ scrollToBenefits }) => {
       {isMobile ? (
         <>
           {renderMobileTopHeader()}
-          <div className={styles.pageContent}>
-            {/* Здесь будет контент страницы */}
-          </div>
           {renderMobileBottomNav()}
         </>
       ) : (

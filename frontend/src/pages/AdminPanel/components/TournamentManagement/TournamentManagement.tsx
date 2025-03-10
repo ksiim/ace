@@ -257,6 +257,79 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       });
   };
   
+  
+  const handleToggleRegistration = async (tournamentId: number, canRegister: boolean) => {
+    try {
+      // Find the tournament by ID
+      const tournament = tournaments.find(t => t.id === tournamentId);
+      if (!tournament) {
+        onError("Турнир не найден");
+        return;
+      }
+      
+      // Create an updated tournament object with the opposite can_register value
+      const updatedTournament = {
+        ...tournament,
+        can_register: !canRegister, // Toggle the registration status
+      };
+      
+      // Send the PUT request with the updated tournament data
+      const response = await apiRequest(
+        `tournaments/${tournamentId}`,
+        "PUT",
+        updatedTournament,
+        true
+      );
+      
+      if (response) {
+        // Update the tournaments state with the new can_register value
+        setTournaments(prevTournaments =>
+          prevTournaments.map(t =>
+            t.id === tournamentId ? { ...t, can_register: !canRegister } : t
+          )
+        );
+        
+        // Update the parent component's tournaments state
+        onTournamentsUpdate(prevTournaments => {
+          // Check if prevTournaments is an array before mapping
+          if (Array.isArray(prevTournaments)) {
+            return prevTournaments.map(t =>
+              t.id === tournamentId ? { ...t, can_register: !canRegister } : t
+            );
+          } else {
+            // If it's not an array, return a new array with the updated tournament
+            return [{ ...tournament, can_register: !canRegister }];
+          }
+        });
+      } else {
+        onError("Ошибка при изменении статуса регистрации");
+      }
+    } catch (err) {
+      console.error("Ошибка при изменении статуса регистрации:", err);
+      onError("Ошибка при изменении статуса регистрации");
+    }
+  };
+  
+  const handleSendMoneyRequest = async (tournamentId: number) => {
+    try {
+      const response = await apiRequest(
+        `tournaments/${tournamentId}/send-money-request`,
+        "POST",
+        undefined,
+        true
+      );
+      
+      if (response && response.message) {
+        alert(response.message); // Показываем сообщение об успехе
+      } else {
+        onError("Ошибка при запросе взносов");
+      }
+    } catch (err) {
+      console.error("Ошибка при запросе взносов:", err);
+      onError("Ошибка при запросе взносов");
+    }
+  };
+  
   return (
     <div className={styles.tabContent}>
       <div className={styles.formContainer}>
@@ -513,6 +586,22 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
                         onClick={() => startEditTournament(tournament)}
                       >
                         Редактировать
+                      </button>
+                      
+                      {/* Кнопка для закрытия/открытия регистрации */}
+                      <button
+                        className={styles.editButton}
+                        onClick={() => handleToggleRegistration(tournament.id, tournament.can_register)}
+                      >
+                        {tournament.can_register ? "Закрыть регистрацию" : "Открыть регистрацию"}
+                      </button>
+                      
+                      {/* Кнопка для запроса взносов */}
+                      <button
+                        className={styles.editButton}
+                        onClick={() => handleSendMoneyRequest(tournament.id)}
+                      >
+                        Запросить взносы
                       </button>
                     </div>
                   )}

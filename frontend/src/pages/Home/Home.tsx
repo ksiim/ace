@@ -15,12 +15,14 @@ const Home: React.FC = () => {
   };
   
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.homeContainer}> {/* Add a container class */}
       <Header scrollToBenefits={scrollToBenefits} />
-      <Hero />
-      <Features />
-      <Benefits ref={benefitsRef} />
-      <Contact />
+      <div className={styles.pageContent}> {/* Wrap content in pageContent */}
+        <Hero />
+        <Features />
+        <Benefits ref={benefitsRef} />
+        <Contact />
+      </div>
       <Footer />
     </div>
   );

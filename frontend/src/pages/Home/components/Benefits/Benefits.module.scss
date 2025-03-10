@@ -1,8 +1,12 @@
 .wrapper {
   width: 100%;
-  padding: 80px 40px;
+  padding: 80px 40px; // Отступы для ПК
   background-color: white;
   font-family: 'Manrope', sans-serif;
+
+  @media (max-width: 768px) {
+    padding: 60px 20px; // Уменьшаем отступы для мобильных устройств
+  }
 }
 
 .content {
@@ -13,39 +17,68 @@
 .header {
   text-align: center;
   max-width: 800px;
-  margin: 0 auto 60px;
+  margin: 0 auto 60px; // Отступы для ПК
+
+  @media (max-width: 768px) {
+    margin-bottom: 40px; // Уменьшаем отступы для мобильных устройств
+  }
 }
 
 .title {
-  font-size: 36px;
+  font-size: 36px; // Размер шрифта для ПК
   font-weight: 700;
-  margin-bottom: 24px;
+  margin-bottom: 24px; // Отступы для ПК
   line-height: 1.2;
+
+  @media (max-width: 768px) {
+    font-size: 28px; // Уменьшаем размер шрифта для мобильных устройств
+    margin-bottom: 16px; // Уменьшаем отступы
+  }
 }
 
 .description {
-  font-size: 16px;
+  font-size: 16px; // Размер шрифта для ПК
   line-height: 1.6;
   color: #333;
+
+  @media (max-width: 768px) {
+    font-size: 14px; // Уменьшаем размер шрифта для мобильных устройств
+  }
 }
 
 .benefits_grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 40px;
+  grid-template-columns: repeat(2, 1fr); // Сетка 2x2 для ПК
+  gap: 40px; // Отступы для ПК
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr; // Одна колонка для мобильных устройств
+    gap: 32px; // Уменьшаем отступы
+  }
 }
 
 .benefit_item {
   display: flex;
-  gap: 16px;
+  gap: 16px; // Отступы для ПК
   align-items: flex-start;
+
+  @media (max-width: 768px) {
+    flex-direction: column; // Меняем направление на колонку для мобильных устройств
+    align-items: center; // Выравниваем элементы по центру
+    text-align: center; // Выравниваем текст по центру
+  }
 }
 
 .check_icon {
-  width: 24px;
-  height: 24px;
+  width: 24px; // Размер иконки для ПК
+  height: 24px; // Размер иконки для ПК
   color: #f95e1b;
   flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    width: 20px; // Уменьшаем размер иконки для мобильных устройств
+    height: 20px; // Уменьшаем размер иконки для мобильных устройств
+  }
 }
 
 .benefit_content {
@@ -53,32 +86,22 @@
 }
 
 .benefit_title {
-  font-size: 20px;
+  font-size: 20px; // Размер шрифта для ПК
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 12px; // Отступы для ПК
+
+  @media (max-width: 768px) {
+    font-size: 18px; // Уменьшаем размер шрифта для мобильных устройств
+    margin-bottom: 8px; // Уменьшаем отступы
+  }
 }
 
 .benefit_description {
-  font-size: 14px;
+  font-size: 14px; // Размер шрифта для ПК
   line-height: 1.6;
   color: #666;
-}
 
-@media (max-width: 768px) {
-  .benefits_grid {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-
-  .wrapper {
-    padding: 60px 20px;
-  }
-
-  .title {
-    font-size: 28px;
-  }
-
-  .header {
-    margin-bottom: 40px;
+  @media (max-width: 768px) {
+    font-size: 12px; // Уменьшаем размер шрифта для мобильных устройств
   }
 }

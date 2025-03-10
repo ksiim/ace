@@ -74,16 +74,11 @@
   text-align: center;
 }
 
-.forgotPassword {
+.forgotPasswordButton {
   align-self: flex-start;
-}
-.forgotPassword a {
   color: #f95e1b;
   text-decoration: none;
   font-size: 14px;
-}
-.forgotPassword a:hover {
-  text-decoration: underline;
 }
 
 .loginButton {

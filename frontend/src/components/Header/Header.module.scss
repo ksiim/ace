@@ -108,54 +108,17 @@ button {
 }
 
 .pageContent {
-  padding-top: 60px;  /* Space for fixed top header */
-  padding-bottom: 60px;  /* Space for fixed bottom nav */
-  min-height: calc(100vh - 120px);
+  padding-top: 50px; /* Match your mobileTopHeader height */
+  padding-bottom: 50px; /* Match your mobileNav height */
+  min-height: calc(100vh - 100px); /* Total of both header and nav heights */
+  /* Add this to make sure content takes full width */
+  width: 100%;
+  /* Add this to see your content boundary for debugging */
+  background-color: #f5f5f5; /* Light gray background to see the content area */
 }
 
-.mobileNav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-between;
-  background-color: white;
-  border-top: 1px solid #e0e0e0;
-  height: 60px;
-  z-index: 100;
-  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.navItem {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 16.666%;
-  cursor: pointer;
-  padding: 8px 0;
-
-  &.active {
-    color: #f95e1b;
-  }
-
-  .navIcon {
-    font-size: 18px;
-    margin-bottom: 4px;
-  }
-
-  .navText {
-    font-size: 8px;
-    font-weight: 600;
-    text-align: center;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-}
-
-/* Обновим стили мобильного хедера */
+/* Make sure both header and nav are exactly 50px */
+/* Make sure the header has proper width constraints */
 .mobileTopHeader {
   position: fixed;
   top: 0;
@@ -163,16 +126,53 @@ button {
   right: 0;
   z-index: 100;
   background-color: white;
-  height: 50px;  /* Уменьшаем высоту */
-  padding: 0 10px;  /* Уменьшаем паддинги */
+  height: 50px;
+  padding: 0 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 100%; /* Убедимся, что ширина равна 100% */
+  width: 100%;
+  box-sizing: border-box; /* This ensures padding is included in width */
+  display: flex;
+  align-items: center;
 }
 
-.pageContent {
-  padding-top: 50px; /* Уменьшаем отступ сверху */
-  padding-bottom: 50px;  /* Уменьшаем отступ снизу */
-  min-height: calc(100vh - 100px); /* Учитываем новую высоту хедера */
+/* Adjust content inside header to be responsive */
+.mobileTopHeader .content {
+  height: 50px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: none;
+  padding: 0;
+  overflow: hidden; /* Prevent content from breaking out */
+}
+
+/* Make sure any text or logo in the header is responsive */
+.mobileTopHeader .logo img,
+.mobileTopHeader .logo {
+  max-width: 100%;
+  height: auto;
+}
+
+/* For any navigation items in the header */
+.mobileTopHeader .navigation {
+  display: flex;
+  gap: 10px; /* Reduce gap on mobile */
+}
+
+.mobileTopHeader .nav_link {
+  font-size: 12px; /* Smaller font on mobile */
+}
+
+/* Make sure social links don't take too much space */
+.mobileTopHeader .social_links {
+  width: auto;
+  padding: 0 2px;
+}
+
+.mobileTopHeader .social_links img {
+  width: 20px;
+  height: 20px;
 }
 
 .mobileNav {
@@ -184,11 +184,12 @@ button {
   justify-content: space-between;
   background-color: white;
   border-top: 1px solid #e0e0e0;
-  height: 50px;  /* Уменьшаем высоту */
+  height: 50px; /* Make sure this is exactly 50px */
   z-index: 100;
   box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
-  padding: 0 5px; /* Уменьшаем паддинги */
+  padding: 0 5px;
 }
+
 
 .navItem {
   display: flex;

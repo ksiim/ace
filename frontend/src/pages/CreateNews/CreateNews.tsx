@@ -16,7 +16,6 @@ const CreateNews: React.FC = () => {
   
   // Функция для проверки, является ли пользователь администратором
   useEffect(() => {
-    console.log(newsId);
     const checkAdmin = async () => {
       try {
         const userResponse = await apiRequest('users/me', 'GET', undefined, true);
@@ -34,10 +33,8 @@ const CreateNews: React.FC = () => {
     if (newsId) {
       const loadNews = async () => {
         try {
-          console.log('Загружаем новость с ID:', newsId); // Добавляем логирование
           const newsResponse = await apiRequest(`news/${newsId}`, 'GET', undefined, true);
           if (newsResponse) {
-            console.log('Данные новости:', newsResponse); // Логируем полученные данные
             setTitle(newsResponse.title);
             setText(newsResponse.text);
             
@@ -135,6 +132,7 @@ const CreateNews: React.FC = () => {
           title,
           text,
           created_at: new Date().toISOString(),
+          photo_paths: photoPaths,
         };
       } else {
         // Формат для создания новости
@@ -146,8 +144,6 @@ const CreateNews: React.FC = () => {
           creator_id: userResponse.id,
         };
       }
-      
-      console.log(payload);
       
       let response;
       if (newsId) {
