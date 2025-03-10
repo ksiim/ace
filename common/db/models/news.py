@@ -23,7 +23,7 @@ class NewsCreate(NewsBase):
 
 
 class NewsUpdate(NewsBase):
-    pass
+    photo_paths: List[str]
 
 
 class NewsPublic(NewsBase):
