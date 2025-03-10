@@ -68,8 +68,9 @@ services:
     ports:
       - "3000:3000"
     environment:
-      NODE_ENV: development
-      VITE_API_URL: ${VITE_API_URL}
+      - NODE_ENV=development
+      - VITE_API_URL=${VITE_API_URL}
+      - FRONTEND_HOST=${FRONTEND_HOST}
     command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
     depends_on:
       - backend
@@ -87,6 +88,7 @@ services:
       - .env
     environment:
       - VITE_API_URL=${VITE_API_URL}
+      - FRONTEND_HOST=${FRONTEND_HOST}
     ports:
       - "80:80"
 
