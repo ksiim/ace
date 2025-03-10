@@ -1,6 +1,16 @@
+import datetime
+from sqlalchemy import select
+from sqlalchemy.orm import aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.app.messaging.producer import send_tournament_notification_task
+from common.db.models.participant import TournamentParticipant
 from common.db.models.tournament import Tournament, TournamentCreate, TournamentUpdate
+import logging
+
+from common.db.models.user import User
+
+logger = logging.getLogger(__name__)
 
 
 async def create_tournament(session: AsyncSession, tournament_in: TournamentCreate) -> Tournament:
@@ -17,6 +27,14 @@ async def create_tournament(session: AsyncSession, tournament_in: TournamentCrea
     session.add(tournament)
     await session.commit()
     await session.refresh(tournament)
+    
+    notification_date = tournament.date - datetime.timedelta(days=4)
+    
+    await send_tournament_notification_task(
+        tournament_id=tournament.id,
+        notification_date=notification_date.isoformat()
+    )
+    
     return tournament
 
 
@@ -29,3 +47,39 @@ async def update_tournament(session: AsyncSession, tournament_id: int, tournamen
     await session.commit()
     await session.refresh(tournament)
     return tournament
+
+
+async def close_registration_and_get_participants(tournament_id: int, session: AsyncSession) -> list[dict]:
+    """Закрываем регистрацию и возвращаем список участников."""
+    tournament = await session.get(Tournament, tournament_id)
+    if not tournament:
+        logger.error(f"Tournament {tournament_id} not found")
+        return []
+    
+    tournament.can_register = False
+    session.add(tournament)
+    
+    UserAlias = aliased(User, name="user")
+    PartnerAlias = aliased(User, name="partner")
+    
+    statement = (
+        select(
+            UserAlias.telegram_id.label("user_telegram_id"),
+            PartnerAlias.telegram_id.label("partner_telegram_id"),
+        )
+        .select_from(TournamentParticipant)
+        .join(UserAlias, UserAlias.id == TournamentParticipant.user_id)
+        .outerjoin(PartnerAlias, PartnerAlias.id == TournamentParticipant.partner_id)
+        .where(TournamentParticipant.tournament_id == tournament_id)
+        .distinct()
+    )
+    participants = (await session.execute(statement)).all()
+    participants_list = list()
+    
+    for participant in participants:
+        participants_list.append({"user_id": participant[0],})
+        if participant[1]:
+            participants_list.append({"user_id": participant[1],})
+    
+    await session.commit()
+    return participants_list

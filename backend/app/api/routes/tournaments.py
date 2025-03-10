@@ -18,6 +18,17 @@ from common.db.models import Category, Message, Region, Sex, Tournament, Tournam
 router = APIRouter()
 
 
+@router.post(
+    '/test'
+)
+async def test(
+    session: SessionDep,
+    tournament_id: int,
+):
+    await tournament_crud.close_registration_and_get_participants(tournament_id=tournament_id, session=session)
+    return {"message": "ok"}
+
+
 @router.get(
     "/",
     dependencies=[Depends(get_current_user)],

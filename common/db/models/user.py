@@ -12,6 +12,7 @@ class UserBase(SQLModel):
     patronymic: str = Field(max_length=255, nullable=True)
     score: int | None = Field(default=0, nullable=True)
     admin: bool = Field(default=False)
+    telegram_id: Optional[int] = Field(default=None, nullable=True)
     organizer: bool | None = Field(default=False, nullable=True)
     end_of_subscription: Optional[datetime.datetime] = Field(default=None, nullable=True)
     updated_at: Optional[datetime.datetime] = Field(default_factory=datetime.datetime.now, nullable=True)
@@ -34,11 +35,9 @@ class UserUpdate(UserBase):
     email: Optional[EmailStr] = Field(default=None, max_length=255)
     updated_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
-class UserUpdateMe(SQLModel):
-    name: Optional[str] = Field(default=None, max_length=255)
-    surname: Optional[str] = Field(default=None, max_length=255)
-    patronymic: Optional[str] = Field(default=None, max_length=255)
+class UserUpdateMe(UserBase):
     email: Optional[EmailStr] = Field(default=None, max_length=255)
+    updated_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
 class UpdatePassword(SQLModel):
     current_password: str = Field(min_length=8, max_length=40)

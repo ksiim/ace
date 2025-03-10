@@ -1,4 +1,5 @@
 import logging
+from pydantic import computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -13,8 +14,17 @@ class Settings(BaseSettings):
     )
     
     bot_token: str
-    rabbitmq_url: str = "amqp://guest:guest@rabbitmq:5672/"
     env: str
+    
+    RABBITMQ_HOST: str
+    RABBITMQ_PORT: int
+    RABBITMQ_USER: str
+    RABBITMQ_PASSWORD: str
+    
+    @computed_field
+    @property
+    def RABBITMQ_URL(self) -> str:
+        return f"amqp://{self.RABBITMQ_USER}:{self.RABBITMQ_PASSWORD}@{self.RABBITMQ_HOST}:{self.RABBITMQ_PORT}/"
 
     
 settings = Settings()
