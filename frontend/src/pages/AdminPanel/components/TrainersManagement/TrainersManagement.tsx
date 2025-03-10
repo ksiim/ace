@@ -74,7 +74,7 @@ const TrainerManagement: React.FC<TrainerManagementProps> = ({ onError }) => {
         .then((data) => {
           if (data && data.file_path) {
             // Изменяем путь
-            const correctPath = `${import.meta.env.FRONTEND_HOST}/${(data.file_path).slice(4)}`;
+            const correctPath = `${(data.file_path).slice(4)}`;
             setFormData(prev => ({
               ...prev,
               photo_path: correctPath // Сохраняем исправленный путь

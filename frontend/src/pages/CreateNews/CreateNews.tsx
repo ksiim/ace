@@ -79,7 +79,7 @@ const CreateNews: React.FC = () => {
         .then((data) => {
           if (data && data.file_path) {
             // Изменяем путь
-            return `${import.meta.env.FRONTEND_HOST}/${(data.file_path).slice(4)}`;
+            return `${(data.file_path).slice(4)}`;
           } else {
             throw new Error("Ошибка загрузки фото");
           }

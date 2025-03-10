@@ -70,7 +70,7 @@ services:
     environment:
       - NODE_ENV=development
       - VITE_API_URL=${VITE_API_URL}
-      - FRONTEND_HOST=${FRONTEND_HOST}
+      - VITE_FRONTEND_HOST=${FRONTEND_HOST}
     command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
     depends_on:
       - backend
@@ -82,13 +82,14 @@ services:
       target: production
       args:
         - VITE_API_URL=${VITE_API_URL}
+        - VITE_FRONTEND_HOST=${FRONTEND_HOST}
     volumes:
       - uploads:/usr/share/nginx/html/uploads
     env_file:
       - .env
     environment:
       - VITE_API_URL=${VITE_API_URL}
-      - FRONTEND_HOST=${FRONTEND_HOST}
+      - VITE_FRONTEND_HOST=${FRONTEND_HOST}
     ports:
       - "80:80"
 
