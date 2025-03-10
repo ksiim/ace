@@ -83,16 +83,16 @@ async def reset_password(session: SessionDep, body: NewPassword) -> Message:
 
 @router.post(
     "/check-reset-password-token/{token}",
-    response_model=Message
 )
 async def check_reset_password_token(
     token: str
-) -> Message:
+) -> Any:
     """
     Check token
     """
     user_id = await verify_password_reset_token(token=token)
-    if not user_id:
-        raise HTTPException(status_code=400, detail="Invalid token")
-    return Message(message="Token is valid")
+    flag = False
+    if user_id: 
+        flag = True
+    return {"valid": flag}
 
