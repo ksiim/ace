@@ -130,7 +130,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
         .then((data) => {
           if (data && data.file_path) {
             // Изменяем путь
-            const correctPath = `${import.meta.env.VITE_API_URL}/${(data.file_path).slice(4)}`;
+            const correctPath = `${import.meta.env.FRONTEND_HOST}/${(data.file_path).slice(4)}`;
             setNewTournament(prev => ({
               ...prev,
               photo_path: correctPath // Сохраняем исправленный путь
