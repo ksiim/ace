@@ -7,10 +7,11 @@ from sqlmodel import col, delete, func, select
 from backend.app.api.deps import (
     CurrentUser,
     SessionDep,
-    get_current_active_superuser,
+    get_current_admin,
     get_current_user,
 )
-from common.db.models import Message, Sex, SexCreate, SexPublic, SexUpdate, SexesPublic
+from common.db.models.base import Message
+from common.db.models.sex import Sex, SexCreate, SexPublic, SexUpdate, SexesPublic
 
 
 router = APIRouter()
@@ -31,11 +32,12 @@ async def read_sexes(
     """
     count_statement = select(func.count()).select_from(Sex)
     count = (await session.execute(count_statement)).scalar_one_or_none()
-    
+
     statement = select(Sex).offset(skip).limit(limit)
     sexes = (await session.execute(statement)).scalars().all()
-    
+
     return SexesPublic(data=sexes, count=count)
+
 
 @router.get(
     '/{sex_id}',
@@ -51,15 +53,16 @@ async def read_sex(
     """
     statement = select(Sex).where(Sex.id == sex_id)
     sex = (await session.execute(statement)).scalar_one_or_none()
-    
+
     if not sex:
         raise HTTPException(status_code=404, detail="Sex not found")
-    
+
     return sex
+
 
 @router.post(
     "/",
-    dependencies=[Depends(get_current_active_superuser)],
+    dependencies=[Depends(get_current_admin)],
     response_model=SexPublic,
 )
 async def create_sex(
@@ -75,9 +78,10 @@ async def create_sex(
     await session.refresh(sex)
     return sex
 
+
 @router.put(
     '/{sex_id}',
-    dependencies=[Depends(get_current_active_superuser)],
+    dependencies=[Depends(get_current_admin)],
     response_model=SexPublic,
 )
 async def update_sex(
@@ -98,9 +102,10 @@ async def update_sex(
     await session.refresh(sex)
     return sex
 
+
 @router.delete(
     '/{sex_id}',
-    dependencies=[Depends(get_current_active_superuser)],
+    dependencies=[Depends(get_current_admin)],
     response_model=Message
 )
 async def delete_sex(

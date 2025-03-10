@@ -8,7 +8,7 @@ from backend.app.crud import participant as participant_crud
 from backend.app.api.deps import (
     CurrentUser,
     SessionDep,
-    get_current_active_superuser,
+    get_current_admin,
     get_current_user,
 )
 from common.db.models import (
@@ -115,6 +115,7 @@ async def update_tournament_participant(
         tournament_participant_in=participant_in
     )
     return participant
+
 
 @router.delete(
     '/{participant_id}',

@@ -9,29 +9,24 @@ from backend.app.crud import tournament as tournament_crud
 from backend.app.api.deps import (
     CurrentUser,
     SessionDep,
-    get_current_active_superuser,
+    get_current_admin,
+    get_current_organizer_or_admin,
     get_current_user,
 )
-from common.db.models import Category, Message, Region, Sex, Tournament, TournamentCreate, TournamentParticipant, TournamentParticipantsPublic, TournamentPublic, TournamentUpdate, TournamentsPublic
+from common.db.models.category import Category
+from common.db.models.participant import TournamentParticipant, TournamentParticipantsPublic
+from common.db.models.region import Region
+from common.db.models.sex import Sex
+from common.db.models.tournament import Tournament, TournamentCreate, TournamentPublic, TournamentUpdate, TournamentsPublic
+from common.db.models.base import Message
 
 
 router = APIRouter()
 
 
-@router.post(
-    '/test'
-)
-async def test(
-    session: SessionDep,
-    tournament_id: int,
-):
-    await tournament_crud.close_registration_and_get_participants(tournament_id=tournament_id, session=session)
-    return {"message": "ok"}
-
-
 @router.get(
     "/",
-    dependencies=[Depends(get_current_user)],
+    dependencies=[Depends(get_current_organizer_or_admin)],
     response_model=TournamentsPublic,
 )
 async def read_user_tournaments(
@@ -50,12 +45,14 @@ async def read_user_tournaments(
         statement = select(Tournament).offset(skip).limit(limit)
         tournaments = (await session.execute(statement)).scalars().all()
     else:
-        count_statement = select(func.count()).where(Tournament.owner_id == current_user.id)
+        count_statement = select(func.count()).where(
+            Tournament.owner_id == current_user.id)
         count = (await session.execute(count_statement)).scalar_one_or_none()
-        
-        statement = select(Tournament).where(Tournament.owner_id == current_user.id).offset(skip).limit(limit)
+
+        statement = select(Tournament).where(
+            Tournament.owner_id == current_user.id).offset(skip).limit(limit)
         tournaments = (await session.execute(statement)).scalars().all()
-        
+
     return TournamentsPublic(data=tournaments, count=count)
 
 
@@ -81,8 +78,28 @@ async def read_all_tournaments(
 
 
 @router.post(
+    '/{tournanemnt_id}/send-money-request',
+    dependencies=[Depends(get_current_organizer_or_admin)],
+    response_model=Message
+)
+async def send_money_request(
+    session: SessionDep,
+    tournament_id: int,
+    current_user: CurrentUser
+):
+    tournament = await session.get(Tournament, tournament_id)
+    if not tournament:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+    if not tournament.owner_id == current_user.id and not current_user.admin:
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+
+    await tournament_crud.send_money_request(tournament_id=tournament_id, session=session, current_user=current_user)
+    return Message(message="Money request sent successfully")
+
+
+@router.post(
     "/",
-    dependencies=[Depends(get_current_active_superuser)],
+    dependencies=[Depends(get_current_admin)],
 )
 async def create_tournament(
     session: SessionDep,
@@ -92,9 +109,10 @@ async def create_tournament(
     Create a new tournament
     """
     await validate_tournament_inputs(session, tournament_in)
-    
+
     tournament = await tournament_crud.create_tournament(session, tournament_in)
     return tournament
+
 
 async def validate_tournament_inputs(session, tournament_in):
     if not await session.get(Sex, tournament_in.sex_id):
@@ -103,6 +121,7 @@ async def validate_tournament_inputs(session, tournament_in):
         raise HTTPException(status_code=400, detail="Invalid region_id")
     elif not await session.get(Category, tournament_in.category_id):
         raise HTTPException(status_code=400, detail="Invalid category_id")
+
 
 @router.get(
     '/{tournament_id}',
@@ -122,6 +141,7 @@ async def read_tournament(
     if tournament is None:
         raise HTTPException(status_code=404, detail="Tournament not found")
     return tournament
+
 
 @router.get(
     '/{tournament_id}/participants',
@@ -147,6 +167,7 @@ async def get_participants_by_tournament_id(
 
     return TournamentParticipantsPublic(data=participants, count=count)
 
+
 @router.put(
     '/{tournament_id}',
     dependencies=[Depends(get_current_user)],
@@ -163,15 +184,16 @@ async def update_tournament(
     """
     await validate_tournament_inputs(session, tournament_in)
     if not current_user.admin and current_user.id != tournament_in.owner_id:
-        raise HTTPException(status_code=403, detail="User not authorized to update this tournament")
-    
+        raise HTTPException(
+            status_code=403, detail="User not authorized to update this tournament")
+
     tournament = await tournament_crud.update_tournament(session, tournament_id, tournament_in)
     return tournament
 
 
 @router.delete(
     '/{tournament_id}',
-    dependencies=[Depends(get_current_active_superuser)],
+    dependencies=[Depends(get_current_admin)],
     response_model=Message
 )
 async def delete_tournament(

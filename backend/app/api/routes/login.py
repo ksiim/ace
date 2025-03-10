@@ -3,6 +3,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy import select
 
 from backend.app.api.deps import CurrentUser, SessionDep
 from backend.app.core import security
@@ -65,19 +66,28 @@ async def reset_password(session: SessionDep, body: NewPassword) -> Message:
     """
     Reset password
     """
-    user_id = int(await verify_password_reset_token(token=body.token))
-    if not user_id:
+    user_email = await verify_password_reset_token(token=body.token)
+    
+    if not user_email:
         raise HTTPException(status_code=400, detail="Invalid token")
-    user = await session.get(User, user_id)
+    
+    statement = select(User).where(User.email == user_email)
+    user = (
+        await session.execute(statement)
+    ).scalar_one_or_none()
+    
     if not user:
         raise HTTPException(
             status_code=404,
             detail="The user with this email does not exist in the system.",
         )
+        
     hashed_password = await security.get_password_hash(password=body.new_password)
     user.hashed_password = hashed_password
+    
     session.add(user)
     await session.commit()
+    
     return Message(message="Password updated successfully")
 
 
@@ -90,9 +100,9 @@ async def check_reset_password_token(
     """
     Check token
     """
-    user_id = await verify_password_reset_token(token=token)
+    user_email = await verify_password_reset_token(token=token)
     flag = False
-    if user_id: 
+    if user_email: 
         flag = True
     return {"valid": flag}
 
