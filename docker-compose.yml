@@ -62,6 +62,7 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+      - uploads:/usr/share/nginx/html/uploads
     env_file:
       - .env
     ports:
