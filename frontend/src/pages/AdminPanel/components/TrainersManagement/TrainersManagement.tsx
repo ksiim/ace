@@ -74,7 +74,7 @@ const TrainerManagement: React.FC<TrainerManagementProps> = ({ onError }) => {
         .then((data) => {
           if (data && data.file_path) {
             // Изменяем путь
-            const correctPath = `http://localhost${(data.file_path).slice(4)}`;
+            const correctPath = `${import.meta.env.VITE_API_URL}/${(data.file_path).slice(4)}`;
             setFormData(prev => ({
               ...prev,
               photo_path: correctPath // Сохраняем исправленный путь

@@ -27,7 +27,7 @@ class Tournament(TournamentBase, table=True):
     __tablename__ = "tournaments"
     id: Optional[int] = Field(primary_key=True, default=None)
     region_id: int = Field(foreign_key="regions.id")
-    sex_id: Optional[int] = Field(default=None, foreign_key="sex.id")
+    sex_id: Optional[int] = Field(default=None, foreign_key="sex.id", nullable=True)
     category_id: int = Field(foreign_key="categories.id")
     owner_id: int = Field(foreign_key="users.id")
 
