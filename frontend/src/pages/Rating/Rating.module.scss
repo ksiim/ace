@@ -1,3 +1,5 @@
+/* Rating.module.scss */
+
 * {
   margin: 0;
   padding: 0;
@@ -16,7 +18,11 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Mulish', sans-serif;
+
+  @media (max-width: 768px) {
+    padding: 10px;
+  }
 }
 
 .title {
@@ -24,6 +30,11 @@
   margin-bottom: 24px;
   font-size: 24px;
   font-weight: 600;
+
+  @media (max-width: 768px) {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
 }
 
 .filtersContainer {
@@ -37,6 +48,8 @@
 
   @media (max-width: 768px) {
     flex-direction: column;
+    gap: 12px;
+    padding: 12px;
   }
 }
 
@@ -44,6 +57,10 @@
   position: relative;
   flex: 1;
   min-width: 250px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 }
 
 .searchInput {
@@ -52,6 +69,11 @@
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 16px;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding: 10px;
+  }
 
   &:focus {
     outline: none;
@@ -90,9 +112,17 @@
   gap: 8px;
   min-width: 200px;
 
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+
   label {
     font-weight: 500;
     white-space: nowrap;
+
+    @media (max-width: 768px) {
+      font-size: 14px;
+    }
   }
 
   .select {
@@ -103,6 +133,11 @@
     background-color: white;
     font-size: 16px;
     cursor: pointer;
+
+    @media (max-width: 768px) {
+      font-size: 14px;
+      padding: 8px;
+    }
 
     &:focus {
       outline: none;
@@ -115,6 +150,10 @@
   overflow-x: auto;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 768px) {
+    margin: 0 -10px; /* Убираем отступы для мобильных устройств */
+  }
 }
 
 .classificationTable {
@@ -125,6 +164,11 @@
     padding: 12px 16px;
     text-align: left;
     border-bottom: 1px solid #eee;
+
+    @media (max-width: 768px) {
+      padding: 8px 12px;
+      font-size: 14px;
+    }
   }
 
   th {
@@ -132,6 +176,10 @@
     color: white;
     font-weight: 600;
     white-space: nowrap;
+
+    @media (max-width: 768px) {
+      font-size: 14px;
+    }
 
     &:first-child {
       border-top-left-radius: 8px;

@@ -1,3 +1,5 @@
+@charset "UTF-8";
+/* Rating.module.scss */
 * {
   margin: 0;
   padding: 0;
@@ -16,7 +18,12 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  font-family: "Roboto", sans-serif;
+  font-family: "Mulish", sans-serif;
+}
+@media (max-width: 768px) {
+  .classificationContainer {
+    padding: 10px;
+  }
 }
 
 .title {
@@ -24,6 +31,12 @@
   margin-bottom: 24px;
   font-size: 24px;
   font-weight: 600;
+}
+@media (max-width: 768px) {
+  .title {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
 }
 
 .filtersContainer {
@@ -38,6 +51,8 @@
 @media (max-width: 768px) {
   .filtersContainer {
     flex-direction: column;
+    gap: 12px;
+    padding: 12px;
   }
 }
 
@@ -46,6 +61,11 @@
   flex: 1;
   min-width: 250px;
 }
+@media (max-width: 768px) {
+  .searchBox {
+    width: 100%;
+  }
+}
 
 .searchInput {
   width: 100%;
@@ -53,6 +73,12 @@
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 16px;
+}
+@media (max-width: 768px) {
+  .searchInput {
+    font-size: 14px;
+    padding: 10px;
+  }
 }
 .searchInput:focus {
   outline: none;
@@ -89,9 +115,19 @@
   gap: 8px;
   min-width: 200px;
 }
+@media (max-width: 768px) {
+  .filterSelect {
+    width: 100%;
+  }
+}
 .filterSelect label {
   font-weight: 500;
   white-space: nowrap;
+}
+@media (max-width: 768px) {
+  .filterSelect label {
+    font-size: 14px;
+  }
 }
 .filterSelect .select {
   flex: 1;
@@ -101,6 +137,12 @@
   background-color: white;
   font-size: 16px;
   cursor: pointer;
+}
+@media (max-width: 768px) {
+  .filterSelect .select {
+    font-size: 14px;
+    padding: 8px;
+  }
 }
 .filterSelect .select:focus {
   outline: none;
@@ -112,6 +154,11 @@
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
+@media (max-width: 768px) {
+  .tableContainer {
+    margin: 0 -10px; /* Убираем отступы для мобильных устройств */
+  }
+}
 
 .classificationTable {
   width: 100%;
@@ -122,11 +169,22 @@
   text-align: left;
   border-bottom: 1px solid #eee;
 }
+@media (max-width: 768px) {
+  .classificationTable th, .classificationTable td {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+}
 .classificationTable th {
   background-color: #f95e1b;
   color: white;
   font-weight: 600;
   white-space: nowrap;
+}
+@media (max-width: 768px) {
+  .classificationTable th {
+    font-size: 14px;
+  }
 }
 .classificationTable th:first-child {
   border-top-left-radius: 8px;

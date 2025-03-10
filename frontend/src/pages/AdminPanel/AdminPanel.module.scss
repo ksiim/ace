@@ -38,6 +38,11 @@ $info-color: #2196f3;
   background-color: $white;
   border-radius: 12px;
   @include card-shadow;
+
+  @media (max-width: 768px) {
+    margin: 1rem;
+    padding: 1rem;
+  }
 }
 
 .title {
@@ -45,6 +50,10 @@ $info-color: #2196f3;
   font-size: 1.8rem;
   padding-bottom: 0.5rem;
   border-bottom: 2px solid $primary-color;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
 }
 
 .error {
@@ -68,6 +77,11 @@ $info-color: #2196f3;
   display: flex;
   margin-bottom: 1.5rem;
   border-bottom: 1px solid $medium-gray;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    border-bottom: none;
+  }
 }
 
 .tabButton {
@@ -97,12 +111,24 @@ $info-color: #2196f3;
       background-color: $primary-color;
     }
   }
+
+  @media (max-width: 768px) {
+    border-bottom: 1px solid $medium-gray;
+    text-align: left;
+
+    &.active:after {
+      display: none;
+    }
+  }
 }
 
 .tabContent {
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  width: 100%;
+  max-width: 100%; // Ограничиваем ширину контейнера
+  overflow: hidden; // Скрываем всё, что выходит за пределы контейнера
 }
 
 .header {
@@ -110,6 +136,12 @@ $info-color: #2196f3;
   justify-content: space-between;
   align-items: center;
   height: 100px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    height: auto;
+    gap: 1rem;
+  }
 }
 
 .logoutButton {
@@ -126,6 +158,11 @@ $info-color: #2196f3;
   &:hover {
     background-color: #c9302c;
   }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    text-align: center;
+  }
 }
 
 // Формы
@@ -139,10 +176,18 @@ $info-color: #2196f3;
     font-size: 1.4rem;
     color: $dark-gray;
     margin-bottom: 1rem;
+
+    @media (max-width: 768px) {
+      font-size: 1.2rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
   }
 }
 
-form{
+form {
   display: flex;
   flex-direction: column;
   align-items: start;
@@ -170,6 +215,10 @@ form{
       outline: none;
       border-color: $primary-color;
     }
+
+    @media (max-width: 768px) {
+      padding: 0.5rem;
+    }
   }
 
   textarea {
@@ -177,36 +226,48 @@ form{
   }
 }
 
-
 .formActions {
   display: flex;
   gap: 1rem;
   margin-top: 1rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    width: 100%;
+  }
 }
 
 .submitButton {
   @include button-style($primary-color, $white);
   padding: 0.75rem 1.5rem;
   border-radius: 15px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    text-align: center;
+  }
 }
 
 .cancelButton {
   @include button-style($medium-gray, $dark-gray);
+
+  @media (max-width: 768px) {
+    width: 100%;
+    text-align: center;
+  }
 }
 
 // Таблицы
 .tableContainer {
   margin-top: 1rem;
-
-  h2 {
-    font-size: 1.4rem;
-    color: $dark-gray;
-    margin-bottom: 1rem;
-  }
+  overflow-x: auto; // Добавляем горизонтальный скролл для таблицы
+  width: 100%;
+  max-width: 100%; // Ограничиваем ширину контейнера
 }
 
 .dataTable {
   width: 100%;
+  min-width: 800px; // Минимальная ширина таблицы (можно настроить под ваши нужды)
   border-collapse: collapse;
 
   th, td {
@@ -224,10 +285,13 @@ form{
   tr:hover {
     background-color: rgba($light-gray, 0.5);
   }
+
+  img {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+  }
 }
-
-
-
 
 // Статусы
 .status {
@@ -261,6 +325,10 @@ form{
 .actionButtons {
   display: flex;
   gap: 0.5rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
 }
 
 .editButton {
@@ -406,7 +474,6 @@ select:disabled:hover {
   box-shadow: none;
 }
 
-
 .roleSelect {
   border: 2px solid $primary-color;
   padding: 5px;
@@ -418,6 +485,3 @@ select:disabled:hover {
     outline: none;
   }
 }
-
-
-

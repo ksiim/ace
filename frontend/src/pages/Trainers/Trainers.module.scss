@@ -1,3 +1,5 @@
+/* Trainers.module.scss */
+
 * {
   margin: 0;
   padding: 0;
@@ -10,24 +12,42 @@
   flex-direction: column;
 }
 
-
 .trainersContainer {
   flex: 1;
   padding: 20px;
+
   max-width: 1200px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Центрируем содержимое */
+
+  @media (max-width: 768px) {
+    padding-top: 80px;
+  }
 }
 
 .title {
   font-size: 2rem;
   text-align: center;
   margin-bottom: 20px;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+  }
 }
 
 .trainersList {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 20px;
+  width: 100%; /* Занимаем всю ширину контейнера */
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr; /* Одна колонка на мобильных устройствах */
+    gap: 15px;
+  }
 }
 
 .trainerCard {
@@ -42,34 +62,85 @@
     transform: translateY(-10px);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   }
+
+  @media (max-width: 768px) {
+    margin-bottom: 15px;
+  }
 }
 
 .trainerPhoto {
   width: 100%;
   height: 200px;
   object-fit: cover;
+
+  @media (max-width: 768px) {
+    height: 150px;
+  }
 }
 
 .trainerInfo {
   padding: 15px;
+
+  @media (max-width: 768px) {
+    padding: 10px;
+  }
 }
 
 .trainerName {
   font-size: 1.5rem;
   font-weight: bold;
   margin-bottom: 10px;
+
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+    margin-bottom: 8px;
+  }
 }
 
 .trainerDescription {
   font-size: 1rem;
   margin-bottom: 15px;
+
+  @media (max-width: 768px) {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
 }
 
 .trainerContact {
   font-size: 0.9rem;
   color: #555;
+
   span {
     display: block;
     margin-bottom: 5px;
   }
+
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+  }
+}
+
+.loading,
+.error {
+  text-align: center;
+  font-size: 1.2rem;
+  padding: 20px;
+  color: #333;
+  width: 100%; /* Занимаем всю ширину */
+  background-color: #f8f8f8; /* Легкий фон для выделения */
+  border-radius: 8px; /* Скругленные углы */
+  margin: 20px 0; /* Отступы сверху и снизу */
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    padding: 15px;
+    margin: 10px 0;
+  }
+}
+
+.error {
+  color: #d32f2f; /* Красный цвет для ошибок */
+  border: 1px solid #d32f2f; /* Красная рамка */
+  background-color: #ffebee; /* Светло-красный фон */
 }

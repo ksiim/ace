@@ -147,7 +147,7 @@ const TrainerManagement: React.FC<TrainerManagementProps> = ({ onError }) => {
   
   return (
     <div className={styles.tabContent}>
-      <div className={styles.tableContainer}>
+      <div className={styles.formContainer}>
         <h2>Список тренеров</h2>
         
         {/* Unified form for adding or editing a trainer */}
@@ -240,51 +240,55 @@ const TrainerManagement: React.FC<TrainerManagementProps> = ({ onError }) => {
           )}
         </div>
         
-        {trainers.length > 0 ? (
-          <table className={styles.dataTable}>
-            <thead>
-            <tr>
-              <th>ID</th>
-              <th>Имя</th>
-              <th>Фото</th>
-              <th>Описание</th>
-              <th>Телефон</th>
-              <th>Адрес</th>
-              <th>Действия</th>
-            </tr>
-            </thead>
-            <tbody>
-            {trainers.map((trainer) => (
-              <tr key={trainer.id}>
-                <td>{trainer.id}</td>
-                <td>{trainer.name}</td>
-                <td><img src={trainer.photo_path} alt={trainer.name} width={50} height={50}/></td>
-                <td>{trainer.description}</td>
-                <td>{trainer.phone}</td>
-                <td>{trainer.address}</td>
-                <td>
-                  <div className={styles.actionButtons}>
-                    <button
-                      className={styles.editButton}
-                      onClick={() => handleEditTrainer(trainer)}
-                    >
-                      Редактировать
-                    </button>
-                    <button
-                      className={styles.deleteButton}
-                      onClick={() => handleDeleteTrainer(trainer.id)}
-                    >
-                      Удалить
-                    </button>
-                  </div>
-                </td>
+        <div className={styles.tableContainer}>
+          {trainers.length > 0 ? (
+            <table className={styles.dataTable}>
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>Имя</th>
+                <th>Фото</th>
+                <th>Описание</th>
+                <th>Телефон</th>
+                <th>Адрес</th>
+                <th>Действия</th>
               </tr>
-            ))}
-            </tbody>
-          </table>
-        ) : (
-          <p className={styles.noData}>Тренеры не найдены</p>
-        )}
+              </thead>
+              <tbody>
+              {trainers.map((trainer) => (
+                <tr key={trainer.id}>
+                  <td>{trainer.id}</td>
+                  <td>{trainer.name}</td>
+                  <td>
+                    <img src={trainer.photo_path} alt={trainer.name} />
+                  </td>
+                  <td>{trainer.description}</td>
+                  <td>{trainer.phone}</td>
+                  <td>{trainer.address}</td>
+                  <td>
+                    <div className={styles.actionButtons}>
+                      <button
+                        className={styles.editButton}
+                        onClick={() => handleEditTrainer(trainer)}
+                      >
+                        Редактировать
+                      </button>
+                      <button
+                        className={styles.deleteButton}
+                        onClick={() => handleDeleteTrainer(trainer.id)}
+                      >
+                        Удалить
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className={styles.noData}>Тренеры не найдены</p>
+          )}
+        </div>
       </div>
     </div>
   );

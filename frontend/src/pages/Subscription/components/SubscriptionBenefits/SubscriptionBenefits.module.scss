@@ -1,9 +1,14 @@
-/* SubscriptionBenefits.module.css */
+/* SubscriptionBenefits.module.scss */
+
 .container {
   max-width: 1200px;
   margin: 45px auto 0;
   padding: 135px 0;
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Mulish', sans-serif;
+
+  @media (max-width: 768px) {
+    padding: 60px 20px;
+  }
 }
 
 .title {
@@ -11,18 +16,33 @@
   font-weight: 700;
   text-align: center;
   margin-bottom: 40px;
+
+  @media (max-width: 768px) {
+    font-size: 28px;
+    margin-bottom: 20px;
+  }
 }
 
 .subtitle {
   font-size: 20px;
   text-align: center;
   margin-bottom: 90px;
+
+  @media (max-width: 768px) {
+    font-size: 16px;
+    margin-bottom: 40px;
+  }
 }
 
 .benefitsGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 40px 10px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
 }
 
 .benefitItem {
@@ -50,25 +70,18 @@
   font-weight: 600;
   margin-bottom: 8px;
   color: #333;
+
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
 }
 
 .benefitDescription {
   font-size: 16px;
   line-height: 1.5;
   color: #666;
-}
 
-@media (max-width: 768px) {
-  .benefitsGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .title {
-    font-size: 28px;
-  }
-
-  .subtitle {
-    font-size: 16px;
-    margin-bottom: 32px;
+  @media (max-width: 768px) {
+    font-size: 14px;
   }
 }

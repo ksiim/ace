@@ -1,9 +1,10 @@
+@charset "UTF-8";
+/* PlanCard.module.scss */
 .card {
   background: #ffffff;
   border-radius: 12px;
   padding: 24px;
-  width: 100%;
-  max-width: 280px;
+  width: 280px; /* Фиксированная ширина карточки */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -11,6 +12,13 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease;
   font-family: "Mulish", sans-serif;
+  flex-shrink: 0; /* Запрещаем сжатие карточки */
+}
+@media (max-width: 768px) {
+  .card {
+    padding: 16px;
+    width: 250px; /* Уменьшаем ширину для мобильных устройств */
+  }
 }
 .card:hover {
   transform: translateY(-4px);
@@ -26,6 +34,12 @@
   justify-content: center;
   margin-bottom: 16px;
 }
+@media (max-width: 768px) {
+  .icon {
+    width: 80px;
+    height: 80px;
+  }
+}
 
 .star {
   color: black;
@@ -36,6 +50,12 @@
   font-weight: 600;
   margin-bottom: 24px;
 }
+@media (max-width: 768px) {
+  .period {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+}
 
 .features {
   list-style: none;
@@ -44,12 +64,22 @@
   margin-bottom: 24px;
   width: 100%;
 }
+@media (max-width: 768px) {
+  .features {
+    margin-bottom: 16px;
+  }
+}
 
 .feature {
   margin-bottom: 12px;
   color: #666;
   font-size: 14px;
   line-height: 1.5;
+}
+@media (max-width: 768px) {
+  .feature {
+    font-size: 12px;
+  }
 }
 .feature:last-child {
   margin-bottom: 0;
@@ -60,6 +90,12 @@
   font-weight: 600;
   margin-bottom: 24px;
   color: #333;
+}
+@media (max-width: 768px) {
+  .price {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
 }
 
 .button {
@@ -72,6 +108,12 @@
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease;
+}
+@media (max-width: 768px) {
+  .button {
+    padding: 10px 24px;
+    font-size: 14px;
+  }
 }
 .button:hover {
   background: rgb(255, 99.3734177215, 71.5);
@@ -95,6 +137,11 @@
   font-size: 14px;
   text-align: center;
   margin-top: 10px;
+}
+@media (max-width: 768px) {
+  .errorText {
+    font-size: 12px;
+  }
 }
 
 .secondaryButton {
