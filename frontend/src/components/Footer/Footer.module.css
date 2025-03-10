@@ -1,3 +1,4 @@
+@charset "UTF-8";
 * {
   padding: 0;
   margin: 0;
@@ -9,7 +10,7 @@
   padding: 24px 40px;
   background-color: #FFF5F3;
   border-top: 1px solid rgba(0, 0, 0, 0.1);
-  font-family: "Manrope", sans-serif;
+  font-family: "Mulish", sans-serif;
 }
 
 .content {
@@ -44,14 +45,43 @@
   height: 16px;
 }
 
+/* Мобильные стили */
 @media (max-width: 768px) {
   .wrapper {
-    padding: 20px;
+    padding: 16px;
   }
   .content {
-    flex-direction: column;
-    gap: 16px;
+    gap: 12px;
     text-align: center;
+  }
+  .logo {
+    font-size: 12px;
+  }
+  .scroll_top {
+    font-size: 12px;
+    gap: 6px;
+  }
+  .scroll_top .icon {
+    width: 14px;
+    height: 14px;
+  }
+}
+@media (max-width: 480px) {
+  .wrapper {
+    padding: 12px 12px 50px 12px;
+  }
+  .content {
+    gap: 10px;
+  }
+  .logo {
+    font-size: 11px;
+  }
+  .scroll_top {
+    font-size: 11px;
+  }
+  .scroll_top .icon {
+    width: 12px;
+    height: 12px;
   }
 }
 

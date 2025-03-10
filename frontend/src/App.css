@@ -7,6 +7,6 @@
 button, input, textarea, select, a {
     all: unset;
     box-sizing: border-box;
-    font-family: 'Manrope', sans-serif;
+    font-family: 'Mulish', sans-serif;
     font-weight: 600;
 }

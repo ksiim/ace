@@ -8,7 +8,9 @@ const Calendar:React.FC = () => {
   return (
     <div className={styles.wrapper}>
       <Header scrollToBenefits={() => {}}/>
-      <Schedule/>
+      <div className={styles.pageContent}>
+        <Schedule/>
+      </div>
       <Footer/>
     </div>
   );

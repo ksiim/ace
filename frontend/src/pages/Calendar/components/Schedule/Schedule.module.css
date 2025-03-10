@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /* Schedule.module.scss */
 * {
   margin: 0;
@@ -6,19 +7,20 @@
 }
 
 .tableContainer {
-  width: 100%;
+  width: 90%;
   max-width: 1200px;
+  max-height: 70vh;
   margin: 0 auto;
   padding: 20px 0;
-  overflow-x: auto;
+  overflow-x: auto; /* Горизонтальная прокрутка для мобильных устройств */
   text-align: center;
 }
 
 .Schedule {
-  width: auto;
+  width: 100%; /* Занимает всю доступную ширину */
   max-width: 960px;
   border-collapse: collapse;
-  font-family: "Manrope", Arial, sans-serif;
+  font-family: "Mulish", Arial, sans-serif;
   font-weight: 300;
   margin: 0 auto;
 }
@@ -80,10 +82,85 @@
   width: 25%;
 }
 
+/* Мобильные стили */
 @media (max-width: 768px) {
+  .tableContainer {
+    padding: 10px 0;
+    overflow-x: auto; /* Горизонтальная прокрутка для мобильных устройств */
+  }
+  .Schedule {
+    width: 100%;
+    max-width: 100%;
+    display: table; /* Оставляем табличную структуру */
+    overflow-x: auto; /* Горизонтальная прокрутка для мобильных устройств */
+  }
   .Schedule th, .Schedule td {
     padding: 12px 8px;
-    font-size: 14px;
+    font-size: 12px; /* Уменьшаем размер шрифта */
+  }
+  .Schedule th {
+    font-size: 12px;
+    padding: 12px 8px;
+  }
+  .Schedule td {
+    font-size: 12px;
+  }
+  .tournamentRow td {
+    padding: 12px 8px;
+  }
+  .nameCell {
+    font-size: 12px;
+  }
+  /* Уменьшаем ширину столбцов для мобильных устройств */
+  .dateColumn {
+    width: 15%;
+  }
+  .nameColumn {
+    width: 20%;
+  }
+  .locationColumn {
+    width: 15%;
+  }
+  .refereeColumn {
+    width: 20%;
+  }
+  .categoryColumn {
+    width: 15%;
+  }
+}
+/* Адаптация для очень маленьких экранов */
+@media (max-width: 480px) {
+  .Schedule th, .Schedule td {
+    padding: 8px 4px;
+    font-size: 10px; /* Ещё меньше размер шрифта */
+  }
+  .Schedule th {
+    font-size: 10px;
+  }
+  .Schedule td {
+    font-size: 10px;
+  }
+  .tournamentRow td {
+    padding: 8px 4px;
+  }
+  .nameCell {
+    font-size: 10px;
+  }
+  /* Ещё больше уменьшаем ширину столбцов */
+  .dateColumn {
+    width: 10%;
+  }
+  .nameColumn {
+    width: 15%;
+  }
+  .locationColumn {
+    width: 15%;
+  }
+  .refereeColumn {
+    width: 20%;
+  }
+  .categoryColumn {
+    width: 15%;
   }
 }
 

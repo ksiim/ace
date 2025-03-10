@@ -2,17 +2,35 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Mulish', sans-serif;
+}
+body, html {
+  height: 100%;
+  margin: 0;
 }
 
 .wrapper {
-  display: grid;
-  grid-template-rows: auto 1fr auto;
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
 }
 
-.tableContainer {
-  max-height: 70vh;
-  overflow-y: auto;
+.pageContent {
+  flex: 1;
+  padding-top: 50px;
+  padding-bottom: 70px; /* Increase padding to account for the bottom navigation */
+  width: 100%;
 }
+
+/* The footer styling below is for the actual footer component, not the bottom navigation */
+footer {
+  margin-top: auto; /* This pushes the footer to the bottom */
+}
+
+.pageContent {
+  padding-top: 50px;
+  padding-bottom: 50px;
+  width: 100%;
+}
+
 

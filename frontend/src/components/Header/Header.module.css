@@ -183,8 +183,8 @@ button {
   justify-content: space-between;
   background-color: white;
   border-top: 1px solid #e0e0e0;
-  height: 50px; /* Make sure this is exactly 50px */
-  z-index: 100;
+  height: 50px; /* Фиксированная высота */
+  z-index: 100; /* Убедитесь, что хеддер поверх контента */
   box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
   padding: 0 5px;
 }

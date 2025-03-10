@@ -1,3 +1,5 @@
+/* TournamentPage.module.scss */
+
 .pageWrapper {
   min-height: 100vh;
   display: flex;
@@ -6,7 +8,7 @@
 
 .mainContent {
   flex: 1;
-  padding: 20px;
+  padding: 20px 20px 70px 20px;
   margin-top: 60px; /* Используйте значение, соответствующее высоте вашего хедера */
 }
 
@@ -26,6 +28,7 @@
 
   @media (max-width: 768px) {
     flex-direction: column-reverse;
+    gap: 20px;
   }
 }
 
@@ -86,12 +89,20 @@
   font-size: 28px;
   margin-bottom: 15px;
   color: #2c3e50;
+
+  @media (max-width: 768px) {
+    font-size: 24px;
+  }
 }
 
 .tournamentDate {
   font-size: 16px;
   color: #7f8c8d;
   margin-bottom: 20px;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
 }
 
 .tournamentType,
@@ -103,6 +114,10 @@
   margin-bottom: 12px;
   font-size: 16px;
   line-height: 1.5;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
 }
 
 .registrationContainer {
@@ -122,6 +137,11 @@
   &:hover {
     background-color: #27ae60;
   }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    font-size: 14px;
+  }
 }
 
 .registrationClosed {
@@ -131,6 +151,11 @@
   border-radius: 4px;
   display: inline-block;
   font-weight: bold;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    text-align: center;
+  }
 }
 
 .modal {
@@ -139,11 +164,11 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Затемнение фона */
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999; /* Убедитесь, что модальное окно будет поверх всех элементов */
+  z-index: 999;
 }
 
 .modalContent {
@@ -153,12 +178,22 @@
   max-width: 400px;
   width: 100%;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 480px) {
+    padding: 15px;
+    max-width: 90%;
+  }
 }
 
 .modalButtons {
   display: flex;
   justify-content: space-between;
   margin-top: 20px;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 
 .confirmButton,
@@ -167,6 +202,10 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
+
+  @media (max-width: 480px) {
+    width: 100%;
+  }
 }
 
 .confirmButton {
@@ -194,6 +233,10 @@
   font-weight: bold;
   margin-bottom: 5px;
   color: #333;
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+  }
 }
 
 .modalInput input {
@@ -213,11 +256,14 @@
   &::placeholder {
     color: #aaa;
   }
+
+  @media (max-width: 480px) {
+    font-size: 14px;
+    padding: 8px;
+  }
 }
 
 .modalInput input:disabled {
   background-color: #e9ecef;
   cursor: not-allowed;
 }
-
-
