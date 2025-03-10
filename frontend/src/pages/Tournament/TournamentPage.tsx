@@ -268,7 +268,7 @@ const TournamentPage: React.FC = () => {
               <strong>Реквизиты:</strong> {tournament.organizer_requisites}
             </p>
             <p className={styles.tournamentPrice}>
-              <strong>Стоимость участия:</strong> {tournament.price > 0 ? `${tournament.price} ₽` : 'Бесплатно'}
+              <strong>Стоимость участия (за человека):</strong> {tournament.price > 0 ? `${tournament.price} ₽` : 'Бесплатно'}
             </p>
             <p className={styles.tournamentPrizeFund}>
               <strong>Призовой фонд:</strong> {tournament.prize_fund > 0 ? `${tournament.prize_fund} ₽` : 'Не предусмотрен'}

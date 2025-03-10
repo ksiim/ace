@@ -462,7 +462,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
           
           
           <div className={styles.formGroup}>
-            <label htmlFor="price">Цена</label>
+            <label htmlFor="price">Стоимость участия (за человека)</label>
             <input
               type="number"
               id="price"

@@ -1,12 +1,17 @@
-// NewsTab.module.scss
+/* NewsTab.module.scss */
+
 .newsTab {
-  width: 800px;
+  width: 100%; /* Занимаем всю ширину */
+  max-width: 800px; /* Ограничиваем максимальную ширину */
   margin: 0 auto;
   padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
 
+  @media (max-width: 768px) {
+    padding: 10px;
+  }
 
   .title {
     font-size: 2rem;
@@ -14,46 +19,73 @@
     margin-bottom: 2rem;
     color: #333;
     font-weight: 600;
+
+    @media (max-width: 768px) {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
   }
 
   .posts {
     display: flex;
     flex-direction: column;
     gap: 2rem;
+
+    @media (max-width: 768px) {
+      gap: 1rem;
+    }
   }
-}
 
-.createNewsButton {
-  text-align: center;
-  font-size: 14px;
-  background-color: #f95e1b;
-  color: white;
-  width: 144px;
-  height: 40px;
-  border-radius: 32px;
-  margin-bottom: 10px;
-}
-
-.adminButtons {
-  margin-top: 10px;
-  display: flex;
-  justify-content: space-between;
-
-  button{
+  .createNewsButton {
     text-align: center;
     font-size: 14px;
+    background-color: #f95e1b;
     color: white;
     width: 144px;
     height: 40px;
     border-radius: 32px;
     margin-bottom: 10px;
+
+    @media (max-width: 768px) {
+      width: 100%;
+      font-size: 12px;
+      height: 36px;
+    }
   }
 
-  .editButton{
-    background-color: #f95e1b;
-  }
+  .adminButtons {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
 
-  .deleteButton{
-    background-color: #d32f2f;
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    button {
+      text-align: center;
+      font-size: 14px;
+      color: white;
+      width: 144px;
+      height: 40px;
+      border-radius: 32px;
+      margin-bottom: 10px;
+
+      @media (max-width: 768px) {
+        width: 100%;
+        font-size: 12px;
+        height: 36px;
+      }
+    }
+
+    .editButton {
+      background-color: #f95e1b;
+    }
+
+    .deleteButton {
+      background-color: #d32f2f;
+    }
   }
 }

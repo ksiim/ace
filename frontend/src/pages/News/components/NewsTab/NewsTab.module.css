@@ -1,10 +1,18 @@
+@charset "UTF-8";
+/* NewsTab.module.scss */
 .newsTab {
-  width: 800px;
+  width: 100%; /* Занимаем всю ширину */
+  max-width: 800px; /* Ограничиваем максимальную ширину */
   margin: 0 auto;
   padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+@media (max-width: 768px) {
+  .newsTab {
+    padding: 10px;
+  }
 }
 .newsTab .title {
   font-size: 2rem;
@@ -13,13 +21,23 @@
   color: #333;
   font-weight: 600;
 }
+@media (max-width: 768px) {
+  .newsTab .title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+}
 .newsTab .posts {
   display: flex;
   flex-direction: column;
   gap: 2rem;
 }
-
-.createNewsButton {
+@media (max-width: 768px) {
+  .newsTab .posts {
+    gap: 1rem;
+  }
+}
+.newsTab .createNewsButton {
   text-align: center;
   font-size: 14px;
   background-color: #f95e1b;
@@ -29,13 +47,26 @@
   border-radius: 32px;
   margin-bottom: 10px;
 }
-
-.adminButtons {
+@media (max-width: 768px) {
+  .newsTab .createNewsButton {
+    width: 100%;
+    font-size: 12px;
+    height: 36px;
+  }
+}
+.newsTab .adminButtons {
   margin-top: 10px;
   display: flex;
   justify-content: space-between;
+  gap: 10px;
 }
-.adminButtons button {
+@media (max-width: 768px) {
+  .newsTab .adminButtons {
+    flex-direction: column;
+    gap: 5px;
+  }
+}
+.newsTab .adminButtons button {
   text-align: center;
   font-size: 14px;
   color: white;
@@ -44,10 +75,17 @@
   border-radius: 32px;
   margin-bottom: 10px;
 }
-.adminButtons .editButton {
+@media (max-width: 768px) {
+  .newsTab .adminButtons button {
+    width: 100%;
+    font-size: 12px;
+    height: 36px;
+  }
+}
+.newsTab .adminButtons .editButton {
   background-color: #f95e1b;
 }
-.adminButtons .deleteButton {
+.newsTab .adminButtons .deleteButton {
   background-color: #d32f2f;
 }
 

@@ -1,13 +1,24 @@
+/* CommentSection.module.scss */
 .commentSection {
   padding: 1.5rem;
   background-color: #f9f9f9;
   border-top: 1px solid #eee;
+}
+@media (max-width: 768px) {
+  .commentSection {
+    padding: 1rem;
+  }
 }
 .commentSection .heading {
   font-size: 1.125rem;
   font-weight: 600;
   margin: 0 0 1rem;
   color: #444;
+}
+@media (max-width: 768px) {
+  .commentSection .heading {
+    font-size: 1rem;
+  }
 }
 .commentSection .noComments {
   color: #888;
@@ -26,6 +37,11 @@
   margin-bottom: 0.75rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
+@media (max-width: 768px) {
+  .commentSection .commentList .commentItem {
+    padding: 0.8rem;
+  }
+}
 .commentSection .commentList .commentItem:last-child {
   margin-bottom: 0;
 }
@@ -33,6 +49,12 @@
   display: flex;
   justify-content: space-between;
   margin-bottom: 0.5rem;
+}
+@media (max-width: 768px) {
+  .commentSection .commentList .commentItem .commentHeader {
+    flex-direction: column;
+    gap: 4px;
+  }
 }
 .commentSection .commentList .commentItem .commentHeader .commentAuthor {
   font-weight: 600;
@@ -50,6 +72,11 @@
   margin: 0;
   word-break: break-word;
 }
+@media (max-width: 768px) {
+  .commentSection .commentList .commentItem .commentText {
+    font-size: 0.875rem;
+  }
+}
 .commentSection .commentForm {
   display: flex;
   flex-direction: column;
@@ -65,6 +92,12 @@
   font-size: 0.9375rem;
   line-height: 1.5;
   transition: border-color 0.2s ease;
+}
+@media (max-width: 768px) {
+  .commentSection .commentForm .commentInput {
+    font-size: 0.875rem;
+    padding: 0.5rem;
+  }
 }
 .commentSection .commentForm .commentInput:focus {
   outline: none;
@@ -85,6 +118,12 @@
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
+@media (max-width: 768px) {
+  .commentSection .commentForm .commentButton {
+    font-size: 0.75rem;
+    padding: 0.5rem 1rem;
+  }
+}
 .commentSection .commentForm .commentButton:hover {
   background-color: #f9a58c;
 }
@@ -97,6 +136,11 @@
   display: flex;
   gap: 10px;
   justify-content: flex-end;
+}
+@media (max-width: 768px) {
+  .commentActions {
+    gap: 5px;
+  }
 }
 
 .icon {
@@ -117,6 +161,11 @@
   border-radius: 8px;
   border: 1px solid #ddd;
 }
+@media (max-width: 768px) {
+  .editingComment {
+    padding: 8px;
+  }
+}
 
 .commentInput {
   width: 100%;
@@ -127,6 +176,12 @@
   font-size: 14px;
   resize: vertical;
   outline: none;
+}
+@media (max-width: 768px) {
+  .commentInput {
+    font-size: 12px;
+    min-height: 60px;
+  }
 }
 .commentInput:focus {
   border-color: #f95e1b;
@@ -140,6 +195,12 @@
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.2s ease-in-out;
+}
+@media (max-width: 768px) {
+  .commentButton {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
 }
 
 .commentButton:first-of-type {

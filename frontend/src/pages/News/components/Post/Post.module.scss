@@ -1,3 +1,5 @@
+/* Post.module.scss */
+
 .post {
   border-radius: 8px;
   background-color: #fff;
@@ -13,11 +15,19 @@
     padding: 1.5rem;
     border-bottom: 1px solid #eee;
 
+    @media (max-width: 768px) {
+      padding: 1rem;
+    }
+
     .title {
       margin: 0 0 0.5rem;
       font-size: 1.5rem;
       font-weight: 600;
       color: #222;
+
+      @media (max-width: 768px) {
+        font-size: 1.25rem;
+      }
     }
 
     .meta {
@@ -25,6 +35,11 @@
       justify-content: space-between;
       font-size: 0.875rem;
       color: #666;
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+        gap: 4px;
+      }
 
       .author {
         font-weight: 500;
@@ -41,6 +56,11 @@
     font-size: 1rem;
     line-height: 1.6;
     color: #333;
+
+    @media (max-width: 768px) {
+      padding: 1rem;
+      font-size: 0.9rem;
+    }
 
     p {
       margin: 0 0 1rem;
@@ -83,6 +103,10 @@
         &:hover {
           color: rgba(0, 0, 0, 0.8);
         }
+
+        @media (max-width: 768px) {
+          font-size: 1.5rem;
+        }
       }
 
       .sliderButton:first-child {
@@ -94,7 +118,8 @@
       }
 
       .imageContainer {
-        max-width: 100%;
+        max-height: 400px;
+        max-width: 690px;
         overflow: hidden;
         text-align: center;
       }
@@ -102,8 +127,14 @@
       .image {
         display: block;
         width: 100%;
+        min-height: 200px;
         max-height: 400px;
+        max-width: 690px;
         object-fit: cover;
+        @media (max-width: 768px) {
+          max-height: 200px;
+          max-width: 320px;
+        }
       }
     }
   }
