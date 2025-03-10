@@ -40,11 +40,12 @@ async def watch_and_restart():
         
 
 async def main():
-    """Основная точка входа."""
-    if os.getenv("ENV") == "development":
-        await watch_and_restart()
-    else:
-        await run_bot()
+    # """Основная точка входа."""
+    # if os.getenv("ENV") == "development":
+    #     await watch_and_restart()
+    # else:
+    #     await run_bot()
+    await run_bot()
 
 if __name__ == "__main__":
     asyncio.run(main())
