@@ -1,5 +1,5 @@
 # Stage 1: Base image
-FROM node:20 AS base
+FROM node:20-alpine AS base
 WORKDIR /app
 COPY ./frontend/package*.json ./
 RUN corepack enable && npm install --legacy-peer-deps
@@ -20,6 +20,6 @@ COPY ./frontend .
 RUN npm install --legacy-peer-deps && npm run build
 
 # Stage 4: Production (Nginx)
-FROM nginx:1 AS production
+FROM nginx:1-alpine AS production
 COPY --from=build /app/dist/ /usr/share/nginx/html
 COPY ./frontend/nginx.conf /etc/nginx/conf.d/default.conf
