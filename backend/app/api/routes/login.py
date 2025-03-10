@@ -8,8 +8,9 @@ from backend.app.api.deps import CurrentUser, SessionDep
 from backend.app.core import security
 from backend.app.core.config import settings
 from backend.app.utils import generate_password_reset_token, generate_reset_password_email, send_email, verify_password_reset_token, logger
-from common.db.models import Message, NewPassword, Token, User, UserPublic
 import backend.app.crud.user as user_crud
+from common.db.models.base import Message, NewPassword, Token
+from common.db.models.user import User
 
 
 router = APIRouter(tags=["login"])
@@ -80,13 +81,13 @@ async def reset_password(session: SessionDep, body: NewPassword) -> Message:
     return Message(message="Password updated successfully")
 
 
-@router.get(
-    "/check-token/{token}",
-    response_class=Message
+@router.post(
+    "/check-reset-password-token/{token}",
+    response_model=Message
 )
-async def check_token(
+async def check_reset_password_token(
     token: str
-) -> Any:
+) -> Message:
     """
     Check token
     """
