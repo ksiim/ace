@@ -8,7 +8,7 @@ from backend.app.crud import trainer as trainer_crud
 from backend.app.api.deps import (
     CurrentUser,
     SessionDep,
-    get_current_active_superuser,
+    get_current_admin,
     get_current_user,
 )
 from common.db.models import Message, Trainer, TrainerCreate, TrainerPublic, TrainerUpdate, TrainersPublic
@@ -19,7 +19,7 @@ router = APIRouter()
 
 @router.get(
     "/",
-    dependencies=[Depends(get_current_user)],
+    # dependencies=[Depends(get_current_user)],
     response_model=TrainersPublic,
 )
 async def read_trainers(
@@ -41,7 +41,7 @@ async def read_trainers(
 
 @router.get(
     "/{trainer_id}",
-    dependencies=[Depends(get_current_user)],
+    # dependencies=[Depends(get_current_user)],
     response_model=TrainerPublic,
 )
 async def read_trainer(

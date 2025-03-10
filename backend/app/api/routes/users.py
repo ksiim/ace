@@ -12,7 +12,8 @@ from backend.app.crud import user as user_crud
 from backend.app.api.deps import (
     CurrentUser,
     SessionDep,
-    get_current_active_superuser,
+    get_current_admin,
+    get_current_user,
 )
 from backend.app.core.config import settings
 from backend.app.core.security import get_password_hash, verify_password
@@ -24,7 +25,7 @@ router = APIRouter()
 
 @router.get(
     "/",
-    dependencies=[Depends(get_current_active_superuser)],
+    dependencies=[Depends(get_current_user)],
     response_model=UsersPublic,
 )
 async def read_users(
@@ -40,9 +41,9 @@ async def read_users(
 
     statement = select(User).offset(skip).limit(limit)
     users = (await session.execute(statement)).scalars().all()
-    
 
     return UsersPublic(data=users, count=count)
+
 
 @router.get(
     "/create_super_user",
@@ -62,12 +63,14 @@ async def create_super_user(
     await session.commit()
     return 'Super user created'
 
+
 @router.get("/me", response_model=UserPublic)
 def read_user_me(current_user: CurrentUser) -> Any:
     """
     Get current user.
     """
     return current_user
+
 
 @router.get('/{user_id}/fio', response_model=UserFio)
 async def read_user_fio(session: SessionDep, user_id: int) -> Any:
@@ -78,6 +81,7 @@ async def read_user_fio(session: SessionDep, user_id: int) -> Any:
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return UserFio(name=user.name, surname=user.surname, patronymic=user.patronymic)
+
 
 @router.delete("/me", response_model=Message)
 async def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
@@ -91,6 +95,7 @@ async def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
     await session.delete(current_user)
     await session.commit()
     return Message(message="User deleted successfully")
+
 
 @router.post("/signup", response_model=UserPublic)
 async def register_user(session: SessionDep, user_in: UserRegister) -> Any:
@@ -108,10 +113,9 @@ async def register_user(session: SessionDep, user_in: UserRegister) -> Any:
     return user
 
 
-
 @router.get(
     "/{user_id}",
-    dependencies=[Depends(get_current_active_superuser)],
+    dependencies=[Depends(get_current_user)],
     response_model=UserPublic,
 )
 async def read_user_by_id(
@@ -126,6 +130,7 @@ async def read_user_by_id(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
 
 @router.patch("/me", response_model=UserPublic)
 async def update_user_me(
@@ -148,9 +153,10 @@ async def update_user_me(
     await session.refresh(current_user)
     return current_user
 
+
 @router.delete(
     "/{user_id}",
-    dependencies=[Depends(get_current_active_superuser)],
+    dependencies=[Depends(get_current_admin)],
 )
 async def delete_user_by_id(
     session: SessionDep,
@@ -162,7 +168,7 @@ async def delete_user_by_id(
     user_found = await session.get(User, user_id)
     if user_found is None:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     statement = delete(User).where(User.id == user_id)
     await session.execute(statement)
     await session.commit()
@@ -171,7 +177,7 @@ async def delete_user_by_id(
 
 @router.put(
     "/{user_id}",
-    dependencies=[Depends(get_current_active_superuser)],
+    dependencies=[Depends(get_current_admin)],
 )
 async def update_user_by_id(
     session: SessionDep,
@@ -184,9 +190,10 @@ async def update_user_by_id(
     db_user = await session.get(User, user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     user = await user_crud.update_user(session=session, db_user=db_user, user_in=user_in)
     return user
+
 
 @router.patch("/me/password", response_model=Message)
 async def update_password_me(
@@ -207,6 +214,7 @@ async def update_password_me(
     await session.commit()
     return Message(message="Password updated successfully")
 
+
 @router.get("/send_phone_verification_code/")
 async def send_phone_verification_code(session: SessionDep, phone_number: str) -> Any:
     """
@@ -226,8 +234,10 @@ async def send_phone_verification_code(session: SessionDep, phone_number: str) -
     async with httpx.AsyncClient() as client:
         response = await client.post(url, data=json_body, headers=headers)
     if response.status_code != 200 or response.json()["ok"] != True:
-        raise HTTPException(status_code=400, detail={"detail": "Failed to send phone verification code", "response": response.json()})
+        raise HTTPException(status_code=400, detail={
+                            "detail": "Failed to send phone verification code", "response": response.json()})
     return {"message": "Phone verification code sent successfully", "response": response.json()}
+
 
 @router.get("/verify_code/")
 async def check_verification_status(session: SessionDep, request_id: str, code: str) -> Any:
@@ -247,5 +257,6 @@ async def check_verification_status(session: SessionDep, request_id: str, code: 
     async with httpx.AsyncClient() as client:
         response = await client.post(url, data=json_body, headers=headers)
     if response.status_code != 200 or response.json()["ok"] != True:
-        raise HTTPException(status_code=400, detail={"detail": "Failed to verify phone verification code", "response": response.json()})
+        raise HTTPException(status_code=400, detail={
+                            "detail": "Failed to verify phone verification code", "response": response.json()})
     return {"message": "Phone verification code verified successfully", "response": response.json()}

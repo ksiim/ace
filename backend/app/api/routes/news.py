@@ -10,7 +10,7 @@ from backend.app.crud import comment as comment_crud
 from backend.app.api.deps import (
     CurrentUser,
     SessionDep,
-    get_current_active_superuser,
+    get_current_admin,
     get_current_user,
 )
 from common.db.models import (
@@ -66,7 +66,7 @@ async def read_news(
 
 @router.post(
     "/",
-    dependencies=[Depends(get_current_active_superuser)],
+    dependencies=[Depends(get_current_admin)],
     response_model=NewsPublic,
 )
 async def create_news(
@@ -82,7 +82,7 @@ async def create_news(
 
 @router.put(
     "/{news_id}",
-    dependencies=[Depends(get_current_active_superuser)],
+    dependencies=[Depends(get_current_admin)],
     response_model=NewsPublic,
 )
 async def update_news(
@@ -102,7 +102,7 @@ async def update_news(
 
 @router.delete(
     "/{news_id}",
-    dependencies=[Depends(get_current_active_superuser)],
+    dependencies=[Depends(get_current_admin)],
     response_model=Message,
 )
 async def delete_news(
@@ -208,6 +208,7 @@ async def update_comment(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     comment = await comment_crud.update_comment(session=session, db_comment=comment, comment_update=comment_update)
     return comment
+
 
 @router.get(
     "/{news_id}/photos",
