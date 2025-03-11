@@ -117,6 +117,7 @@ services:
       dockerfile: bot/Dockerfile
     container_name: telegram_bot
     depends_on:
+      - backend
       - rabbitmq
       - redis
     env_file:

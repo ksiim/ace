@@ -57,6 +57,14 @@ class User(UserBase, table=True):
     hashed_password: Optional[str] = Field(default=None, nullable=True)
 
     tournaments: List["Tournament"] = Relationship(back_populates="owner")
+    
+    @property
+    def fio(self) -> str:
+        return f"{self.surname} {self.name} {self.patronymic}"
+    
+    @property
+    def subscriber(self) -> bool:
+        return self.end_of_subscription > datetime.datetime.now()
 
 class UsersPublic(SQLModel):
     data: List[UserPublic]

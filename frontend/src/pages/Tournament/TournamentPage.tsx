@@ -204,9 +204,16 @@ const TournamentPage: React.FC = () => {
         
         setIsModalOpen(false);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Ошибка при отправке запроса на регистрацию:', error);
-      alert('Произошла ошибка при регистрации. Пожалуйста, попробуйте ещё раз.');
+  
+      // Проверяем статус ошибки
+      if (error.response && error.response.status === 403) {
+        // Перенаправляем на страницу /subscription
+        window.location.href = '/subscription';
+      } else {
+        alert('Произошла ошибка при регистрации. Пожалуйста, попробуйте ещё раз.');
+      }
     } finally {
       setIsRegistering(false);
     }

@@ -25,7 +25,7 @@ router = APIRouter()
 
 @router.get(
     "/",
-    dependencies=[Depends(get_current_user)],
+    # dependencies=[Depends(get_current_user)],
     response_model=UsersPublic,
 )
 async def read_users(
@@ -115,7 +115,7 @@ async def register_user(session: SessionDep, user_in: UserRegister) -> Any:
 
 @router.get(
     "/{user_id}",
-    dependencies=[Depends(get_current_user)],
+    # dependencies=[Depends(get_current_user)],
     response_model=UserPublic,
 )
 async def read_user_by_id(

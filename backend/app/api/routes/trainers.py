@@ -60,6 +60,7 @@ async def read_trainer(
 @router.post(
     "/",
     response_model=TrainerPublic,
+    dependencies=[Depends(get_current_admin)]
 )
 async def create_trainer(
     session: SessionDep,
@@ -75,6 +76,7 @@ async def create_trainer(
 @router.put(
     "/{trainer_id}",
     response_model=TrainerPublic,
+    dependencies=[Depends(get_current_admin)]
 )
 async def update_trainer(
     session: SessionDep,
@@ -93,7 +95,8 @@ async def update_trainer(
 
 @router.delete(
     "/{trainer_id}",
-    response_model=Message
+    response_model=Message,
+    dependencies=[Depends(get_current_admin)]
 )
 async def delete_trainer(
     session: SessionDep,

@@ -13,6 +13,7 @@ from backend.app.api.deps import (
     CurrentUser,
     SessionDep,
     get_current_admin,
+    get_current_subscriber,
     get_current_user,
 )
 
@@ -21,7 +22,7 @@ router = APIRouter()
 
 @router.get(
     "/",
-    dependencies=[Depends(get_current_user)],
+    # dependencies=[Depends(get_current_user)],
     response_model=TournamentParticipantsPublic,
 )
 async def read_tournament_participants(
@@ -44,7 +45,7 @@ async def read_tournament_participants(
 
 @router.get(
     '/{participant_id}',
-    dependencies=[Depends(get_current_user)],
+    # dependencies=[Depends(get_current_user)],
     response_model=TournamentParticipantPublic,
 )
 async def read_tournament_participant(
@@ -67,7 +68,7 @@ async def read_tournament_participant(
 
 @router.post(
     "/",
-    dependencies=[Depends(get_current_user)],
+    dependencies=[Depends(get_current_subscriber)],
     response_model=TournamentParticipantPublic,
 )
 async def create_tournament_participant(
@@ -78,8 +79,7 @@ async def create_tournament_participant(
     """
     Create a new tournament participant.
     """
-    UserAlias = aliased(User)
-    PartnerAlias = aliased(User)
+    
     
     participants_ids_statement = (
         select(TournamentParticipant.user_id, TournamentParticipant.partner_id)
@@ -89,8 +89,6 @@ async def create_tournament_participant(
     
     participants_ids_raw = (await session.execute(participants_ids_statement)).all()
     participants_ids = [item for sublist in participants_ids_raw for item in sublist if item]
-    
-    print(participants_ids)
 
     if current_user.id in participants_ids:
         raise HTTPException(
@@ -109,7 +107,7 @@ async def create_tournament_participant(
 
 @router.put(
     '/{participant_id}',
-    dependencies=[Depends(get_current_user)],
+    dependencies=[Depends(get_current_subscriber)],
     response_model=TournamentParticipantPublic,
 )
 async def update_tournament_participant(

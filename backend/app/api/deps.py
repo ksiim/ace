@@ -69,3 +69,10 @@ async def get_current_admin(current_user: CurrentUser) -> User:
             status_code=403, detail="The user doesn't have enough privileges"
         )
     return current_user
+
+async def get_current_subscriber(current_user: CurrentUser) -> User:
+    if not current_user.subscriber and not current_user.admin and not current_user.organizer:
+        raise HTTPException(
+            status_code=403, detail="The user need to be subscribed"
+        )
+    return current_user

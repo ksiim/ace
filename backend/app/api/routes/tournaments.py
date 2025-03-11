@@ -61,7 +61,7 @@ async def read_user_tournaments(
 
 @router.get(
     "/all",
-    dependencies=[Depends(get_current_user)],
+    # dependencies=[Depends(get_current_user)],
     response_model=TournamentsPublic,
 )
 async def read_all_tournaments(
@@ -153,7 +153,7 @@ async def validate_tournament_inputs(session, tournament_in):
 
 @router.get(
     '/{tournament_id}',
-    dependencies=[Depends(get_current_user)],
+    # dependencies=[Depends(get_current_user)],
     response_model=TournamentPublic,
 )
 async def read_tournament(
@@ -173,7 +173,7 @@ async def read_tournament(
 
 @router.get(
     '/{tournament_id}/participants',
-    dependencies=[Depends(get_current_user)],
+    # dependencies=[Depends(get_current_user)],
     response_model=TournamentParticipantsPublic,
 )
 async def get_participants_by_tournament_id(
@@ -198,7 +198,7 @@ async def get_participants_by_tournament_id(
 
 @router.put(
     '/{tournament_id}',
-    dependencies=[Depends(get_current_user)],
+    dependencies=[Depends(get_current_organizer_or_admin)],
     response_model=TournamentPublic,
 )
 async def update_tournament(
@@ -221,7 +221,7 @@ async def update_tournament(
 
 @router.delete(
     '/{tournament_id}',
-    dependencies=[Depends(get_current_admin)],
+    dependencies=[Depends(get_current_organizer_or_admin)],
     response_model=Message
 )
 async def delete_tournament(

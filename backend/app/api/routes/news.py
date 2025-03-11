@@ -26,7 +26,7 @@ router = APIRouter()
 
 @router.get(
     "/",
-    dependencies=[Depends(get_current_user)],
+    # dependencies=[Depends(get_current_user)],
     response_model=NewsesPublic,
 )
 async def read_newses(
@@ -48,7 +48,7 @@ async def read_newses(
 
 @router.get(
     "/{news_id}",
-    dependencies=[Depends(get_current_user)],
+    # dependencies=[Depends(get_current_user)],
     response_model=NewsPublic,
 )
 async def read_news(
@@ -212,7 +212,7 @@ async def update_comment(
 
 @router.get(
     "/{news_id}/photos",
-    dependencies=[Depends(get_current_user)],
+    # dependencies=[Depends(get_current_user)],
     response_model=NewsPhotosPublic,
 )
 async def read_news_photos(
