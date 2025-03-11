@@ -120,7 +120,6 @@ services:
       BOT_TOKEN: ${BOT_TOKEN}
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: "5672"
-    restart: unless-stopped
     volumes:
       - uploads:/app/uploads
       - ./common:/app/common
