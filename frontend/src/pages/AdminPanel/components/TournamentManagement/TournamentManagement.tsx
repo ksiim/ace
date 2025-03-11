@@ -106,11 +106,23 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   
   const handleTournamentInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
+    
+    let parsedValue: string | number = value;
+    
+    if (type === 'number') {
+      // Удаляем начальный 0, если он есть
+      parsedValue = value.replace(/^0+/, '') || '0'; // Если строка пустая, оставляем '0'
+    }
+    
+    // Если поле - дата, преобразуем в ISO строку без учета локального времени
+    if (name === 'date') {
+      const date = new Date(value);
+      parsedValue = date.toISOString(); // Сохраняем в формате ISO
+    }
+    
     setNewTournament(prev => ({
       ...prev,
-      [name]: type === 'number' ? Number(value) :
-        type === 'checkbox' ? (e.target as HTMLInputElement).checked :
-          value
+      [name]: parsedValue, // Сохраняем как строку или число
     }));
   };
   
@@ -142,8 +154,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
         .catch(() => onError("Ошибка загрузки фото"));
     }
   };
-  
-  
   
   const handleCreateTournament = (e: React.FormEvent) => {
     e.preventDefault();
@@ -205,7 +215,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   
   const startEditTournament = (tournament: Tournament) => {
     setEditTournamentId(tournament.id);
-    setNewTournament({...tournament});
+    setNewTournament({ ...tournament });
   };
   
   const canEditTournament = (tournament: Tournament) => {
@@ -256,7 +266,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
         onError("Ошибка обновления турнира");
       });
   };
-  
   
   const handleToggleRegistration = async (tournamentId: number, canRegister: boolean) => {
     try {
@@ -363,23 +372,35 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             </select>
           </div>
           
-          
-          {/* Добавляем выбор пола */}
-          <div className={styles.formGroup}>
-            <label htmlFor="sex_id">Пол участников</label>
-            <select
-              id="sex_id"
-              name="sex_id"
-              value={newTournament.sex_id || ''}  // Ensure default empty value if no selection
+          {/* Галочка "Детский турнир" */}
+          <div className={styles.checkboxContainer}>
+            <input
+              type="checkbox"
+              id="is_child"
+              name="is_child"
+              checked={!!newTournament.is_child}
               onChange={handleTournamentInputChange}
-              required
-            >
-              <option value="">Выберите пол</option>
-              <option value="2">Мужчины</option>
-              <option value="3">Женщины</option>
-            </select>
+            />
+            <label htmlFor="is_child">Детский турнир</label>
           </div>
           
+          {/* Добавляем выбор пола, только если турнир не детский */}
+          {!newTournament.is_child && (
+            <div className={styles.formGroup}>
+              <label htmlFor="sex_id">Пол участников</label>
+              <select
+                id="sex_id"
+                name="sex_id"
+                value={newTournament.sex_id || ''}
+                onChange={handleTournamentInputChange}
+                required
+              >
+                <option value="">Выберите пол</option>
+                <option value="2">Мужчины</option>
+                <option value="3">Женщины</option>
+              </select>
+            </div>
+          )}
           
           {/* Добавляем выбор категории */}
           <div className={styles.formGroup}>
@@ -444,22 +465,15 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
           </div>
           
           <div className={styles.formGroup}>
-            <label htmlFor="photo" className={styles.fileLabel}>
-              Выбрать файл
-              <span
-                className={`${styles.fileName} ${newTournament.photo_path ? '' : styles.noFile}`}>
-      {newTournament.photo_path ? 'Файл выбран' : 'Нет файла'}
-    </span>
-              <input
-                type="file"
-                id="photo"
-                name="photo"
-                className={styles.fileInput}
-                onChange={handleFileChange}
-              />
-            </label>
+            <label htmlFor="photo" className={styles.fileLabel}>Фотография турнира</label>
+            <input
+              type="file"
+              id="photo"
+              name="photo"
+              className={styles.fileInput}
+              onChange={handleFileChange}
+            />
           </div>
-          
           
           <div className={styles.formGroup}>
             <label htmlFor="price">Стоимость участия (за человека)</label>
@@ -488,17 +502,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
           <div className={styles.checkboxContainer}>
             <input
               type="checkbox"
-              id="is_child"
-              name="is_child"
-              checked={!!newTournament.is_child}
-              onChange={handleTournamentInputChange}
-            />
-            <label htmlFor="is_child">Детский турнир</label>
-          </div>
-          
-          <div className={styles.checkboxContainer}>
-            <input
-              type="checkbox"
               id="can_register"
               name="can_register"
               checked={newTournament.can_register !== false}
@@ -508,8 +511,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
           </div>
           
           <div className={styles.formGroup}>
-            <label htmlFor="organizer_name_and_contacts">Контакты
-              организатора</label>
+            <label htmlFor="organizer_name_and_contacts">Контакты организатора</label>
             <input
               type="text"
               id="organizer_name_and_contacts"
@@ -520,8 +522,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
           </div>
           
           <div className={styles.formGroup}>
-            <label htmlFor="organizer_requisites">Реквизиты
-              организатора</label>
+            <label htmlFor="organizer_requisites">Реквизиты организатора</label>
             <input
               type="text"
               id="organizer_requisites"
@@ -530,7 +531,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
               onChange={handleTournamentInputChange}
             />
           </div>
-          
           
           <div className={styles.formActions}>
             <button type="submit" className={styles.submitButton}>

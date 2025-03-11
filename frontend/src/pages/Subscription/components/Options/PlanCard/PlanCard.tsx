@@ -154,7 +154,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({
   return (
     <div className={styles.card}>
       <div className={styles.icon}>
-        <Star size={50} className={styles.star} strokeWidth={1}/>
+        <Star size={50} className={styles.star} strokeWidth={1} color={'#f95e1b'} fill={'#f95e1b'}/>
       </div>
       <h3 className={styles.period}>{period}</h3>
       <ul className={styles.features}>

@@ -58,7 +58,7 @@ async def recover_password(email: str, session: SessionDep) -> Message:
         subject=email_data.subject,
         html_content=email_data.html_content,
     )
-    return Message(message="Password recovery email sent")
+    return Message(message="Ссылка на восстановление пароля была отправлена вам на почту! Не забудьте проверить папку спам :)")
 
 
 @router.post("/reset-password/")
@@ -67,27 +67,27 @@ async def reset_password(session: SessionDep, body: NewPassword) -> Message:
     Reset password
     """
     user_email = await verify_password_reset_token(token=body.token)
-    
+
     if not user_email:
         raise HTTPException(status_code=400, detail="Invalid token")
-    
+
     statement = select(User).where(User.email == user_email)
     user = (
         await session.execute(statement)
     ).scalar_one_or_none()
-    
+
     if not user:
         raise HTTPException(
             status_code=404,
             detail="The user with this email does not exist in the system.",
         )
-        
+
     hashed_password = await security.get_password_hash(password=body.new_password)
     user.hashed_password = hashed_password
-    
+
     session.add(user)
     await session.commit()
-    
+
     return Message(message="Password updated successfully")
 
 
@@ -102,7 +102,7 @@ async def check_reset_password_token(
     """
     user_email = await verify_password_reset_token(token=token)
     flag = False
-    if user_email: 
+    if user_email:
         flag = True
     return {"valid": flag}
 
