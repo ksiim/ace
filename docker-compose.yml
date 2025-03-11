@@ -121,7 +121,6 @@ services:
       RABBITMQ_PORT: "5672"
     restart: unless-stopped
     volumes:
-      - ./bot:/app/bot
       - uploads:/app/uploads
 
 volumes:
