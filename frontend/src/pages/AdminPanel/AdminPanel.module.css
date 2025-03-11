@@ -17,7 +17,7 @@
   color: #333333;
   font-size: 1.8rem;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid #ff8562;
+  border-bottom: 2px solid #f95e1b;
 }
 @media (max-width: 768px) {
   .title {
@@ -37,7 +37,7 @@
 .loading {
   text-align: center;
   padding: 2rem;
-  color: #ff8562;
+  color: #f95e1b;
   font-size: 1.2rem;
 }
 
@@ -63,10 +63,10 @@
   position: relative;
 }
 .tabButton:hover {
-  color: #ff8562;
+  color: #f95e1b;
 }
 .tabButton.active {
-  color: #ff8562;
+  color: #f95e1b;
   font-weight: 600;
 }
 .tabButton.active:after {
@@ -76,7 +76,7 @@
   left: 0;
   width: 100%;
   height: 2px;
-  background-color: #ff8562;
+  background-color: #f95e1b;
 }
 @media (max-width: 768px) {
   .tabButton {
@@ -115,7 +115,7 @@
   margin-top: 0;
   padding: 10px 20px;
   font-size: 16px;
-  background-color: #ff8562;
+  background-color: #f95e1b;
   color: white;
   border: none;
   border-radius: 16px;
@@ -179,7 +179,7 @@ form {
 }
 .formGroup input:focus, .formGroup select:focus, .formGroup textarea:focus {
   outline: none;
-  border-color: #ff8562;
+  border-color: #f95e1b;
 }
 @media (max-width: 768px) {
   .formGroup input, .formGroup select, .formGroup textarea {
@@ -203,7 +203,7 @@ form {
 }
 
 .submitButton {
-  background-color: #ff8562;
+  background-color: #f95e1b;
   color: #ffffff;
   border: none;
   border-radius: 4px;
@@ -215,7 +215,7 @@ form {
   border-radius: 15px;
 }
 .submitButton:hover {
-  background-color: rgb(255, 93.3694267516, 47);
+  background-color: rgb(219.2307692308, 70.1923076923, 5.7692307692);
 }
 @media (max-width: 768px) {
   .submitButton {
@@ -313,7 +313,7 @@ form {
 }
 
 .editButton {
-  background-color: #ff8562;
+  background-color: #f95e1b;
   color: #ffffff;
   border: none;
   border-radius: 4px;
@@ -325,7 +325,7 @@ form {
   font-size: 0.8rem;
 }
 .editButton:hover {
-  background-color: rgb(255, 93.3694267516, 47);
+  background-color: rgb(219.2307692308, 70.1923076923, 5.7692307692);
 }
 
 .deleteButton {
@@ -422,7 +422,7 @@ input[type=checkbox] {
   background: white;
 }
 input[type=checkbox]:checked {
-  accent-color: #ff8562;
+  accent-color: #f95e1b;
 }
 
 .checkbox {
@@ -438,7 +438,7 @@ input[type=checkbox]:checked {
   border-radius: 3px;
 }
 .checkbox:checked {
-  background-color: #ff8562;
+  background-color: #f95e1b;
   position: relative;
 }
 .checkbox:checked::after {
@@ -470,13 +470,13 @@ select:disabled:hover {
 }
 
 .roleSelect {
-  border: 2px solid #ff8562;
+  border: 2px solid #f95e1b;
   padding: 5px;
   border-radius: 15px;
   transition: border-color 0.2s ease-in-out;
 }
 .roleSelect:focus {
-  border-color: #ff8562;
+  border-color: #f95e1b;
   outline: none;
 }
 

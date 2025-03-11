@@ -27,7 +27,7 @@
 .icon {
   width: 100px;
   height: 100px;
-  background: #c6c6c6;
+  background: #f1f0f0;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -40,9 +40,6 @@
   }
 }
 
-.star {
-  color: black;
-}
 
 .period {
   font-size: 24px;
@@ -95,7 +92,7 @@
 }
 
 .button {
-  background: #ff7961;
+  background: #f95e1b;
   color: white;
   border: none;
   border-radius: 32px;
@@ -111,7 +108,7 @@
   }
 
   &:hover {
-    background: darken(#ff7961, 5%);
+    background: darken(#f95e1b, 5%);
   }
 }
 

@@ -7,6 +7,7 @@ const ResetPasswordPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState(''); // Новое состояние для подтверждения пароля
   const [isValidToken, setIsValidToken] = useState<boolean | null>(null);
   const [error, setError] = useState('');
   
@@ -15,7 +16,7 @@ const ResetPasswordPage: React.FC = () => {
   const token = queryParams.get('token') ? decodeURIComponent(queryParams.get('token')!) : null;
   
   useEffect(() => {
-    console.log('Токен:', token);  // Проверяем значение токена
+    console.log('Токен:', token); // Проверяем значение токена
     const checkToken = async () => {
       if (!token) {
         setIsValidToken(false);
@@ -24,10 +25,10 @@ const ResetPasswordPage: React.FC = () => {
       
       const response = await apiRequest(
         `login/check-reset-password-token/${token}`,
-        "POST", undefined, true
+        "POST", undefined, false
       );
       
-      console.log('Ответ от проверки токена:', response);  // Логируем ответ
+      console.log('Ответ от проверки токена:', response); // Логируем ответ
       if (!response || response.error || response === "false") {
         setIsValidToken(false);
       } else {
@@ -38,9 +39,15 @@ const ResetPasswordPage: React.FC = () => {
     checkToken();
   }, [token]);
   
-  
   const handleResetPassword = async () => {
     console.log("Функция handleResetPassword вызвана"); // Проверка вызова функции
+    
+    // Проверка на совпадение паролей
+    if (newPassword !== confirmPassword) {
+      setError('Пароли не совпадают');
+      console.log("Ошибка: пароли не совпадают");
+      return;
+    }
     
     if (!newPassword || newPassword.length < 8) {
       setError('Пароль должен содержать минимум 8 символов');
@@ -72,7 +79,6 @@ const ResetPasswordPage: React.FC = () => {
     }
   };
   
-  
   if (isValidToken === null) {
     return <div className={styles.loading}>Проверка токена...</div>;
   }
@@ -83,12 +89,19 @@ const ResetPasswordPage: React.FC = () => {
   
   return (
     <div className={styles.resetContainer}>
-      <h2>Сброс пароля</h2>
+      <h2 className={styles.title}>Сброс пароля</h2>
       <input
         type="password"
         placeholder="Введите новый пароль"
         value={newPassword}
         onChange={(e) => setNewPassword(e.target.value)}
+        className={styles.input}
+      />
+      <input
+        type="password"
+        placeholder="Повторите новый пароль"
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
         className={styles.input}
       />
       {error && <div className={styles.error}>{error}</div>}

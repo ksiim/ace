@@ -5,7 +5,7 @@ import { getToken, removeToken } from "../../utils/serviceToken";
 import { apiRequest } from "../../utils/apiRequest";
 import {
   Calendar,
-  HeartHandshake,
+  //HeartHandshake,
   Info,
   Newspaper,
   Trophy,
@@ -97,7 +97,7 @@ const Header: React.FC<HeaderProps> = ({ scrollToBenefits }) => {
     { label: "НОВОСТИ", path: "/news", onClick: () => navigate("/news"), icon: <Newspaper size={16} color={'#f95e1b'} strokeWidth={1.5} /> },
     { label: "ТАРИФЫ", path: "/subscription", onClick: () => navigate("/subscription"), icon: <Wallet size={16} color={'#f95e1b'} strokeWidth={1.5} /> },
     { label: "О НАС", path: "/", onClick: handleAboutClick, icon: <Info size={16} color={'#f95e1b'} strokeWidth={1.5} /> },
-    { label: "ТРЕНЕРЫ", path: "/trainers", onClick: () => navigate('/trainers'), icon: <HeartHandshake size={16} color={'#f95e1b'} strokeWidth={1.5} /> }
+    //{ label: "ТРЕНЕРЫ", path: "/trainers", onClick: () => navigate('/trainers'), icon: <HeartHandshake size={16} color={'#f95e1b'} strokeWidth={1.5} /> }
   ];
   
   // Стандартный десктопный хедер
