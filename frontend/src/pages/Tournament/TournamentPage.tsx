@@ -154,10 +154,10 @@ const TournamentPage: React.FC = () => {
           return; // Прекращаем дальнейшее выполнение
         }
         
+        // Данные для регистрации или обновления
         const registrationData = {
           tournament_id: tournament.id,
           user_id: userData.id,
-          confirmed: false,
           partner_id: partnerId ? parseInt(partnerId) : null,
           participant_name: partnerId
             ? `${userData.surname} ${userData.name} ${userData.patronymic}\ ${partnerData?.surname} ${partnerData?.name} ${partnerData?.patronymic}`
@@ -165,9 +165,17 @@ const TournamentPage: React.FC = () => {
         };
         
         if (existingParticipant) {
-          // Если участие уже существует, обновляем его
+          // Если участие уже существует, обновляем его, но сохраняем текущее значение confirmed
           const participantId = existingParticipant.id;
-          const updateResponse = await apiRequest(`participants/${participantId}`, 'PUT', registrationData, true);
+          const updateResponse = await apiRequest(
+            `participants/${participantId}`,
+            'PUT',
+            {
+              ...registrationData, // Новые данные
+              confirmed: existingParticipant.confirmed, // Сохраняем текущее значение confirmed
+            },
+            true
+          );
           
           if (!updateResponse.error) {
             alert('Ваше участие в турнире обновлено!');
@@ -177,7 +185,15 @@ const TournamentPage: React.FC = () => {
           }
         } else {
           // Если участия нет, создаем новое
-          const response = await apiRequest('participants/', 'POST', registrationData, true);
+          const response = await apiRequest(
+            'participants/',
+            'POST',
+            {
+              ...registrationData,
+              confirmed: false, // По умолчанию участие не подтверждено
+            },
+            true
+          );
           if (!response.error) {
             alert('Вы успешно зарегистрировались на турнир!');
             await loadParticipants(); // Перезагружаем список участников
@@ -190,6 +206,7 @@ const TournamentPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Ошибка при отправке запроса на регистрацию:', error);
+      alert('Произошла ошибка при регистрации. Пожалуйста, попробуйте ещё раз.');
     } finally {
       setIsRegistering(false);
     }
