@@ -8,7 +8,7 @@ from sqlalchemy import select
 from backend.app.api.deps import CurrentUser, SessionDep
 from backend.app.core import security
 from backend.app.core.config import settings
-from backend.app.utils import generate_password_reset_token, generate_reset_password_email, send_email, verify_password_reset_token, logger
+from backend.app.utils.utils import generate_password_reset_token, generate_reset_password_email, send_email, verify_password_reset_token, logger
 import backend.app.crud.user as user_crud
 from common.db.models.base import Message, NewPassword, Token
 from common.db.models.user import User

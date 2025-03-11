@@ -6,6 +6,8 @@ from pathlib import Path
 import smtplib
 from typing import Any
 
+from redis.asyncio import Redis
+
 import emails  # type: ignore
 import jwt
 from jinja2 import Template
@@ -128,3 +130,5 @@ async def verify_password_reset_token(token: str) -> str | None:
         return str(decoded_token["sub"])
     except InvalidTokenError:
         return None
+    
+redis = Redis.from_url(settings.REDIS_URL, decode_responses=True)

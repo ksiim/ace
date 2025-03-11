@@ -1,8 +1,12 @@
 from typing import Any, Optional
 
+from common.db.models.participant import TournamentParticipant, TournamentParticipantCreate, TournamentParticipantPublic, TournamentParticipantUpdate, TournamentParticipantsPublic
+from common.db.models.tournament import Tournament
+from common.db.models.user import User
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import or_, update
-from sqlmodel import col, delete, func, select
+from sqlalchemy import or_, update, select
+from sqlalchemy.orm import aliased
+from sqlmodel import col, delete, func
 
 from backend.app.crud import participant as participant_crud
 from backend.app.api.deps import (
@@ -10,11 +14,6 @@ from backend.app.api.deps import (
     SessionDep,
     get_current_admin,
     get_current_user,
-)
-from common.db.models import (
-    TournamentParticipant, TournamentParticipantCreate,
-    TournamentParticipantPublic, TournamentParticipantUpdate,
-    TournamentParticipantsPublic, User
 )
 
 router = APIRouter()
@@ -79,6 +78,24 @@ async def create_tournament_participant(
     """
     Create a new tournament participant.
     """
+    UserAlias = aliased(User)
+    PartnerAlias = aliased(User)
+    
+    participants_ids_statement = (
+        select(TournamentParticipant.user_id, TournamentParticipant.partner_id)
+        .select_from(TournamentParticipant)
+        .where(TournamentParticipant.tournament_id == participant_in.tournament_id)
+    )
+    
+    participants_ids_raw = (await session.execute(participants_ids_statement)).all()
+    participants_ids = [item for sublist in participants_ids_raw for item in sublist if item]
+    
+    print(participants_ids)
+
+    if current_user.id in participants_ids:
+        raise HTTPException(
+            status_code=400, detail="User is already a participant of this tournament")
+    
     user = await session.get(User, participant_in.user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")

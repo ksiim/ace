@@ -41,6 +41,7 @@ services:
     depends_on:
       - db
       - rabbitmq
+      - redis  # Добавляем зависимость от Redis
     env_file:
       - .env
     environment:
@@ -50,8 +51,11 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       GATEWAY_TOKEN: ${GATEWAY_TOKEN}
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_PORT: "5672"
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     ports:
       - "8000:8000"
 
@@ -102,8 +106,8 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: guest  # Можно настроить через .env
-      RABBITMQ_DEFAULT_PASS: guest  # По умолчанию, лучше изменить в продакшене
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}  # Можно настроить через .env
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}  # По умолчанию, лучше изменить в продакшене
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
 
@@ -113,18 +117,31 @@ services:
       dockerfile: bot/Dockerfile
     container_name: telegram_bot
     depends_on:
-      - rabbitmq 
+      - rabbitmq
+      - redis
     env_file:
       - .env
     environment:
       BOT_TOKEN: ${BOT_TOKEN}
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_PORT: "5672"
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     volumes:
       - uploads:/app/uploads
       - ./common:/app/common
+
+  redis:
+    image: redis:6
+    container_name: redis
+    restart: always
+    volumes:
+      - redis_data:/data
+    command: redis-server --port ${REDIS_PORT} --requirepass ${REDIS_PASSWORD}
 
 volumes:
   postgres_data:
   rabbitmq_data:
   uploads:
+  redis_data:

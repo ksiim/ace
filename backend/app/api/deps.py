@@ -1,4 +1,5 @@
 from collections.abc import Generator, Coroutine
+from contextlib import asynccontextmanager
 from typing import Annotated
 
 import jwt
@@ -21,6 +22,14 @@ reusable_oauth2 = OAuth2PasswordBearer(
 async def get_db():
     async with AsyncSession(async_engine) as session:
         yield session
+        
+@asynccontextmanager
+async def get_db_session():
+    session = AsyncSession(async_engine)
+    try:
+        yield session
+    finally:
+        await session.close()
 
 
 SessionDep = Annotated[AsyncSession, Depends(get_db)]

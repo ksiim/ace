@@ -1,11 +1,25 @@
+from contextlib import asynccontextmanager
+from backend.app.messaging.consumer import start_consumer, stop_consumer
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from backend.app.api.main import api_router
 from backend.app.core.config import settings
+import logging
 
 
-app = FastAPI()
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("Starting FastAPI application and RabbitMQ consumer...")
+    app.state.rabbitmq_connection = await start_consumer()
+    yield
+    logger.info("Shutting down FastAPI application...")
+    await stop_consumer(app.state.rabbitmq_connection)
+    
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

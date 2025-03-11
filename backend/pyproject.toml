@@ -23,4 +23,6 @@ dependencies = [
     "aio-pika>=9.5.5",
     "pydantic-settings>=2.8.1",
     "aiofiles>=24.1.0",
+    "setuptools>=76.0.0",
+    "redis>=5.2.1",
 ]

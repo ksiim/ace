@@ -14,5 +14,9 @@ services:
     volumes:
       - ./bot:/app/bot
       - ./common:/app/common
+    environment:
+      - ENV=development
+    restart:
+      unless-stopped
     command: >
       sh -c "python bot/main.py"

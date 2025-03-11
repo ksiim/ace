@@ -146,13 +146,9 @@ async def update_user_me(
             raise HTTPException(
                 status_code=409, detail="User with this email already exists"
             )
-    user_data = user_in.model_dump(exclude_unset=True)
-    current_user.sqlmodel_update(user_data)
-    session.add(current_user)
-    await session.commit()
-    await session.refresh(current_user)
+            
+    await user_crud.update_user(session=session, db_user=current_user, user_in=user_in)
     return current_user
-
 
 @router.delete(
     "/{user_id}",

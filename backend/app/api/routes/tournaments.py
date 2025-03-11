@@ -1,8 +1,9 @@
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import or_, update
-from sqlmodel import col, delete, func, select
+from sqlalchemy import or_, update, select
+from sqlalchemy.orm import joinedload
+from sqlmodel import col, delete, func
 
 from backend.app.crud import tournament as tournament_crud
 
@@ -13,12 +14,14 @@ from backend.app.api.deps import (
     get_current_organizer_or_admin,
     get_current_user,
 )
+from backend.app.messaging.producer import send_tournament_money_request_task
 from common.db.models.category import Category
 from common.db.models.participant import TournamentParticipant, TournamentParticipantsPublic
 from common.db.models.region import Region
 from common.db.models.sex import Sex
 from common.db.models.tournament import Tournament, TournamentCreate, TournamentPublic, TournamentUpdate, TournamentsPublic
 from common.db.models.base import Message
+from common.db.models.user import User
 
 
 router = APIRouter()
@@ -87,19 +90,44 @@ async def send_money_request(
     tournament_id: int,
     current_user: CurrentUser
 ):
-    tournament = await session.get(Tournament, tournament_id)
+    statement = (
+        select(Tournament)
+        .where(Tournament.id == tournament_id)
+        .options(
+            joinedload(Tournament.owner),
+            joinedload(Tournament.category),
+            joinedload(Tournament.region),
+            joinedload(Tournament.sex)
+        )
+    )
+    tournament = (await session.execute(statement)).scalar_one_or_none()
+    
     if not tournament:
         raise HTTPException(status_code=404, detail="Tournament not found")
     if not tournament.owner_id == current_user.id and not current_user.admin:
         raise HTTPException(status_code=400, detail="Not enough permissions")
+    
+    statement = (
+        select(TournamentParticipant)
+        .where(TournamentParticipant.tournament_id == tournament_id)
+        .options(
+            joinedload(TournamentParticipant.user)
+        )
+        .distinct()
+    )
 
-    await tournament_crud.send_money_request(tournament_id=tournament_id, session=session, current_user=current_user)
+    participants = (await session.execute(statement)).scalars().all()
+    
+    await session.refresh(tournament)
+    
+    await send_tournament_money_request_task(tournament, participants)
+    
     return Message(message="Money request sent successfully")
 
 
 @router.post(
     "/",
-    dependencies=[Depends(get_current_admin)],
+    dependencies=[Depends(get_current_organizer_or_admin)],
 )
 async def create_tournament(
     session: SessionDep,

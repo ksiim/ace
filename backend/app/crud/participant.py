@@ -1,3 +1,5 @@
+from typing import List
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from common.db.models.participant import (
@@ -5,6 +7,7 @@ from common.db.models.participant import (
     TournamentParticipantCreate,
     TournamentParticipantPublic
 )
+from common.db.models.user import User
 
 
 async def create_tournament_participant(session: AsyncSession, tournament_participant_in: TournamentParticipantCreate) -> TournamentParticipantPublic:
@@ -24,7 +27,6 @@ async def update_tournament_participant(
         exclude_unset=True
     )
     db_tournament_participant.sqlmodel_update(tournament_participant_data)
-    print(db_tournament_participant)
     session.add(db_tournament_participant)
     await session.commit()
     await session.refresh(db_tournament_participant)
