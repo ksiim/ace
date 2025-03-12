@@ -93,6 +93,7 @@ services:
     env_file:
       - .env
     environment:
+      - NODE_ENV=production
       - VITE_API_URL=${VITE_API_URL}
       - VITE_FRONTEND_HOST=${FRONTEND_HOST}
     ports:
