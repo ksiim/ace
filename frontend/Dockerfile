@@ -24,5 +24,5 @@ RUN npm install --legacy-peer-deps && npm run build
 # Stage 4: Production (Nginx)
 FROM nginx:1 AS production
 COPY --from=build /app/dist/ /usr/share/nginx/html
-COPY /etc/nginx/ssl /etc/nginx/ssl
+COPY /etc/nginx/ssl/ /etc/nginx/ssl
 COPY ./frontend/nginx.conf /etc/nginx/conf.d/default.conf
