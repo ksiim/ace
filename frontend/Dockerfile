@@ -22,6 +22,14 @@ RUN npm run build
 
 # Stage 4: Production (Nginx)
 FROM nginx:1 AS production
+ARG ENV=production
 COPY --from=build /app/dist/ /usr/share/nginx/html
-COPY ./ssl /etc/nginx/ssl
-COPY ./frontend/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Копируем SSL-сертификаты только для production
+RUN if [ "$ENV" = "production" ]; then COPY ./ssl /etc/nginx/ssl; fi
+
+# Копируем нужный конфиг в зависимости от значения ENV
+COPY ./frontend/nginx.${ENV}.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
