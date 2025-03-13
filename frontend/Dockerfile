@@ -26,7 +26,7 @@ ARG ENV=production
 COPY --from=build /app/dist/ /usr/share/nginx/html
 
 # Копируем SSL-сертификаты только для production
-RUN if [ "$ENV" = "production" ]; then COPY ./ssl /etc/nginx/ssl; fi
+RUN if [ "$ENV" = "production" ]; then mkdir -p /etc/nginx/ssl && cp -r /tmp/ssl/* /etc/nginx/ssl; fi
 
 # Копируем нужный конфиг в зависимости от значения ENV
 COPY ./frontend/nginx.${ENV}.conf /etc/nginx/conf.d/default.conf
