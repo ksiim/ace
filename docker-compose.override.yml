@@ -20,3 +20,15 @@ services:
       unless-stopped
     command: >
       sh -c "python bot/main.py"
+
+  frontend:
+    build:
+      target: dev  # Используем dev-стадию из Dockerfile
+    volumes:
+      - ./frontend:/app  # Монтируем исходный код для hot-reload
+      - /app/node_modules  # Игнорируем node_modules внутри контейнера
+    environment:
+      - NODE_ENV=development
+    ports:
+      - "3000:3000"
+    command: [ "npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000" ]

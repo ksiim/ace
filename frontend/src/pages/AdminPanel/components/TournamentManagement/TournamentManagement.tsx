@@ -107,23 +107,31 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   const handleTournamentInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     
-    let parsedValue: string | number = value;
+    let parsedValue: string | number | boolean = value;
     
     if (type === 'number') {
-      // Удаляем начальный 0, если он есть
-      parsedValue = value.replace(/^0+/, '') || '0'; // Если строка пустая, оставляем '0'
+      parsedValue = value.replace(/^0+/, '') || '0';
     }
     
-    // Если поле - дата, преобразуем в ISO строку без учета локального времени
     if (name === 'date') {
       const date = new Date(value);
-      parsedValue = date.toISOString(); // Сохраняем в формате ISO
+      parsedValue = date.toISOString();
     }
     
-    setNewTournament(prev => ({
-      ...prev,
-      [name]: parsedValue, // Сохраняем как строку или число
-    }));
+    // Обработка чекбокса "Детский турнир"
+    if (type === 'checkbox' && name === 'is_child' && 'checked' in e.target) {
+      const checked = (e.target as HTMLInputElement).checked;
+      setNewTournament(prev => ({
+        ...prev,
+        [name]: checked,
+        sex_id: checked ? 5 : prev.sex_id || 0, // Устанавливаем пол на "Микст" (5), если галочка установлена, иначе оставляем текущее значение
+      }));
+    } else {
+      setNewTournament(prev => ({
+        ...prev,
+        [name]: parsedValue,
+      }));
+    }
   };
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -157,6 +165,20 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   
   const handleCreateTournament = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Проверка данных перед отправкой
+    if (newTournament.is_child && newTournament.sex_id !== 5) {
+      onError("Для детского турнира пол должен быть 'Микст'.");
+      return;
+    }
+    
+    // Проверка других обязательных полей
+    if (!newTournament.name || !newTournament.type || !newTournament.date) {
+      onError("Заполните все обязательные поля.");
+      return;
+    }
+    
+    // Отправка данных на сервер
     apiRequest("tournaments/", "POST", newTournament, true)
       .then((data) => {
         if (data) {
@@ -165,6 +187,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             return Array.isArray(prevTournaments) ? [...prevTournaments, data] : [data];
           });
           
+          // Сброс формы
           setNewTournament({
             name: "",
             type: "",
@@ -385,22 +408,22 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
           </div>
           
           {/* Добавляем выбор пола, только если турнир не детский */}
-          {!newTournament.is_child && (
-            <div className={styles.formGroup}>
-              <label htmlFor="sex_id">Пол участников</label>
-              <select
-                id="sex_id"
-                name="sex_id"
-                value={newTournament.sex_id || ''}
-                onChange={handleTournamentInputChange}
-                required
-              >
-                <option value="">Выберите пол</option>
-                <option value="2">Мужчины</option>
-                <option value="3">Женщины</option>
-              </select>
-            </div>
-          )}
+          <div className={styles.formGroup}>
+            <label htmlFor="sex_id">Пол участников</label>
+            <select
+              id="sex_id"
+              name="sex_id"
+              value={newTournament.sex_id || ''}
+              onChange={handleTournamentInputChange}
+              required
+              disabled={!!newTournament.is_child} // Блокируем выбор, если турнир детский
+            >
+              <option value="">Выберите пол</option>
+              <option value="2">Мужчины</option>
+              <option value="3">Женщины</option>
+              <option value="5">Микст</option>
+            </select>
+          </div>
           
           {/* Добавляем выбор категории */}
           <div className={styles.formGroup}>
@@ -465,7 +488,8 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
           </div>
           
           <div className={styles.formGroup}>
-            <label htmlFor="photo" className={styles.fileLabel}>Фотография турнира</label>
+            <label htmlFor="photo" className={styles.fileLabel}>Фотография
+              турнира</label>
             <input
               type="file"
               id="photo"
@@ -511,7 +535,8 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
           </div>
           
           <div className={styles.formGroup}>
-            <label htmlFor="organizer_name_and_contacts">Контакты организатора</label>
+            <label htmlFor="organizer_name_and_contacts">Контакты
+              организатора</label>
             <input
               type="text"
               id="organizer_name_and_contacts"
@@ -556,15 +581,15 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
           <table className={styles.dataTable}>
             <thead>
             <tr>
-              <th>ID</th>
-              <th>Название</th>
-              <th>Дата</th>
-              <th>Адрес</th>
-              <th>Цена</th>
-              <th>Пол</th>
-              <th>Категория</th>
-              <th>Регион</th>
-              <th>Действия</th>
+              <th className={styles.tableHeader}>ID</th>
+              <th className={styles.tableHeader}>Название</th>
+              <th className={styles.tableHeader}>Дата</th>
+              <th className={styles.tableHeader}>Адрес</th>
+              <th className={styles.tableHeader}>Цена</th>
+              <th className={styles.tableHeader}>Пол</th>
+              <th className={styles.tableHeader}>Категория</th>
+              <th className={styles.tableHeader}>Регион</th>
+              <th className={styles.tableHeader}>Действия</th>
             </tr>
             </thead>
             <tbody>
@@ -575,7 +600,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
                 <td>{new Date(tournament.date).toLocaleDateString()}</td>
                 <td>{tournament.address}</td>
                 <td>{tournament.price}</td>
-                <td>{tournament.sex_id === 2 ? 'Мужчины' : tournament.sex_id === 3 ? 'Женщины' : 'Не указан'}</td>
+                <td>{tournament.sex_id === 2 ? 'Мужчины' : tournament.sex_id === 3 ? 'Женщины' : tournament.sex_id === 5 ? 'Микст' : 'Не указан'}</td>
                 <td>{categories.find(c => c.id === tournament.category_id)?.name || 'Не указана'}</td>
                 <td>{regions.find(r => r.id === tournament.region_id)?.name || 'Не указан'}</td>
                 <td>
@@ -587,16 +612,12 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
                       >
                         Редактировать
                       </button>
-                      
-                      {/* Кнопка для закрытия/открытия регистрации */}
                       <button
                         className={styles.editButton}
                         onClick={() => handleToggleRegistration(tournament.id, tournament.can_register)}
                       >
                         {tournament.can_register ? "Закрыть регистрацию" : "Открыть регистрацию"}
                       </button>
-                      
-                      {/* Кнопка для запроса взносов */}
                       <button
                         className={styles.editButton}
                         onClick={() => handleSendMoneyRequest(tournament.id)}

@@ -13,9 +13,16 @@ const Subscription:React.FC = () => {
     <div className={styles.wrapper}>
       <Header scrollToBenefits={() => {}}/>
       <div className={styles.pageContent}>
-        <Options/>
+        <div id="subscription-options">
+          <Options/>
+        </div>
         <SubscriptionBenefits/>
-        <SubscriptionBanner/>
+        <SubscriptionBanner scrollToOptions={() => {
+          const element = document.getElementById('subscription-options');
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }} />
       </div>
       <Footer/>
     </div>
