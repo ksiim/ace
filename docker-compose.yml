@@ -98,6 +98,8 @@ services:
       - VITE_FRONTEND_HOST=${FRONTEND_HOST}
     ports:
       - "80:80"
+    depends_on:
+      - backend
 
   rabbitmq:
     image: rabbitmq:3-management
