@@ -22,7 +22,7 @@ RUN npm run build
 
 # Stage 4: Production (Nginx)
 FROM nginx:1 AS production
-ARG ENV=production
+ARG ENV=${ENV}
 COPY --from=build /app/dist/ /usr/share/nginx/html
 
 # Копируем SSL-сертификаты только для production
