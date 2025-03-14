@@ -78,6 +78,7 @@ services:
       - VITE_FRONTEND_HOST=${FRONTEND_HOST}
     ports:
       - "80:80"
+      - "443:443"
     depends_on:
       - backend
 
