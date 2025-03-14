@@ -81,7 +81,7 @@ async def read_all_tournaments(
 
 
 @router.post(
-    '/{tournanemnt_id}/send-money-request',
+    '/{tournament_id}/send-money-request',
     dependencies=[Depends(get_current_organizer_or_admin)],
     response_model=Message
 )

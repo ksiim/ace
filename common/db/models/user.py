@@ -30,6 +30,7 @@ class UserRegister(SQLModel):
     surname: str
     patronymic: str
     phone_number: str
+    telegram_id: int
 
 class UserUpdate(UserBase):
     email: Optional[EmailStr] = Field(default=None, max_length=255)
