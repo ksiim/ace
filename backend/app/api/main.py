@@ -4,7 +4,7 @@ from backend.app.api.routes import (
     users, login, tournaments,
     sex, categories, regions,
     trainers, news, participants,
-    transactions, photos
+    transactions, photos, healthcheck
 )
 
 api_router = APIRouter()
@@ -19,3 +19,4 @@ api_router.include_router(categories.router, tags=["categories"], prefix="/categ
 api_router.include_router(regions.router, tags=["regions"], prefix="/regions")
 api_router.include_router(trainers.router, tags=["trainers"], prefix="/trainers")
 api_router.include_router(news.router, tags=["news"], prefix="/news")
+api_router.include_router(healthcheck.router)

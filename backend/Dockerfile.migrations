@@ -1,5 +1,5 @@
 # Stage 1: Сборка зависимостей
-FROM python:3.12-slim as builder
+FROM python:3.12-slim AS builder
 
 # Устанавливаем рабочую директорию
 WORKDIR /app

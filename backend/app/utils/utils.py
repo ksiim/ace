@@ -6,6 +6,8 @@ from pathlib import Path
 import smtplib
 from typing import Any
 
+import aio_pika
+import asyncpg
 from redis.asyncio import Redis
 
 import emails  # type: ignore
@@ -15,6 +17,7 @@ from jwt.exceptions import InvalidTokenError
 
 from backend.app.core import security
 from backend.app.core.config import settings
+from common.db.database import POSTGRES_DB, POSTGRES_PASSWORD, POSTGRES_PORT, POSTGRES_SERVER, POSTGRES_USER
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -132,3 +135,38 @@ async def verify_password_reset_token(token: str) -> str | None:
         return None
     
 redis = Redis.from_url(settings.REDIS_URL, decode_responses=True)
+
+
+async def check_postgres():
+    try:
+        conn = await asyncpg.connect(
+            user=POSTGRES_USER,
+            password=POSTGRES_PASSWORD,
+            database=POSTGRES_DB,
+            host=POSTGRES_SERVER,
+            port=POSTGRES_PORT
+        )
+        await conn.close()
+        return True
+    except Exception:
+        return False
+
+async def check_redis():
+    try:
+        client = Redis.from_url(settings.REDIS_URL, decode_responses=True)
+        await client.ping()
+        await client.close()
+        return True
+    except Exception:
+        return False
+
+async def check_rabbitmq():
+    try:
+        connection = await aio_pika.connect_robust(
+            host=settings.RABBITMQ_HOST,
+            port=int(settings.RABBITMQ_PORT)
+        )
+        await connection.close()
+        return True
+    except Exception:
+        return False

@@ -1,5 +1,5 @@
 # Stage 1: Сборка зависимостей
-FROM python:3.12-slim as builder
+FROM python:3.12-slim AS builder
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
@@ -32,6 +32,7 @@ FROM python:3.12-slim
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 # Копируем виртуальное окружение из builder
 COPY --from=builder /app/.venv /app/.venv
