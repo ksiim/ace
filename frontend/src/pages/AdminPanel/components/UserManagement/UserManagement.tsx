@@ -26,9 +26,14 @@ type UserRole = "Администратор" | "Организатор" | "По�
 
 const UserManagement: React.FC<UserManagementProps> = ({
                                                          currentUser,
-                                                         onError
+                                                         onError,
                                                        }) => {
   const [users, setUsers] = useState<User[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [roleFilter, setRoleFilter] = useState<UserRole | "">("");
+  const [subscriptionFilter, setSubscriptionFilter] = useState<boolean | null>(null);
+  const [sortByPoints, setSortByPoints] = useState<"asc" | "desc" | null>(null);
+  
   const [editUserData, setEditUserData] = useState<{
     userId: number | null;
     points: number | null;
@@ -38,7 +43,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
     userId: null,
     points: null,
     editingRole: false,
-    role: null
+    role: null,
   });
   
   // Загрузка данных пользователей при монтировании компонента
@@ -72,36 +77,83 @@ const UserManagement: React.FC<UserManagementProps> = ({
     }
   };
   
+  const filteredUsers = users.filter((user) => {
+    // Поиск по имени, фамилии, email или телефону
+    const matchesSearchQuery =
+      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.surname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.phone_number.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Фильтр по роли
+    const matchesRoleFilter =
+      roleFilter === "" || getUserRole(user) === roleFilter;
+    
+    // Фильтр по подписке
+    const matchesSubscriptionFilter =
+      subscriptionFilter === null ||
+      (subscriptionFilter
+        ? user.end_of_subscription && new Date(user.end_of_subscription).getTime() !== 0
+        : !user.end_of_subscription || new Date(user.end_of_subscription).getTime() === 0);
+    
+    return matchesSearchQuery && matchesRoleFilter && matchesSubscriptionFilter;
+  });
+  
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    if (sortByPoints === "asc") {
+      return (a.score || 0) - (b.score || 0);
+    } else if (sortByPoints === "desc") {
+      return (b.score || 0) - (a.score || 0);
+    } else {
+      return 0; // Без сортировки
+    }
+  });
+  
+  const handleSortByPoints = () => {
+    if (sortByPoints === null) {
+      setSortByPoints("asc");
+    } else if (sortByPoints === "asc") {
+      setSortByPoints("desc");
+    } else {
+      setSortByPoints(null);
+    }
+  };
+  
   const handleUpdateUserPoints = (userId: number, points: number) => {
-    const user = users.find(u => u.id === userId);
+    const user = users.find((u) => u.id === userId);
     if (!user) {
       onError("Пользователь не найден");
       return;
     }
     
-    apiRequest(`users/${userId}`, "PUT", {
-      name: user.name,
-      surname: user.surname,
-      patronymic: user.patronymic,
-      admin: user.admin,
-      organizer: user.organizer,
-      phone_number: user.phone_number,
-      email: user.email,
-      score: points,
-      end_of_subscription: user.end_of_subscription,
-      created_at: user.created_at,
-      updated_at: new Date().toISOString()
-    }, true)
+    apiRequest(
+      `users/${userId}`,
+      "PUT",
+      {
+        name: user.name,
+        surname: user.surname,
+        patronymic: user.patronymic,
+        admin: user.admin,
+        organizer: user.organizer,
+        phone_number: user.phone_number,
+        email: user.email,
+        score: points,
+        end_of_subscription: user.end_of_subscription,
+        created_at: user.created_at,
+        updated_at: new Date().toISOString(),
+      },
+      true
+    )
       .then((data) => {
         if (data) {
-          setUsers(prevUsers =>
-            prevUsers.map(u => u.id === userId ? { ...u, score: data.score } : u)
+          setUsers((prevUsers) =>
+            prevUsers.map((u) => (u.id === userId ? { ...u, score: data.score } : u))
           );
           setEditUserData({
             userId: null,
             points: null,
             editingRole: false,
-            role: null
+            role: null,
           });
         } else {
           onError("Ошибка обновления очков пользователя");
@@ -111,7 +163,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
   };
   
   const handleUpdateUserRole = (userId: number, role: UserRole) => {
-    const user = users.find(u => u.id === userId);
+    const user = users.find((u) => u.id === userId);
     if (!user) {
       onError("Пользователь не найден");
       return;
@@ -119,33 +171,42 @@ const UserManagement: React.FC<UserManagementProps> = ({
     
     const roleValues = getRoleValues(role);
     
-    apiRequest(`users/${userId}`, "PUT", {
-      name: user.name,
-      surname: user.surname,
-      patronymic: user.patronymic,
-      admin: roleValues.admin,
-      organizer: roleValues.organizer,
-      phone_number: user.phone_number,
-      email: user.email,
-      score: user.score || 0,
-      end_of_subscription: user.end_of_subscription,
-      created_at: user.created_at,
-      updated_at: new Date().toISOString()
-    }, true)
+    apiRequest(
+      `users/${userId}`,
+      "PUT",
+      {
+        name: user.name,
+        surname: user.surname,
+        patronymic: user.patronymic,
+        admin: roleValues.admin,
+        organizer: roleValues.organizer,
+        phone_number: user.phone_number,
+        email: user.email,
+        score: user.score || 0,
+        end_of_subscription: user.end_of_subscription,
+        created_at: user.created_at,
+        updated_at: new Date().toISOString(),
+      },
+      true
+    )
       .then((data) => {
         if (data) {
-          setUsers(prevUsers =>
-            prevUsers.map(u => u.id === userId ? {
-              ...u,
-              admin: roleValues.admin,
-              organizer: roleValues.organizer
-            } : u)
+          setUsers((prevUsers) =>
+            prevUsers.map((u) =>
+              u.id === userId
+                ? {
+                  ...u,
+                  admin: roleValues.admin,
+                  organizer: roleValues.organizer,
+                }
+                : u
+            )
           );
           setEditUserData({
             userId: null,
             points: null,
             editingRole: false,
-            role: null
+            role: null,
           });
         } else {
           onError("Ошибка обновления роли пользователя");
@@ -159,7 +220,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
       userId: user.id,
       points: null,
       editingRole: true,
-      role: getUserRole(user)
+      role: getUserRole(user),
     });
   };
   
@@ -168,7 +229,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
       userId: user.id,
       points: user.score || 0,
       editingRole: false,
-      role: null
+      role: null,
     });
   };
   
@@ -177,15 +238,49 @@ const UserManagement: React.FC<UserManagementProps> = ({
       userId: null,
       points: null,
       editingRole: false,
-      role: null
+      role: null,
     });
   };
   
   return (
     <div className={styles.tabContent}>
+      <div className={styles.filtersContainer}>
+        <input
+          type="text"
+          placeholder="Поиск по имени, фамилии, email или телефону"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className={styles.searchInput}
+        />
+        
+        <select
+          value={roleFilter}
+          onChange={(e) => setRoleFilter(e.target.value as UserRole | "")}
+          className={styles.filterSelect}
+        >
+          <option value="">Все роли</option>
+          <option value="Администратор">Администратор</option>
+          <option value="Организатор">Организатор</option>
+          <option value="Пользователь">Пользователь</option>
+        </select>
+        
+        <select
+          value={subscriptionFilter === null ? "" : subscriptionFilter ? "active" : "inactive"}
+          onChange={(e) => {
+            const value = e.target.value;
+            setSubscriptionFilter(value === "" ? null : value === "active");
+          }}
+          className={styles.filterSelect}
+        >
+          <option value="">Все подписки</option>
+          <option value="active">С активной подпиской</option>
+          <option value="inactive">Без активной подписки</option>
+        </select>
+      </div>
+      
       <div className={styles.tableContainer}>
         <h2>Список пользователей</h2>
-        {users.length > 0 ? (
+        {sortedUsers.length > 0 ? (
           <table className={styles.dataTable}>
             <thead>
             <tr>
@@ -195,12 +290,17 @@ const UserManagement: React.FC<UserManagementProps> = ({
               <th>Телефон</th>
               <th>Роль</th>
               <th>Подписка до</th>
-              <th>Очки</th>
+              <th onClick={handleSortByPoints} className={styles.sortableHeader} style={{ cursor: "pointer" }}>
+                Очки{" "}
+                {sortByPoints === "asc" && "↑"}
+                {sortByPoints === "desc" && "↓"}
+                {sortByPoints === null && "↕"}
+              </th>
               <th>Действия</th>
             </tr>
             </thead>
             <tbody>
-            {users.map((user) => (
+            {sortedUsers.map((user) => (
               <tr key={user.id}>
                 <td>{user.id}</td>
                 <td>{`${user.surname} ${user.name} ${user.patronymic}`}</td>
@@ -210,10 +310,12 @@ const UserManagement: React.FC<UserManagementProps> = ({
                   {editUserData.userId === user.id && editUserData.editingRole ? (
                     <select
                       value={editUserData.role || getUserRole(user)}
-                      onChange={(e) => setEditUserData({
-                        ...editUserData,
-                        role: e.target.value as UserRole
-                      })}
+                      onChange={(e) =>
+                        setEditUserData({
+                          ...editUserData,
+                          role: e.target.value as UserRole,
+                        })
+                      }
                       className={styles.roleSelect}
                     >
                       <option value="Администратор">Администратор</option>
@@ -224,16 +326,27 @@ const UserManagement: React.FC<UserManagementProps> = ({
                     getUserRole(user)
                   )}
                 </td>
-                <td>{user.end_of_subscription && new Date(user.end_of_subscription).getTime() !== 0 ? new Date(user.end_of_subscription).toLocaleDateString() : ' '}</td>
+                <td>
+                  {user.end_of_subscription &&
+                  new Date(user.end_of_subscription).getTime() !== 0
+                    ? new Date(user.end_of_subscription).toLocaleDateString()
+                    : " "}
+                </td>
                 <td>
                   {editUserData.userId === user.id && !editUserData.editingRole ? (
                     <input
                       type="number"
-                      value={editUserData.points || 0}
-                      onChange={(e) => setEditUserData({
-                        ...editUserData,
-                        points: parseInt(e.target.value)
-                      })}
+                      value={editUserData.points === null ? '' : editUserData.points.toString()}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Убираем ведущие нули
+                        const trimmedValue = value.replace(/^0+/, '') || '0';
+                        // Обновляем состояние как строку
+                        setEditUserData({
+                          ...editUserData,
+                          points: trimmedValue === '' ? null : parseInt(trimmedValue, 10)
+                        });
+                      }}
                       className={styles.pointsInput}
                     />
                   ) : (

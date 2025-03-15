@@ -38,6 +38,12 @@ interface Region {
   name: string;
 }
 
+interface Sex {
+  id: number;
+  name: string;
+  shortname: string;
+}
+
 interface TournamentManagementProps {
   currentUser: User;
   onTournamentsUpdate: (updateFn: (prevTournaments: Tournament[]) => Tournament[]) => void;
@@ -52,6 +58,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
+  const [sexes, setSexes] = useState<Sex[]>([]);
   const [newTournament, setNewTournament] = useState<Partial<Tournament>>({
     name: "",
     type: "",
@@ -102,6 +109,17 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
         }
       })
       .catch(() => onError("Ошибка загрузки регионов"));
+    
+    // Добавляем запрос на получение списка полов
+    apiRequest("sex/", "GET", undefined, true)
+      .then((data) => {
+        if (data && data.data) {
+          setSexes(data.data);
+        } else {
+          onError("Ошибка загрузки полов");
+        }
+      })
+      .catch(() => onError("Ошибка загрузки полов"));
   }, []);
   
   const handleTournamentInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -419,9 +437,11 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
               disabled={!!newTournament.is_child} // Блокируем выбор, если турнир детский
             >
               <option value="">Выберите пол</option>
-              <option value="1">Мужчины</option>
-              <option value="2">Женщины</option>
-              <option value="3">Микст</option>
+              {sexes.map(sex => (
+                <option key={sex.id} value={sex.id}>
+                  {sex.name}
+                </option>
+              ))}
             </select>
           </div>
           

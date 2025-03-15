@@ -14,7 +14,7 @@ const Registration: React.FC = () => {
     fullName: '',
     email: '',
     phone: '',
-    telegram_id: 0, // telegram_id как число
+    telegram_id: null as number | null, // telegram_id как число или null
     birthDate: '',
     password: '',
     verificationCode: ''
@@ -47,11 +47,11 @@ const Registration: React.FC = () => {
     validateField('telegram_id', formData.telegram_id); // Проверка для telegram_id
   }, [formData.telegram_id]);
   
-  const validateField = (fieldName: string, value: string | number) => {
+  const validateField = (fieldName: string, value: string | number | null) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^\+?\d{10,}$/;
     const passwordRegex = /^.{8,}$/; // Минимум 8 символов
-    const telegramIdValid = typeof value === 'number' && value.toString().length === 9; // Проверка на длину telegram_id
+    const telegramIdValid = value === null || (typeof value === 'number' && value.toString().length === 9); // Проверка на длину telegram_id
     
     setErrors(prev => ({
       ...prev,
@@ -62,7 +62,7 @@ const Registration: React.FC = () => {
           : fieldName === 'password'
             ? value !== '' && !passwordRegex.test(value as string)
             : fieldName === 'telegram_id'
-              ? value !== 0 && !telegramIdValid // Проверка для telegram_id
+              ? value !== null && !telegramIdValid // Проверка для telegram_id
               : false
     }));
   };
@@ -87,8 +87,10 @@ const Registration: React.FC = () => {
       
       setFormData(prev => ({ ...prev, [name]: `+7 ${cleanedValue.slice(1)}` }));
     } else if (name === 'telegram_id') {
-      // Преобразуем значение в число
-      setFormData(prev => ({ ...prev, [name]: Number(value) }));
+      // Убираем ведущие нули и обновляем состояние
+      const trimmedValue = value.replace(/^0+/, '') || '0';
+      const parsedValue = trimmedValue === '' ? null : parseInt(trimmedValue, 10);
+      setFormData(prev => ({ ...prev, [name]: parsedValue }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -98,7 +100,7 @@ const Registration: React.FC = () => {
     const emailValid = !errors.email && formData.email !== '';
     const phoneValid = !errors.phone && formData.phone !== '';
     const passwordValid = !errors.password && formData.password !== '';
-    const telegramIdValid = !errors.telegram_id && formData.telegram_id !== 0; // Проверка на telegram_id
+    const telegramIdValid = !errors.telegram_id && formData.telegram_id !== null; // Проверка на telegram_id
     return validateFullName() && emailValid && phoneValid && passwordValid && telegramIdValid;
   };
   
@@ -232,7 +234,7 @@ const Registration: React.FC = () => {
             <input
               type={type}
               name={name}
-              value={formData[name as keyof typeof formData]}
+              value={formData[name as keyof typeof formData] === null ? '' : formData[name as keyof typeof formData]?.toString()}
               onChange={handleChange}
               className={`${styles.input} ${error ? styles.error : ''}`}
               placeholder={placeholder}

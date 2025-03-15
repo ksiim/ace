@@ -480,4 +480,23 @@ select:disabled:hover {
   outline: none;
 }
 
+.filtersContainer {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.searchInput {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.filterSelect {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
 /*# sourceMappingURL=AdminPanel.module.css.map */

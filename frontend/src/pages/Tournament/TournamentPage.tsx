@@ -47,6 +47,12 @@ interface Participant {
   tournament_id: number;
 }
 
+interface Sex {
+  id: number;
+  name: string;
+  shortname: string;
+}
+
 const TournamentPage: React.FC = () => {
   const { tournamentId } = useParams<{ tournamentId: string }>();
   const [tournament, setTournament] = useState<TournamentPage | null>(null);
@@ -57,6 +63,7 @@ const TournamentPage: React.FC = () => {
   const [partnerId, setPartnerId] = useState<string>('');
   const [partnerData, setPartnerData] = useState<User | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
+  const [sexes, setSexes] = useState<Sex[]>([]);
   
   const loadParticipants = async () => {
     if (!tournament) return;
@@ -85,6 +92,18 @@ const TournamentPage: React.FC = () => {
       }
     };
     
+    const fetchSexes = async () => {
+      try {
+        const response = await apiRequest('sex/', 'GET', undefined, true);
+        if (response && response.data) {
+          setSexes(response.data);
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки списка полов:', error);
+      }
+    };
+    
+    fetchSexes()
     fetchTournament();
   }, [tournamentId]);
   
@@ -280,7 +299,8 @@ const TournamentPage: React.FC = () => {
               {new Date(tournament.date).toLocaleDateString()}
             </p>
             <p className={styles.tournamentType}>
-              <strong>Тип турнира:</strong> {tournament.type === "solo" ? "Одиночный" : "Парный"}
+              <strong>Тип
+                турнира:</strong> {tournament.type === 'solo' ? 'Одиночный' : 'Парный'}
             </p>
             <p className={styles.tournamentAddress}>
               <strong>Место проведения:</strong> {tournament.address}
@@ -292,14 +312,22 @@ const TournamentPage: React.FC = () => {
               <strong>Реквизиты:</strong> {tournament.organizer_requisites}
             </p>
             <p className={styles.tournamentPrice}>
-              <strong>Стоимость участия (за человека):</strong> {tournament.price > 0 ? `${tournament.price} ₽` : 'Бесплатно'}
+              <strong>Стоимость участия (за
+                человека):</strong> {tournament.price > 0 ? `${tournament.price} ₽` : 'Бесплатно'}
             </p>
             <p className={styles.tournamentPrizeFund}>
-              <strong>Призовой фонд:</strong> {tournament.prize_fund > 0 ? `${tournament.prize_fund} ₽` : 'Не предусмотрен'}
+              <strong>Призовой
+                фонд:</strong> {tournament.prize_fund > 0 ? `${tournament.prize_fund} ₽` : 'Не предусмотрен'}
+            </p>
+            
+            <p className={styles.tournamentSex}>
+              <strong>Пол
+                участников:</strong> {sexes.find(sex => sex.id === tournament.sex_id)?.name || 'Не указан'}
             </p>
             <div className={styles.registrationContainer}>
               {tournament.can_register && (
-                <button className={styles.registrationButton} onClick={handleRegisterClick}>
+                <button className={styles.registrationButton}
+                        onClick={handleRegisterClick}>
                   Зарегистрироваться
                 </button>
               )}
