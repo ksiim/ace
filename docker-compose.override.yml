@@ -27,7 +27,6 @@ services:
     volumes:
       - ./frontend:/app  # Монтируем исходный код для hot-reload
       - /app/node_modules  # Игнорируем node_modules внутри контейнера
-      - uploads:/usr/share/nginx/html/uploads
     environment:
       - NODE_ENV=development
       - ENV=development
