@@ -47,7 +47,7 @@ const NewsTab: React.FC = () => {
       setPosts(sortedPosts);
       setError(null);
     } catch (err) {
-      console.error('Ошибка при загрузке новостей:', err.message || err);
+      console.error('Ошибка при загрузке новостей:', err);
       setError('Не удалось загрузить новости. Пожалуйста, попробуйте позже.');
     } finally {
       setIsLoading(false);
