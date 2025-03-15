@@ -19,6 +19,8 @@ class UserBase(SQLModel):
     created_at: Optional[datetime.datetime] = Field(default_factory=datetime.datetime.now, nullable=True)
     phone_number: Optional[str] = Field(default=None, nullable=True)
     email: EmailStr = Field(max_length=255, nullable=True)
+    sex: Optional[str] = Field(default=None, nullable=True)
+    birth_date: Optional[datetime.date] = Field(default=None, nullable=True)
 
 class UserCreate(UserBase):
     password: str = Field(min_length=8, max_length=40)
@@ -31,6 +33,8 @@ class UserRegister(SQLModel):
     patronymic: str
     phone_number: str
     telegram_id: int
+    birth_date: datetime.date
+    sex: str
 
 class UserUpdate(UserBase):
     email: Optional[EmailStr] = Field(default=None, max_length=255)
