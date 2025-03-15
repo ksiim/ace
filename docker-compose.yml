@@ -85,7 +85,7 @@ services:
         - VITE_API_URL=${VITE_API_URL}
         - VITE_FRONTEND_HOST=${FRONTEND_HOST}
     volumes:
-      - uploads:/app/uploads
+      - /uploads:/usr/share/nginx/html/uploads
     env_file:
       - .env
     environment:
