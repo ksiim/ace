@@ -25,5 +25,4 @@ dependencies = [
     "aiofiles>=24.1.0",
     "setuptools>=76.0.0",
     "redis>=5.2.1",
-    "psycopg2>=2.9.10",
 ]
