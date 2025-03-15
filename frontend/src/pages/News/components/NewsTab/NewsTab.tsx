@@ -24,6 +24,7 @@ const NewsTab: React.FC = () => {
       setIsLoading(true);
       const response = await apiRequest('news', 'GET', undefined, true);
       if (!response || !response.data) throw new Error('Не удалось получить данные');
+      console.log(response)
       
       const formattedPosts: PostType[] = await Promise.all(
         response.data.map(async (newsItem: any) => {
