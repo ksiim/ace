@@ -146,7 +146,7 @@ async def update_user_me(
             raise HTTPException(
                 status_code=409, detail="User with this email already exists"
             )
-            
+
     await user_crud.update_user(session=session, db_user=current_user, user_in=user_in)
     return current_user
 
@@ -173,7 +173,7 @@ async def delete_user_by_id(
 
 @router.put(
     "/{user_id}",
-    dependencies=[Depends(get_current_admin)],
+    #dependencies=[Depends(get_current_admin)],
 )
 async def update_user_by_id(
     session: SessionDep,

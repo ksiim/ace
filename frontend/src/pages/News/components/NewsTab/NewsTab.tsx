@@ -23,7 +23,7 @@ const NewsTab: React.FC = () => {
     try {
       setIsLoading(true);
       const response = await apiRequest('news', 'GET', undefined, true);
-      if (!response) throw new Error('Не удалось получить данные');
+      if (!response || !response.data) throw new Error('Не удалось получить данные');
       
       const formattedPosts: PostType[] = await Promise.all(
         response.data.map(async (newsItem: any) => {
@@ -31,7 +31,7 @@ const NewsTab: React.FC = () => {
           return {
             id: newsItem.id,
             author: "ACE",
-            date: newsItem.created_at, // Оставляем полный ISO формат
+            date: newsItem.created_at,
             title: newsItem.title,
             content: newsItem.text,
             imageUrl: newsItem.photo,
@@ -40,7 +40,6 @@ const NewsTab: React.FC = () => {
         })
       );
       
-      // Сортировка по дате (ISO формат сохраняет корректный порядок)
       const sortedPosts = formattedPosts.sort((a, b) =>
         new Date(b.date).getTime() - new Date(a.date).getTime()
       );
@@ -48,7 +47,7 @@ const NewsTab: React.FC = () => {
       setPosts(sortedPosts);
       setError(null);
     } catch (err) {
-      console.error('Ошибка при загрузке новостей:', err);
+      console.error('Ошибка при загрузке новостей:', err.message || err);
       setError('Не удалось загрузить новости. Пожалуйста, попробуйте позже.');
     } finally {
       setIsLoading(false);

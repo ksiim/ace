@@ -14,7 +14,7 @@ const Registration: React.FC = () => {
     fullName: '',
     email: '',
     phone: '',
-    telegramId: '',
+    telegram_id: 0, // telegram_id как число
     birthDate: '',
     password: '',
     verificationCode: ''
@@ -28,7 +28,7 @@ const Registration: React.FC = () => {
     phone: false,
     password: false,
     verificationCode: false,
-    telegramId: false // Добавлена ошибка для telegramId
+    telegram_id: false // Ошибка для telegram_id
   });
   
   useEffect(() => {
@@ -44,25 +44,25 @@ const Registration: React.FC = () => {
   }, [formData.password]);
   
   useEffect(() => {
-    validateField('telegramId', formData.telegramId); // Добавлена проверка для telegramId
-  }, [formData.telegramId]);
+    validateField('telegram_id', formData.telegram_id); // Проверка для telegram_id
+  }, [formData.telegram_id]);
   
-  const validateField = (fieldName: string, value: string) => {
+  const validateField = (fieldName: string, value: string | number) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^\+?\d{10,}$/;
-    const passwordRegex = /^.{8,}$/; // At least 8 characters
-    const telegramIdValid = value.length === 9; // Проверка на длину Telegram ID
+    const passwordRegex = /^.{8,}$/; // Минимум 8 символов
+    const telegramIdValid = typeof value === 'number' && value.toString().length === 9; // Проверка на длину telegram_id
     
     setErrors(prev => ({
       ...prev,
       [fieldName]: fieldName === 'email'
-        ? value !== '' && !emailRegex.test(value)
+        ? value !== '' && !emailRegex.test(value as string)
         : fieldName === 'phone'
-          ? value !== '' && !phoneRegex.test(value.replace(/\D/g, ''))
+          ? value !== '' && !phoneRegex.test((value as string).replace(/\D/g, ''))
           : fieldName === 'password'
-            ? value !== '' && !passwordRegex.test(value)
-            : fieldName === 'telegramId'
-              ? value !== '' && !telegramIdValid // Для telegramId проверяется длина
+            ? value !== '' && !passwordRegex.test(value as string)
+            : fieldName === 'telegram_id'
+              ? value !== 0 && !telegramIdValid // Проверка для telegram_id
               : false
     }));
   };
@@ -86,6 +86,9 @@ const Registration: React.FC = () => {
       }
       
       setFormData(prev => ({ ...prev, [name]: `+7 ${cleanedValue.slice(1)}` }));
+    } else if (name === 'telegram_id') {
+      // Преобразуем значение в число
+      setFormData(prev => ({ ...prev, [name]: Number(value) }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -95,8 +98,8 @@ const Registration: React.FC = () => {
     const emailValid = !errors.email && formData.email !== '';
     const phoneValid = !errors.phone && formData.phone !== '';
     const passwordValid = !errors.password && formData.password !== '';
-    const telegramIdValid = !errors.telegramId && formData.telegramId !== ''; // Проверка на telegramId
-    return validateFullName() && emailValid && phoneValid && passwordValid && telegramIdValid; // Добавлена проверка для telegramId
+    const telegramIdValid = !errors.telegram_id && formData.telegram_id !== 0; // Проверка на telegram_id
+    return validateFullName() && emailValid && phoneValid && passwordValid && telegramIdValid;
   };
   
   const sendVerificationCode = async () => {
@@ -135,6 +138,7 @@ const Registration: React.FC = () => {
       surname,
       patronymic,
       phone_number: formData.phone.replace(/\D/g, ''),
+      telegram_id: formData.telegram_id // Добавляем telegram_id
     };
     
     const response = await apiRequest('users/signup/', 'POST', userData);
@@ -218,7 +222,7 @@ const Registration: React.FC = () => {
           { label: 'Введите Email', name: 'email', type: 'email', placeholder: 'example@mail.ru', error: errors.email, errorMessage: 'Укажите корректный email' },
           { label: 'Телефон', name: 'phone', type: 'tel', placeholder: '+7 (999)-000-00-00', error: errors.phone, errorMessage: 'Укажите корректный номер телефона' },
           { label: 'Пароль', name: 'password', type: 'password', placeholder: 'Введите пароль', error: errors.password, errorMessage: 'Пароль должен содержать минимум 8 символов' },
-          { label: 'Телеграм ID', name: 'telegramId', type: 'text', placeholder: '111111111', error: errors.telegramId, errorMessage: 'Телеграм ID должен содержать 9 символов' },
+          { label: 'Телеграм ID', name: 'telegram_id', type: 'number', placeholder: '111111111', error: errors.telegram_id, errorMessage: 'Телеграм ID должен содержать 9 цифр' },
           { label: 'Дата рождения игрока', name: 'birthDate', type: 'date' }
         ].map(({ label, name, type, placeholder, error, errorMessage }) => (
           <div key={name} className={styles.formGroup}>
@@ -238,14 +242,13 @@ const Registration: React.FC = () => {
           </div>
         ))}
         
-        
         {step === 2 && (
           <div className={styles.otp}>
             <h2>Введите код из Telegram</h2>
             <OTPInput ref={otpRef} onComplete={(otp) => setFormData({
               ...formData,
               verificationCode: otp
-            })}/>
+            })} />
             <div className={styles.otp__buttons}>
               <button onClick={() => otpRef.current?.clear()}>Очистить</button>
             </div>
@@ -253,7 +256,7 @@ const Registration: React.FC = () => {
         )}
         
         <button type="submit" className={styles.submitButton}
-                disabled={errors.email || errors.phone || errors.password || errors.telegramId}>
+                disabled={errors.email || errors.phone || errors.password || errors.telegram_id}>
           {step === 1 ? 'Получить код' : 'Завершить регистрацию'}
         </button>
         

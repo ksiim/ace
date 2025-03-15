@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './Features.module.scss';
-import { Calendar, FileEdit, Phone } from 'lucide-react';
+import {Calendar, FileEdit, ShieldCheck} from 'lucide-react';
 
 const Features: React.FC = () => {
   const features = [
@@ -15,7 +15,7 @@ const Features: React.FC = () => {
       description: 'Легко подавайте заявку на участие в турнире через нашу платформу.'
     },
     {
-      icon: <Phone className={styles.icon} />,
+      icon: <ShieldCheck className={styles.icon} />,
       title: 'Безопасные платежи',
       description: 'Удобная система онлайн-платежей для оплаты турнирных взносов.'
     }

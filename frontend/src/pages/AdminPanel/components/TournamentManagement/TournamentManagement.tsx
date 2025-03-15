@@ -124,7 +124,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       setNewTournament(prev => ({
         ...prev,
         [name]: checked,
-        sex_id: checked ? 5 : prev.sex_id || 0, // Устанавливаем пол на "Микст" (5), если галочка установлена, иначе оставляем текущее значение
+        sex_id: checked ? 3 : prev.sex_id || 0, // Устанавливаем пол на "Микст" (3), если галочка установлена, иначе оставляем текущее значение
       }));
     } else {
       setNewTournament(prev => ({
@@ -167,7 +167,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     e.preventDefault();
     
     // Проверка данных перед отправкой
-    if (newTournament.is_child && newTournament.sex_id !== 5) {
+    if (newTournament.is_child && newTournament.sex_id !== 3) {
       onError("Для детского турнира пол должен быть 'Микст'.");
       return;
     }
@@ -419,9 +419,9 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
               disabled={!!newTournament.is_child} // Блокируем выбор, если турнир детский
             >
               <option value="">Выберите пол</option>
-              <option value="2">Мужчины</option>
-              <option value="3">Женщины</option>
-              <option value="5">Микст</option>
+              <option value="1">Мужчины</option>
+              <option value="2">Женщины</option>
+              <option value="3">Микст</option>
             </select>
           </div>
           
@@ -600,7 +600,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
                 <td>{new Date(tournament.date).toLocaleDateString()}</td>
                 <td>{tournament.address}</td>
                 <td>{tournament.price}</td>
-                <td>{tournament.sex_id === 2 ? 'Мужчины' : tournament.sex_id === 3 ? 'Женщины' : tournament.sex_id === 5 ? 'Микст' : 'Не указан'}</td>
+                <td>{tournament.sex_id === 1 ? 'Мужчины' : tournament.sex_id === 2 ? 'Женщины' : tournament.sex_id === 3 ? 'Микст' : 'Не указан'}</td>
                 <td>{categories.find(c => c.id === tournament.category_id)?.name || 'Не указана'}</td>
                 <td>{regions.find(r => r.id === tournament.region_id)?.name || 'Не указан'}</td>
                 <td>
