@@ -18,7 +18,7 @@ class TournamentBase(SQLModel):
     organizer_name_and_contacts: Optional[str] = None
     organizer_requisites: Optional[str] = None
     date: Optional[datetime.date] = None
-    time: Optional[str] = None
+    desctiption: Optional[str] = None
     price: Optional[int] = None
     can_register: bool = Field(default=True)
     address: Optional[str] = None
