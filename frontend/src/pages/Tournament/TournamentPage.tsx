@@ -266,15 +266,6 @@ const TournamentPage: React.FC = () => {
   };
   
   
-  // Обработчик для подтверждения участника
-  const handleParticipantConfirm = async () => {
-    try {
-      // После успешного подтверждения перезагружаем список
-      await loadParticipants();
-    } catch (error) {
-      console.error('Ошибка при обновлении статуса участника:', error);
-    }
-  };
   
   const renderContent = () => {
     if (loading) {
@@ -349,9 +340,7 @@ const TournamentPage: React.FC = () => {
         </div>
         
         <ParticipantsList
-          tournamentId={tournament.id}
           participants={participants}
-          onParticipantConfirm={handleParticipantConfirm}
         />
       </div>
     );

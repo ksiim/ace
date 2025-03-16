@@ -14,10 +14,11 @@ const Registration: React.FC = () => {
     fullName: '',
     email: '',
     phone: '',
-    telegram_id: null as number | null, // telegram_id как число или null
-    birthDate: '',
+    telegram_id: null as number | null,
+    birth_date: '',
     password: '',
-    verificationCode: ''
+    verificationCode: '',
+    sex: '' as 'мужчина' | 'женщина' | '' // Добавляем поле для пола
   });
   
   const [step, setStep] = useState(1);
@@ -28,7 +29,8 @@ const Registration: React.FC = () => {
     phone: false,
     password: false,
     verificationCode: false,
-    telegram_id: false // Ошибка для telegram_id
+    telegram_id: false,
+    sex: false // Ошибка для пола
   });
   
   useEffect(() => {
@@ -74,20 +76,16 @@ const Registration: React.FC = () => {
     return !hasError;
   };
   
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
     if (name === 'phone') {
-      // Убираем все символы, кроме цифр, и добавляем +7, если его нет в начале
-      let cleanedValue = value.replace(/\D/g, ''); // Убираем все нецифровые символы
-      
+      let cleanedValue = value.replace(/\D/g, '');
       if (cleanedValue.length > 0 && !cleanedValue.startsWith('7')) {
-        cleanedValue = '7' + cleanedValue; // Добавляем 7 в начале, если его нет
+        cleanedValue = '7' + cleanedValue;
       }
-      
       setFormData(prev => ({ ...prev, [name]: `+7 ${cleanedValue.slice(1)}` }));
     } else if (name === 'telegram_id') {
-      // Убираем ведущие нули и обновляем состояние
       const trimmedValue = value.replace(/^0+/, '') || '0';
       const parsedValue = trimmedValue === '' ? null : parseInt(trimmedValue, 10);
       setFormData(prev => ({ ...prev, [name]: parsedValue }));
@@ -100,8 +98,9 @@ const Registration: React.FC = () => {
     const emailValid = !errors.email && formData.email !== '';
     const phoneValid = !errors.phone && formData.phone !== '';
     const passwordValid = !errors.password && formData.password !== '';
-    const telegramIdValid = !errors.telegram_id && formData.telegram_id !== null; // Проверка на telegram_id
-    return validateFullName() && emailValid && phoneValid && passwordValid && telegramIdValid;
+    const telegramIdValid = !errors.telegram_id && formData.telegram_id !== null;
+    const sexValid = formData.sex !== ''; // Проверка на выбор пола
+    return validateFullName() && emailValid && phoneValid && passwordValid && telegramIdValid && sexValid;
   };
   
   const sendVerificationCode = async () => {
@@ -140,8 +139,12 @@ const Registration: React.FC = () => {
       surname,
       patronymic,
       phone_number: formData.phone.replace(/\D/g, ''),
-      telegram_id: formData.telegram_id // Добавляем telegram_id
+      telegram_id: formData.telegram_id,
+      birth_date: formData.birth_date,
+      sex: formData.sex // Включаем пол в данные для регистрации
     };
+    
+    console.log(userData);
     
     const response = await apiRequest('users/signup/', 'POST', userData);
     if (response) {
@@ -225,7 +228,7 @@ const Registration: React.FC = () => {
           { label: 'Телефон', name: 'phone', type: 'tel', placeholder: '+7 (999)-000-00-00', error: errors.phone, errorMessage: 'Укажите корректный номер телефона' },
           { label: 'Пароль', name: 'password', type: 'password', placeholder: 'Введите пароль', error: errors.password, errorMessage: 'Пароль должен содержать минимум 8 символов' },
           { label: 'Телеграм ID', name: 'telegram_id', type: 'number', placeholder: '111111111', error: errors.telegram_id, errorMessage: 'Телеграм ID должен содержать 9 цифр' },
-          { label: 'Дата рождения игрока', name: 'birthDate', type: 'date' }
+          { label: 'Дата рождения игрока', name: 'birth_date', type: 'date' }
         ].map(({ label, name, type, placeholder, error, errorMessage }) => (
           <div key={name} className={styles.formGroup}>
             <div className={styles.labelWrapper}>
@@ -244,6 +247,25 @@ const Registration: React.FC = () => {
           </div>
         ))}
         
+        {/* Добавляем поле для выбора пола */}
+        <div className={styles.formGroup}>
+          <div className={styles.labelWrapper}>
+            <label className={styles.label}>Пол</label>
+          </div>
+          <select
+            name="sex"
+            value={formData.sex}
+            onChange={handleChange}
+            className={`${styles.input} ${errors.sex ? styles.error : ''}`}
+            required
+          >
+            <option value="">Выберите пол</option>
+            <option value="мужчина">Мужчина</option>
+            <option value="женщина">Женщина</option>
+          </select>
+          {errors.sex && <div className={styles.errorMessage}>Пожалуйста, выберите пол</div>}
+        </div>
+        
         {step === 2 && (
           <div className={styles.otp}>
             <h2>Введите код из Telegram</h2>
@@ -258,7 +280,7 @@ const Registration: React.FC = () => {
         )}
         
         <button type="submit" className={styles.submitButton}
-                disabled={errors.email || errors.phone || errors.password || errors.telegram_id}>
+                disabled={errors.email || errors.phone || errors.password || errors.telegram_id || errors.sex}>
           {step === 1 ? 'Получить код' : 'Завершить регистрацию'}
         </button>
         

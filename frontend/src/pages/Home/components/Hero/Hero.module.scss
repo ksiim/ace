@@ -87,6 +87,7 @@
   border-radius: 16px;
 
   @media (max-width: 640px) {
+    object-fit: cover;
     width: 100%; // Занимаем всю ширину на мобильных
     height: auto; // Автоматическая высота для сохранения пропорций
     max-height: 200px; // Ограничиваем максимальную высоту

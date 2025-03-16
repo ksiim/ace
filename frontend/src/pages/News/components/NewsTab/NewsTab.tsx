@@ -9,22 +9,23 @@ const NewsTab: React.FC = () => {
   const [posts, setPosts] = useState<PostType[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState<boolean>(false); // состояние для админа
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [skip, setSkip] = useState<number>(0); // Текущий скип
+  const [hasMore, setHasMore] = useState<boolean>(true); // Есть ли ещё новости для загрузки
   const navigate = useNavigate();
   
   // Получение новостей при загрузке компонента
   useEffect(() => {
-    fetchNews();
+    fetchNews(0); // Загружаем первые 5 новостей
     checkIfAdmin();
   }, []);
   
-  // Функция получения всех новостей
-  const fetchNews = async () => {
+  // Функция получения новостей с пагинацией
+  const fetchNews = async (skip: number) => {
     try {
       setIsLoading(true);
-      const response = await apiRequest('news', 'GET', undefined, true);
+      const response = await apiRequest(`news?skip=${skip}&limit=5`, 'GET', undefined, true);
       if (!response || !response.data) throw new Error('Не удалось получить данные');
-      console.log(response)
       
       const formattedPosts: PostType[] = await Promise.all(
         response.data.map(async (newsItem: any) => {
@@ -41,11 +42,13 @@ const NewsTab: React.FC = () => {
         })
       );
       
-      const sortedPosts = formattedPosts.sort((a, b) =>
-        new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
+      // Если новостей меньше 5, значит, это последняя страница
+      if (formattedPosts.length < 5) {
+        setHasMore(false);
+      }
       
-      setPosts(sortedPosts);
+      // Добавляем новые новости к уже загруженным
+      setPosts(prevPosts => (skip === 0 ? formattedPosts : [...prevPosts, ...formattedPosts]));
       setError(null);
     } catch (err) {
       console.error('Ошибка при загрузке новостей:', err);
@@ -54,8 +57,6 @@ const NewsTab: React.FC = () => {
       setIsLoading(false);
     }
   };
-  
-  
   
   // Функция получения комментариев для конкретной новости
   const fetchCommentsForNews = async (newsId: number): Promise<CommentType[]> => {
@@ -154,10 +155,9 @@ const NewsTab: React.FC = () => {
     }
   };
   
-  
   // Функция редактирования новости
   const handleEditNews = (newsId: number) => {
-    navigate(`/create-news/${newsId}`);  // Переходим на страницу редактирования новости с id
+    navigate(`/create-news/${newsId}`);
   };
   
   // Функция удаления новости
@@ -180,8 +180,14 @@ const NewsTab: React.FC = () => {
     }
   };
   
+  // Функция для загрузки дополнительных новостей
+  const loadMoreNews = () => {
+    const newSkip = skip + 5;
+    setSkip(newSkip);
+    fetchNews(newSkip); // Загружаем следующие 5 новостей
+  };
+  
   useEffect(() => {
-    fetchNews();
     checkIfAdmin();
     
     // Проверяем, есть ли удаленные новости, чтобы исключить их из загрузки
@@ -189,8 +195,7 @@ const NewsTab: React.FC = () => {
     setPosts(prevPosts => prevPosts.filter(post => !deletedNews.includes(post.id)));
   }, []);
   
-  
-  if (isLoading) {
+  if (isLoading && skip === 0) {
     return <div className={styles.loading}>Загрузка новостей...</div>;
   }
   
@@ -242,6 +247,12 @@ const NewsTab: React.FC = () => {
             </div>
           ))}
         </div>
+      )}
+      
+      {hasMore && (
+        <button className={styles.loadMoreButton} onClick={loadMoreNews}>
+          Показать ещё
+        </button>
       )}
     </div>
   );

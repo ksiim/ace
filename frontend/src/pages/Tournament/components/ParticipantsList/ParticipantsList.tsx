@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { apiRequest } from "../../../../utils/apiRequest.ts";
 import styles from "./ParticipantsList.module.scss";
+import {Check, Clock} from 'lucide-react';
 
 interface User {
   name: string;
@@ -18,28 +19,13 @@ interface Participant {
 }
 
 interface ParticipantsListProps {
-  tournamentId: number;
   participants: Participant[];
-  onParticipantConfirm?: () => void;
 }
 
 const ParticipantsList: React.FC<ParticipantsListProps> = ({
-                                                             tournamentId,
                                                              participants,
-                                                             onParticipantConfirm
                                                            }) => {
   const [userDetails, setUserDetails] = useState<Record<number, User>>({});
-  const [isAdminOrOrganizer, setIsAdminOrOrganizer] = useState(false);
-  
-  useEffect(() => {
-    apiRequest("users/me", "GET", undefined, true)
-      .then(response => {
-        if (!response.error) {
-          setIsAdminOrOrganizer(response.admin || response.organizer);
-        }
-      })
-      .catch(error => console.error("Ошибка запроса данных пользователя:", error));
-  }, []);
   
   useEffect(() => {
     // Загружаем информацию о пользователях при изменении списка участников
@@ -82,29 +68,7 @@ const ParticipantsList: React.FC<ParticipantsListProps> = ({
     });
   }, [participants, userDetails]);
   
-  const confirmParticipant = (participantId: number) => {
-    const participantToUpdate = participants.find(participant => participant.id === participantId);
-    if (!participantToUpdate) return;
-    
-    const updatedParticipant = {
-      confirmed: true,
-      id: participantToUpdate.id,
-      user_id: participantToUpdate.user_id,
-      partner_id: participantToUpdate.partner_id,
-      tournament_id: tournamentId
-    };
-    
-    apiRequest(`participants/${participantId}`, "PUT", updatedParticipant, true)
-      .then(response => {
-        if (!response.error) {
-          // Сообщаем родительскому компоненту о подтверждении участника
-          if (onParticipantConfirm) {
-            onParticipantConfirm();
-          }
-        }
-      })
-      .catch(error => console.error("Ошибка при подтверждении участника:", error));
-  };
+  
   
   return (
     <div className={styles.tournamentParticipants}>
@@ -129,14 +93,11 @@ const ParticipantsList: React.FC<ParticipantsListProps> = ({
                 )}
               </span>
               {participant.confirmed ? (
-                <span className={`${styles.participantStatus} ${styles.confirmed}`}>✅</span>
-              ) : (
-                isAdminOrOrganizer && (
-                  <button className={styles.confirmButton} onClick={() => confirmParticipant(participant.id)}>
-                    Подтвердить
-                  </button>
-                )
-              )}
+                <span
+                  className={`${styles.participantStatus} ${styles.confirmed}`}><Check/></span>
+              ) : <span
+                className={`${styles.participantStatus} ${styles.confirmed}`}><Clock color={'#f95e1b'}/></span>
+                }
             </li>
           ))}
         </ul>
