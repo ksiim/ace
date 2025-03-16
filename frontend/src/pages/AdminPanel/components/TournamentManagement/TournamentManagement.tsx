@@ -10,6 +10,7 @@ interface Tournament {
   photo_path: string;
   organizer_name_and_contacts: string;
   organizer_requisites: string;
+  description: string;
   date: string;
   price: number;
   can_register: boolean;
@@ -67,6 +68,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     organizer_name_and_contacts: "",
     organizer_requisites: "",
     date: new Date().toISOString(),
+    description: "", // Добавлено поле description
     price: 0,
     can_register: true,
     address: "",
@@ -132,8 +134,8 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     }
     
     if (name === 'date') {
-      const date = new Date(value);
-      parsedValue = date.toISOString();
+      // Преобразуем значение в формат YYYY-MM-DD
+      parsedValue = value; // Значение уже в формате YYYY-MM-DD
     }
     
     // Обработка чекбокса "Детский турнир"
@@ -191,7 +193,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     }
     
     // Проверка других обязательных полей
-    if (!newTournament.name || !newTournament.type || !newTournament.date) {
+    if (!newTournament.name || !newTournament.type || !newTournament.date || !newTournament.description) {
       onError("Заполните все обязательные поля.");
       return;
     }
@@ -213,7 +215,8 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             photo_path: "",
             organizer_name_and_contacts: "",
             organizer_requisites: "",
-            date: new Date().toISOString(),
+            date: new Date().toISOString().slice(0, 10), // Формат YYYY-MM-DD
+            description: "", // Сброс поля description
             price: 0,
             can_register: true,
             address: "",
@@ -221,7 +224,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             owner_id: currentUser.id,
             sex_id: 0,
             category_id: 0,
-            region_id: 0
+            region_id: 0,
           });
         } else {
           onError("Ошибка создания турнира");
@@ -233,6 +236,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       });
   };
   
+  
   const cancelEdit = () => {
     setEditTournamentId(null);
     setNewTournament({
@@ -243,6 +247,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       organizer_name_and_contacts: "",
       organizer_requisites: "",
       date: new Date().toISOString(),
+      description: '',
       price: 0,
       can_register: true,
       address: "",
@@ -289,6 +294,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             organizer_name_and_contacts: "",
             organizer_requisites: "",
             date: new Date().toISOString(),
+            description: '',
             price: 0,
             can_register: true,
             address: "",
@@ -434,11 +440,12 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
               value={newTournament.sex_id || ''}
               onChange={handleTournamentInputChange}
               required
-              disabled={!!newTournament.is_child} // Блокируем выбор, если турнир детский
+              disabled={!!newTournament.is_child}
             >
               <option value="">Выберите пол</option>
               {sexes.map(sex => (
-                <option key={sex.id} value={sex.id}>
+                <option key={sex.id}
+                        value={sex.id}> {/* Уникальный ключ для каждого пола */}
                   {sex.name}
                 </option>
               ))}
@@ -457,7 +464,8 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             >
               <option value="">Выберите категорию</option>
               {categories.map(category => (
-                <option key={category.id} value={category.id}>
+                <option key={category.id}
+                        value={category.id}> {/* Уникальный ключ для каждой категории */}
                   {category.name} {category.is_child ? '(Детская)' : ''}
                 </option>
               ))}
@@ -476,7 +484,8 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             >
               <option value="">Выберите регион</option>
               {regions.map(region => (
-                <option key={region.id} value={region.id}>
+                <option key={region.id}
+                        value={region.id}> {/* Уникальный ключ для каждого региона */}
                   {region.name}
                 </option>
               ))}
@@ -486,11 +495,25 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
           <div className={styles.formGroup}>
             <label htmlFor="date">Дата проведения</label>
             <input
-              type="datetime-local"
+              type="datetime"
               id="date"
               name="date"
-              value={(newTournament.date || '').slice(0, 16)}
+              value={(newTournament.date || '').slice(0, 10)}
               onChange={handleTournamentInputChange}
+              required
+            />
+          </div>
+          
+          <div className={styles.formGroup}>
+            <label htmlFor="description">Время проведения (по местному
+              времени)</label>
+            <input
+              type="text"
+              id="description"
+              name="description"
+              value={newTournament.description || ''}
+              onChange={handleTournamentInputChange}
+              placeholder="Например, 15:00"
               required
             />
           </div>
@@ -614,7 +637,8 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             </thead>
             <tbody>
             {tournaments.map((tournament) => (
-              <tr key={tournament.id}>
+              <tr
+                key={tournament.id}> {/* Уникальный ключ для каждого турнира */}
                 <td>{tournament.id}</td>
                 <td>{tournament.name}</td>
                 <td>{new Date(tournament.date).toLocaleDateString()}</td>
