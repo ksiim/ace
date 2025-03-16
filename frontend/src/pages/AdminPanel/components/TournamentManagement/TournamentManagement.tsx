@@ -207,6 +207,8 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             return Array.isArray(prevTournaments) ? [...prevTournaments, data] : [data];
           });
           
+          console.log(newTournament);
+          
           // Сброс формы
           setNewTournament({
             name: "",
@@ -637,8 +639,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             </thead>
             <tbody>
             {tournaments.map((tournament) => (
-              <tr
-                key={tournament.id}> {/* Уникальный ключ для каждого турнира */}
+              <tr key={tournament.id}>
                 <td>{tournament.id}</td>
                 <td>{tournament.name}</td>
                 <td>{new Date(tournament.date).toLocaleDateString()}</td>
