@@ -14,6 +14,7 @@ interface Tournament {
   photo_path: string;
   organizer_name_and_contacts: string;
   organizer_requisites: string;
+  description: string;
   date: string;
   price: number;
   can_register: boolean;
@@ -23,7 +24,6 @@ interface Tournament {
   sex_id: number;
   category_id: number;
   region_id: number;
-  description: string;
 }
 
 interface User {

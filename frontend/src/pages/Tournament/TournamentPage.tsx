@@ -13,6 +13,7 @@ interface TournamentPage {
   photo_path: string;
   organizer_name_and_contacts: string;
   organizer_requisites: string;
+  description: string;
   date: string;
   price: number;
   can_register: boolean;

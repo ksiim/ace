@@ -12,6 +12,7 @@ interface Tournament {
   type: string;
   photo_path: string;
   organizer_requisites: string;
+  description: string;
   price: number;
   can_register: boolean;
   prize_fund: number;
