@@ -24,7 +24,7 @@ const NewsTab: React.FC = () => {
   const fetchNews = async (skip: number) => {
     try {
       setIsLoading(true);
-      const response = await apiRequest(`news?skip=${skip}&limit=5`, 'GET', undefined, true);
+      const response = await apiRequest(`news/?skip=${skip}&limit=5`, 'GET', undefined, true);
       if (!response || !response.data) throw new Error('Не удалось получить данные');
       
       const formattedPosts: PostType[] = await Promise.all(
