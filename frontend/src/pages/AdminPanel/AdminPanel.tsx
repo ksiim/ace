@@ -23,6 +23,7 @@ interface Tournament {
   sex_id: number;
   category_id: number;
   region_id: number;
+  description: string;
 }
 
 interface User {
