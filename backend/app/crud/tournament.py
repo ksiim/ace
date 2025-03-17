@@ -31,7 +31,7 @@ async def create_tournament(session: AsyncSession, tournament_in: TournamentCrea
 async def update_tournament(session: AsyncSession, tournament_id: int, tournament_in: TournamentUpdate) -> Tournament:
     tournament = await session.get(Tournament, tournament_id)
     update_dict = tournament_in.model_dump(exclude_unset=True)
-    update_dict["date"] = update_dict["date"].replace(tzinfo=None)
+    update_dict["date"] = update_dict["date"]
     tournament.sqlmodel_update(update_dict)
     session.add(tournament)
     await session.commit()
