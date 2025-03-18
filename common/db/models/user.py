@@ -37,7 +37,8 @@ class UserBase(SQLModel):
         if self.birth_date is None:
             return 0
         return datetime.datetime.now().year - self.birth_date.year
-
+    
+    
 class UserCreate(UserBase):
     password: str = Field(min_length=8, max_length=40)
     region_id: int

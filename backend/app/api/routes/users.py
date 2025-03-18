@@ -1,3 +1,4 @@
+import datetime
 import json
 import uuid
 from typing import Any, Optional
@@ -20,7 +21,9 @@ from backend.app.core.security import get_password_hash, verify_password
 from common.db.models import Message, UpdatePassword, User, UserCreate, UserFio, UserPublic, UserRegister, UserUpdate, UserUpdateMe, UsersPublic
 from common.db.models.category import Category
 from common.db.models.enums import OrderEnum
+from common.db.models.participant import TournamentParticipant
 from common.db.models.region import Region
+from common.db.models.tournament import Tournament, TournamentCountResponse
 
 
 router = APIRouter()
@@ -318,3 +321,36 @@ async def check_verification_status(session: SessionDep, request_id: str, code: 
         raise HTTPException(status_code=400, detail={
                             "detail": "Failed to verify phone verification code", "response": response.json()})
     return {"message": "Phone verification code verified successfully", "response": response.json()}
+
+@router.get(
+    "/{user_id}/tournament-count-per-52-weeks",
+    response_model=TournamentCountResponse,
+)
+async def get_user_tournament_count_per_52_weeks(
+    user_id: int,
+    session: SessionDep,  # AsyncSession
+) -> TournamentCountResponse:
+    """
+    Get the count of tournaments a user participated in over the last 52 weeks.
+    """
+    # Проверяем, существует ли пользователь
+    user_exists = await session.get(User, user_id)
+    if not user_exists:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    fifty_two_weeks_ago = datetime.datetime.now().date() - datetime.timedelta(weeks=52)
+    stmt = (
+        select(func.count(TournamentParticipant.id))
+        .join(Tournament, TournamentParticipant.tournament_id == Tournament.id)
+        .where(
+            or_(
+                TournamentParticipant.user_id == user_id,
+                TournamentParticipant.partner_id == user_id
+            ),
+            Tournament.date >= fifty_two_weeks_ago
+        )
+    )
+    result = await session.execute(stmt)
+    count = result.scalar_one()
+
+    return TournamentCountResponse(count_of_tournament_last_52_weeks=count)

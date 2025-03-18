@@ -67,3 +67,6 @@ class TournamentPublic(TournamentBase):
 class TournamentsPublic(SQLModel):
     data: List[TournamentPublic]
     count: int
+
+class TournamentCountResponse(SQLModel):
+    count_of_tournament_last_52_weeks: int
