@@ -41,7 +41,7 @@ const Profile: React.FC = () => {
   if (!user) return <p className={styles.error}>Данные не найдены</p>;
   
   return (
-    <>
+    <div className={styles.content}>
       <Header scrollToBenefits={() => {}}/>
       <div className={styles.profileContainer}>
         <h1 className={styles.title}>Личный профиль</h1>
@@ -71,7 +71,7 @@ const Profile: React.FC = () => {
         </div>
       
       </div>
-    </>
+    </div>
   );
 };
 

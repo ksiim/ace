@@ -11,6 +11,8 @@ $shadow-color: rgba(0, 0, 0, 0.1);
   box-shadow: 0 4px 12px $shadow-color;
 }
 
+
+
 // Стили профиля
 .profileContainer {
   max-width: 800px;
@@ -19,6 +21,7 @@ $shadow-color: rgba(0, 0, 0, 0.1);
   background-color: $white;
   border-radius: 12px;
   @include card-shadow;
+  margin-top: 50px;
 }
 
 .title {
@@ -108,7 +111,7 @@ $shadow-color: rgba(0, 0, 0, 0.1);
 @media (max-width: 768px) {
   .profileContainer {
     padding: 1.5rem;
-    margin: 1rem;
+    margin: 50px auto;
   }
 
   .title {

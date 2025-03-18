@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Registration.module.scss';
-import OTPInput, { OTPInputRef } from '../../components/OTPInput/OTPInput.tsx';
+import OTPInput from '../../components/OTPInput/OTPInput.tsx';
+import type {OTPInputRef} from '../../components/OTPInput/types.ts';
 import { apiRequest } from '../../utils/apiRequest.ts';
 import { saveToken, setAuthHeader } from '../../utils/serviceToken.ts';
 import axios from 'axios';
