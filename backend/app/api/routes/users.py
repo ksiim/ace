@@ -20,6 +20,7 @@ from backend.app.core.security import get_password_hash, verify_password
 from common.db.models import Message, UpdatePassword, User, UserCreate, UserFio, UserPublic, UserRegister, UserUpdate, UserUpdateMe, UsersPublic
 from common.db.models.category import Category
 from common.db.models.enums import OrderEnum
+from common.db.models.region import Region
 
 
 router = APIRouter()
@@ -34,6 +35,7 @@ async def read_users(
     skip: int = 0,
     limit: int = 100,
     category_id: Optional[int] = None,
+    region_id: Optional[int] = None,
     is_organizer: Optional[bool] = None,
     is_admin: Optional[bool] = None,
     score_order: Optional[OrderEnum] = None,
@@ -56,6 +58,10 @@ async def read_users(
             count_statement = count_statement.where(
                 User.age.between(category.from_age, category.to_age)
             )
+    
+    if region_id is not None:
+        statement = statement.where(User.region_id == region_id)
+        count_statement = count_statement.where(User.region_id == region_id)
 
     if is_organizer is not None:
         statement = statement.where(User.is_organizer == is_organizer)
@@ -146,6 +152,10 @@ async def register_user(session: SessionDep, user_in: UserRegister) -> Any:
             status_code=400,
             detail="The user with this email already exists in the system",
         )
+    region = await session.get(Region, user_in.region_id)
+    if not region:
+        raise HTTPException(status_code=400, detail="Invalid region_id")
+    
     user_create = UserCreate.model_validate(user_in)
     user = await user_crud.create_user(session=session, user_create=user_create)
     return user

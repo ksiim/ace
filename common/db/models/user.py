@@ -40,6 +40,7 @@ class UserBase(SQLModel):
 
 class UserCreate(UserBase):
     password: str = Field(min_length=8, max_length=40)
+    region_id: int
 
 class UserRegister(SQLModel):
     email: EmailStr

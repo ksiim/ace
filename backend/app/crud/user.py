@@ -8,7 +8,11 @@ from common.db.models.user import User, UserCreate
 
 async def create_user(*, session: AsyncSession, user_create: UserCreate) -> User:
     db_obj = User.model_validate(
-        user_create, update={"hashed_password": await get_password_hash(user_create.password)}
+        user_create,
+        update={
+            "hashed_password": await get_password_hash(user_create.password),
+            "region_id": user_create.region_id,
+        }
     )
     session.add(db_obj)
     await session.commit()
