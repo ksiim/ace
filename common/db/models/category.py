@@ -7,6 +7,8 @@ if TYPE_CHECKING:
 class CategoryBase(SQLModel):
     name: str
     is_child: bool = Field(default=False)
+    from_age: Optional[int] = Field(default=None, nullable=True)
+    to_age: Optional[int] = Field(default=None, nullable=True)
 
 class Category(CategoryBase, table=True):
     __tablename__ = "categories"
