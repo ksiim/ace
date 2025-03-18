@@ -149,7 +149,7 @@ const CreateNews: React.FC = () => {
       if (newsId) {
         response = await apiRequest(`news/${newsId}`, 'PUT', payload, true);
       } else {
-        response = await apiRequest('news', 'POST', payload, true);
+        response = await apiRequest('news/', 'POST', payload, true);
       }
       
       if (!response) {
