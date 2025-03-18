@@ -4,55 +4,8 @@ import { apiRequest } from '../../utils/apiRequest.ts';
 import styles from './TournamentPage.module.scss';
 import Header from '../../components/Header/Header.tsx';
 import ParticipantsList from './components/ParticipantsList/ParticipantsList.tsx';
+import type {TournamentPage, User, Sex, Participant} from './types.ts';
 
-interface TournamentPage {
-  id: number;
-  name: string;
-  type: string;
-  is_child: boolean;
-  photo_path: string;
-  organizer_name_and_contacts: string;
-  organizer_requisites: string;
-  description: string;
-  date: string;
-  price: number;
-  can_register: boolean;
-  address: string;
-  prize_fund: number;
-  owner_id: number;
-  sex_id: number;
-  category_id: number;
-  region_id: number;
-}
-
-interface User {
-  name: string;
-  surname: string;
-  patronymic: string;
-  admin: boolean;
-  organizer: boolean;
-  end_of_subscription: string;
-  updated_at: string;
-  created_at: string;
-  phone_number: string;
-  email: string;
-  id: number;
-}
-
-interface Participant {
-  id: number;
-  confirmed: boolean;
-  user_id: number;
-  partner_id: number | null;
-  participant_name: string;
-  tournament_id: number;
-}
-
-interface Sex {
-  id: number;
-  name: string;
-  shortname: string;
-}
 
 const TournamentPage: React.FC = () => {
   const { tournamentId } = useParams<{ tournamentId: string }>();

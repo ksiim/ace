@@ -1,25 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { apiRequest } from "../../../../utils/apiRequest";
 import styles from "../../AdminPanel.module.scss";
+import type {Region, Trainer, TrainerManagementProps} from '../../types.ts';
 
-interface Region {
-  id: number;
-  name: string;
-}
 
-interface Trainer {
-  id: number;
-  name: string;
-  photo_path: string;
-  description: string;
-  phone: string;
-  address: string;
-  region_id: number;
-}
-
-interface TrainerManagementProps {
-  onError: (error: string) => void;
-}
 
 const TrainerManagement: React.FC<TrainerManagementProps> = ({ onError }) => {
   const [trainers, setTrainers] = useState<Trainer[]>([]);

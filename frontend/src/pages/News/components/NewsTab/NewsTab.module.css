@@ -31,6 +31,7 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  margin-bottom: 20px;
 }
 @media (max-width: 768px) {
   .newsTab .posts {
@@ -62,7 +63,6 @@
 }
 @media (max-width: 768px) {
   .newsTab .adminButtons {
-    flex-direction: column;
     gap: 5px;
   }
 }
@@ -87,6 +87,24 @@
 }
 .newsTab .adminButtons .deleteButton {
   background-color: #d32f2f;
+}
+
+.loadMoreButton {
+  background-color: #f95e1b;
+  text-align: center;
+  font-size: 14px;
+  color: white;
+  width: 144px;
+  height: 40px;
+  border-radius: 32px;
+  margin-bottom: 10px;
+}
+@media (max-width: 768px) {
+  .loadMoreButton {
+    width: 100%;
+    font-size: 12px;
+    height: 36px;
+  }
 }
 
 /*# sourceMappingURL=NewsTab.module.css.map */

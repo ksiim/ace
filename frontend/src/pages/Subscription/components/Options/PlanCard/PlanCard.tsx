@@ -1,38 +1,10 @@
 import React, { useState } from 'react';
 import { Star } from 'lucide-react';
 import styles from './PlanCard.module.scss';
-import { apiRequest } from '../../../../../utils/apiRequest.ts'; // Путь к файлу может отличаться
+import { apiRequest } from '../../../../../utils/apiRequest.ts';
+import type {PlanCardProps, Transaction} from '../../../types.ts'; // Путь к файлу может отличаться
 
-export interface PlanFeature {
-  text: string;
-}
 
-export interface SubscriptionPlan {
-  type: string;
-  period: string;
-  features: PlanFeature[];
-  price: number | null;
-  isPopular?: boolean;
-}
-
-interface Transaction {
-  amount: number;
-  payment_link: string;
-  operation_id: string;
-  months: number;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  id: number;
-  user_id: number;
-}
-
-interface PlanCardProps {
-  type: string;
-  period: string;
-  features: PlanFeature[];
-  price: number | null;
-}
 
 export const PlanCard: React.FC<PlanCardProps> = ({
                                                     type,

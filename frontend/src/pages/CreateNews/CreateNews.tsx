@@ -33,7 +33,7 @@ const CreateNews: React.FC = () => {
     if (newsId) {
       const loadNews = async () => {
         try {
-          const newsResponse = await apiRequest(`news/${newsId}`, 'GET', undefined, true);
+          const newsResponse = await apiRequest(`news/${newsId}/`, 'GET', undefined, true);
           if (newsResponse) {
             setTitle(newsResponse.title);
             setText(newsResponse.text);
@@ -120,7 +120,7 @@ const CreateNews: React.FC = () => {
     setIsLoading(true);
     
     try {
-      const userResponse = await apiRequest('users/me', 'GET', undefined, true);
+      const userResponse = await apiRequest('users/me/', 'GET', undefined, true);
       if (!userResponse || !userResponse.id) {
         throw new Error('Не удалось получить данные пользователя');
       }
@@ -147,7 +147,7 @@ const CreateNews: React.FC = () => {
       
       let response;
       if (newsId) {
-        response = await apiRequest(`news/${newsId}`, 'PUT', payload, true);
+        response = await apiRequest(`news/${newsId}/`, 'PUT', payload, true);
       } else {
         response = await apiRequest('news/', 'POST', payload, true);
       }

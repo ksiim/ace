@@ -4,20 +4,9 @@ import styles from "./Profile.module.scss";
 import Header from '../../components/Header/Header.tsx';
 import { useNavigate } from 'react-router-dom';
 import { removeToken } from "../../utils/serviceToken.ts";
+import {User} from './types.ts';
 
-interface User {
-  name: string;
-  surname: string;
-  patronymic: string;
-  admin: boolean;
-  organizer: boolean;
-  end_of_subscription: string | null; // Можем ожидать null для конца подписки
-  updated_at: string;
-  created_at: string;
-  phone_number: string;
-  email: string;
-  id: number;
-}
+
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();

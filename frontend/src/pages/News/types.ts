@@ -16,3 +16,4 @@ export interface PostType {
   photo_paths: string[];
   comments: CommentType[];
 }
+

@@ -1,7 +1,8 @@
 import React from 'react';
 import { PlanCard } from './PlanCard/PlanCard';
 import styles from './Options.module.scss';
-import { SubscriptionPlan } from './PlanCard/PlanCard.tsx';
+import type {SubscriptionPlan} from '../../types.ts';
+
 
 const plans: SubscriptionPlan[] = [
   {

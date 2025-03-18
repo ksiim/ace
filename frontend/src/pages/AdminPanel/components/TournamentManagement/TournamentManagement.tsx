@@ -1,55 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { apiRequest } from "../../../../utils/apiRequest.ts";
 import styles from "../../AdminPanel.module.scss";
+import type {Category, Region, Sex, Tournament, TournamentManagementProps } from '../../types.ts';
 
-interface Tournament {
-  id: number;
-  name: string;
-  type: string;
-  is_child: boolean;
-  photo_path: string;
-  organizer_name_and_contacts: string;
-  organizer_requisites: string;
-  description: string;
-  date: string;
-  price: number;
-  can_register: boolean;
-  address: string;
-  prize_fund: number;
-  owner_id: number;
-  sex_id: number;
-  category_id: number;
-  region_id: number;
-}
-
-interface User {
-  id: number;
-  admin: boolean;
-  organizer: boolean;
-}
-
-interface Category {
-  id: number;
-  name: string;
-  is_child: boolean;
-}
-
-interface Region {
-  id: number;
-  name: string;
-}
-
-interface Sex {
-  id: number;
-  name: string;
-  shortname: string;
-}
-
-interface TournamentManagementProps {
-  currentUser: User;
-  onTournamentsUpdate: (updateFn: (prevTournaments: Tournament[]) => Tournament[]) => void;
-  onError: (error: string) => void;
-}
 
 const TournamentManagement: React.FC<TournamentManagementProps> = ({
                                                                      currentUser,
@@ -275,7 +228,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     e.preventDefault();
     if (!editTournamentId) return;
     
-    apiRequest(`tournaments/${editTournamentId}`, "PUT", newTournament, true)
+    apiRequest(`tournaments/${editTournamentId}/`, "PUT", newTournament, true)
       .then((data) => {
         if (data) {
           setTournaments(prevTournaments =>
@@ -333,7 +286,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       
       // Send the PUT request with the updated tournament data
       const response = await apiRequest(
-        `tournaments/${tournamentId}`,
+        `tournaments/${tournamentId}/`,
         "PUT",
         updatedTournament,
         true
@@ -371,7 +324,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   const handleSendMoneyRequest = async (tournamentId: number) => {
     try {
       const response = await apiRequest(
-        `tournaments/${tournamentId}/send-money-request`,
+        `tournaments/${tournamentId}/send-money-request/`,
         "POST",
         undefined,
         true

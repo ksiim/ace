@@ -1,26 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { apiRequest } from "../../../../utils/apiRequest";
 import styles from "../../AdminPanel.module.scss";
+import type {UserManagementProps, UserToManage} from '../../types.ts';
 
-interface User {
-  id: number;
-  name: string;
-  surname: string;
-  patronymic: string;
-  admin: boolean;
-  organizer: boolean;
-  phone_number: string;
-  email: string;
-  end_of_subscription: string;
-  created_at: string;
-  updated_at: string;
-  score?: number;
-}
 
-interface UserManagementProps {
-  currentUser: User;
-  onError: (error: string) => void;
-}
+
 
 type UserRole = "Администратор" | "Организатор" | "Пользователь";
 
@@ -28,7 +12,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
                                                          currentUser,
                                                          onError,
                                                        }) => {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserToManage[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "">("");
   const [subscriptionFilter, setSubscriptionFilter] = useState<boolean | null>(null);
@@ -59,7 +43,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
       .catch(() => onError("Ошибка при загрузке пользователей"));
   }, []);
   
-  const getUserRole = (user: User): UserRole => {
+  const getUserRole = (user: UserToManage): UserRole => {
     if (user.admin) return "Администратор";
     if (user.organizer) return "Организатор";
     return "Пользователь";
@@ -215,7 +199,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
       .catch(() => onError("Ошибка обновления роли пользователя"));
   };
   
-  const handleEditRole = (user: User) => {
+  const handleEditRole = (user: UserToManage) => {
     setEditUserData({
       userId: user.id,
       points: null,
@@ -224,7 +208,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
     });
   };
   
-  const handleEditPoints = (user: User) => {
+  const handleEditPoints = (user: UserToManage) => {
     setEditUserData({
       userId: user.id,
       points: user.score || 0,

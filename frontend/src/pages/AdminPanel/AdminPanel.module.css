@@ -65,6 +65,10 @@
 .tabButton:hover {
   color: #f95e1b;
 }
+.tabButton:disabled {
+  color: lightgray;
+  cursor: not-allowed;
+}
 .tabButton.active {
   color: #f95e1b;
   font-weight: 600;
@@ -217,6 +221,9 @@ form {
 .submitButton:hover {
   background-color: rgb(219.2307692308, 70.1923076923, 5.7692307692);
 }
+.submitButton:disabled {
+  color: gray;
+}
 @media (max-width: 768px) {
   .submitButton {
     width: 100%;
@@ -236,6 +243,9 @@ form {
 }
 .cancelButton:hover {
   background-color: rgb(198.5, 198.5, 198.5);
+}
+.cancelButton:disabled {
+  color: gray;
 }
 @media (max-width: 768px) {
   .cancelButton {
@@ -327,6 +337,9 @@ form {
 .editButton:hover {
   background-color: rgb(219.2307692308, 70.1923076923, 5.7692307692);
 }
+.editButton:disabled {
+  color: gray;
+}
 
 .deleteButton {
   background-color: #d32f2f;
@@ -343,6 +356,9 @@ form {
 .deleteButton:hover {
   background-color: rgb(170.8571428571, 36.1428571429, 36.1428571429);
 }
+.deleteButton:disabled {
+  color: gray;
+}
 
 .saveButton {
   background-color: #4caf50;
@@ -358,6 +374,9 @@ form {
 }
 .saveButton:hover {
   background-color: rgb(60.5577689243, 139.4422310757, 63.7450199203);
+}
+.saveButton:disabled {
+  color: gray;
 }
 
 .pointsInput {

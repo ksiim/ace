@@ -28,6 +28,10 @@ $info-color: #2196f3;
   &:hover {
     background-color: darken($bg-color, 10%);
   }
+
+  &:disabled{
+    color: gray;
+  }
 }
 
 // Стили админки
@@ -95,6 +99,11 @@ $info-color: #2196f3;
 
   &:hover {
     color: $primary-color;
+  }
+
+  &:disabled {
+    color: lightgray;
+    cursor: not-allowed;
   }
 
   &.active {
@@ -388,6 +397,7 @@ form {
     &.active:after {
       display: none;
     }
+
   }
 
   .dataTable {

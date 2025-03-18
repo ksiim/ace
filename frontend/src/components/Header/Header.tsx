@@ -11,10 +11,8 @@ import {
   Trophy,
   Wallet
 } from 'lucide-react';
+import type {HeaderProps} from './types.ts';
 
-interface HeaderProps {
-  scrollToBenefits: () => void;
-}
 
 const Header: React.FC<HeaderProps> = ({ scrollToBenefits }) => {
   const navigate = useNavigate();

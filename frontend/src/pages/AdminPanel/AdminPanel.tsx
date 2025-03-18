@@ -5,49 +5,17 @@ import UserManagement from "./components/UserManagement/UserManagement.tsx";
 import TrainersManagement
   from './components/TrainersManagement/TrainersManagement.tsx';
 import styles from "./AdminPanel.module.scss";
+import {Tournament, UserToManage} from './types.ts';
 
-interface Tournament {
-  id: number;
-  name: string;
-  type: string;
-  is_child: boolean;
-  photo_path: string;
-  organizer_name_and_contacts: string;
-  organizer_requisites: string;
-  description: string;
-  date: string;
-  price: number;
-  can_register: boolean;
-  address: string;
-  prize_fund: number;
-  owner_id: number;
-  sex_id: number;
-  category_id: number;
-  region_id: number;
-}
 
-interface User {
-  id: number;
-  name: string;
-  surname: string;
-  patronymic: string;
-  admin: boolean;
-  organizer: boolean;
-  phone_number: string;
-  email: string;
-  end_of_subscription: string;
-  created_at: string;
-  updated_at: string;
-  points?: number;
-}
 
 const AdminPanel: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("tournaments");
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserToManage[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserToManage | null>(null);
   
   // Загрузка данных о текущем пользователе
   useEffect(() => {
@@ -173,6 +141,7 @@ const AdminPanel: React.FC = () => {
           <button
             className={`${styles.tabButton} ${activeTab === "trainers" ? styles.active : ""}`}
             onClick={() => setActiveTab("trainers")}
+            disabled={true}
           >
             Управление тренерами
           </button>

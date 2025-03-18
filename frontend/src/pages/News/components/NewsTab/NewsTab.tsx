@@ -10,22 +10,22 @@ const NewsTab: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const [skip, setSkip] = useState<number>(0); // Текущий скип
-  const [hasMore, setHasMore] = useState<boolean>(true); // Есть ли ещё новости для загрузки
+  const [skip, setSkip] = useState<number>(0);
+  const [hasMore, setHasMore] = useState<boolean>(true);
   const navigate = useNavigate();
   
-  // Получение новостей при загрузке компонента
-  useEffect(() => {
-    fetchNews(0); // Загружаем первые 5 новостей
-    checkIfAdmin();
-  }, []);
-  
-  // Функция получения новостей с пагинацией
-  const fetchNews = async (skip: number) => {
+  // Функция получения новостей с пагинацией и сортировкой по убыванию
+  const fetchNews = async (skipValue: number) => {
     try {
       setIsLoading(true);
-      const response = await apiRequest(`news/?skip=${skip}&limit=5`, 'GET', undefined, true);
+      
+      // Убедимся, что skip не отрицательный
+      const safeSkip = Math.max(0, skipValue);
+      const response = await apiRequest(`news/?skip=${safeSkip}&limit=5&order=desc`, 'GET', undefined, true);
       if (!response || !response.data) throw new Error('Не удалось получить данные');
+      
+      // Сохраняем общее количество новостей
+      
       
       const formattedPosts: PostType[] = await Promise.all(
         response.data.map(async (newsItem: any) => {
@@ -38,17 +38,23 @@ const NewsTab: React.FC = () => {
             content: newsItem.text,
             imageUrl: newsItem.photo,
             comments: comments,
+            photo_paths: newsItem.photo_paths || [],
           };
         })
       );
       
-      // Если новостей меньше 5, значит, это последняя страница
+      // Проверяем, есть ли еще новости для загрузки
       if (formattedPosts.length < 5) {
         setHasMore(false);
+      } else {
+        setHasMore(true);
       }
       
       // Добавляем новые новости к уже загруженным
-      setPosts(prevPosts => (skip === 0 ? formattedPosts : [...prevPosts, ...formattedPosts]));
+      setPosts((prevPosts) => {
+        const newPosts = safeSkip === 0 ? formattedPosts : [...prevPosts, ...formattedPosts];
+        return newPosts;
+      });
       setError(null);
     } catch (err) {
       console.error('Ошибка при загрузке новостей:', err);
@@ -57,6 +63,18 @@ const NewsTab: React.FC = () => {
       setIsLoading(false);
     }
   };
+  
+  const loadMoreNews = () => {
+    const newSkip = skip + 5; // Увеличиваем skip на 5
+    setSkip(newSkip);
+    fetchNews(newSkip); // Загружаем следующие 5 новостей
+  };
+  
+  // Инициализация при первой загрузке
+  useEffect(() => {
+    fetchNews(0); // Начинаем с skip = 0
+    checkIfAdmin();
+  }, []); // Зависимость от sortOrder
   
   // Функция получения комментариев для конкретной новости
   const fetchCommentsForNews = async (newsId: number): Promise<CommentType[]> => {
@@ -137,7 +155,7 @@ const NewsTab: React.FC = () => {
         news_id: postId
       };
       
-      const response = await apiRequest(`news/comments/${postId}`, "POST", payload, true);
+      const response = await apiRequest(`news/comments/${postId}/`, "POST", payload, true);
       if (!response) throw new Error('Не удалось добавить комментарий');
       
       const updatedComments = await fetchCommentsForNews(postId);
@@ -163,7 +181,7 @@ const NewsTab: React.FC = () => {
   // Функция удаления новости
   const handleDeleteNews = async (newsId: number) => {
     try {
-      const response = await apiRequest(`news/${newsId}`, 'DELETE', undefined, true);
+      const response = await apiRequest(`news/${newsId}/`, 'DELETE', undefined, true);
       if (!response) {
         throw new Error('Не удалось удалить новость');
       }
@@ -174,17 +192,11 @@ const NewsTab: React.FC = () => {
       
       // Обновляем список новостей после удаления
       setPosts(posts.filter(post => post.id !== newsId));
+      
     } catch (err) {
       console.error('Ошибка при удалении новости:', err);
       alert('Не удалось удалить новость. Попробуйте снова.');
     }
-  };
-  
-  // Функция для загрузки дополнительных новостей
-  const loadMoreNews = () => {
-    const newSkip = skip + 5;
-    setSkip(newSkip);
-    fetchNews(newSkip); // Загружаем следующие 5 новостей
   };
   
   useEffect(() => {

@@ -2,30 +2,13 @@ import React, { useEffect, useState } from "react";
 import { apiRequest } from "../../../../utils/apiRequest.ts";
 import styles from "./ParticipantsList.module.scss";
 import {Check, Clock} from 'lucide-react';
+import {ParticipantsListProps, Fio} from '../../types.ts';
 
-interface User {
-  name: string;
-  surname: string;
-  patronymic: string;
-}
-
-interface Participant {
-  id: number;
-  confirmed: boolean;
-  user_id: number;
-  partner_id: number | null;
-  participant_name?: string;
-  tournament_id: number;
-}
-
-interface ParticipantsListProps {
-  participants: Participant[];
-}
 
 const ParticipantsList: React.FC<ParticipantsListProps> = ({
                                                              participants,
                                                            }) => {
-  const [userDetails, setUserDetails] = useState<Record<number, User>>({});
+  const [userDetails, setUserDetails] = useState<Record<number, Fio>>({});
   
   useEffect(() => {
     // Загружаем информацию о пользователях при изменении списка участников

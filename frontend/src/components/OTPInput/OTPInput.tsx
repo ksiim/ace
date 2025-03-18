@@ -1,14 +1,7 @@
 import React, { useState, useRef, useImperativeHandle, forwardRef } from "react";
 import styles from "./OTPInput.module.scss";
+import type {OTPInputProps, OTPInputRef} from './types.ts';
 
-interface OTPInputProps {
-  onComplete: (otp: string) => void;
-}
-
-export interface OTPInputRef {
-  focus: () => void;
-  clear: () => void;
-}
 
 const OTPInput = forwardRef<OTPInputRef, OTPInputProps>(({ onComplete }, ref) => {
   const [otp, setOtp] = useState(["", "", "", ""]);

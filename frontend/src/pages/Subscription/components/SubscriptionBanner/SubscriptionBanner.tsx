@@ -1,9 +1,8 @@
 import React from "react";
 import styles from "./SubscriptionBanner.module.scss";
+import type {SubscriptionBannerProps} from '../../types.ts';
 
-interface SubscriptionBannerProps {
-  scrollToOptions: () => void;
-}
+
 
 const SubscriptionBanner: React.FC<SubscriptionBannerProps> = ({ scrollToOptions }) => {
   return (

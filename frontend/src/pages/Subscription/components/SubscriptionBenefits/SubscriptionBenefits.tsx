@@ -1,10 +1,7 @@
 import React from 'react';
 import styles from './SubscriptionBenefits.module.scss';
+import type {BenefitItem} from '../../types.ts';
 
-interface BenefitItem {
-  title: string;
-  description: string;
-}
 
 const SubscriptionBenefits: React.FC = () => {
   const benefits: BenefitItem[] = [

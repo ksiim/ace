@@ -3,15 +3,9 @@ import { apiRequest } from '../../utils/apiRequest.ts';
 import styles from './Trainers.module.scss';
 import Header from '../../components/Header/Header.tsx';
 import Footer from '../../components/Footer/Footer.tsx';
+import type {Trainer} from './types.ts';
 
-interface Trainer {
-  name: string;
-  photo_path: string;
-  description: string;
-  phone: string;
-  address: string;
-  id: number;
-}
+
 
 const Trainers: React.FC = () => {
   const [trainers, setTrainers] = useState<Trainer[]>([]);
@@ -22,7 +16,7 @@ const Trainers: React.FC = () => {
     const fetchTrainers = async () => {
       setLoading(true);
       try {
-        const response = await apiRequest('trainers', 'GET', undefined, true);
+        const response = await apiRequest('trainers/', 'GET', undefined, true);
         if (response.error) {
           throw new Error('Не удалось загрузить данные тренеров');
         }
