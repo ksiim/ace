@@ -3,7 +3,9 @@ from pydantic import EmailStr, computed_field
 from sqlmodel import Field, Relationship, SQLModel
 import datetime
 
+
 if TYPE_CHECKING:
+    from .region import Region
     from .tournament import Tournament
 
 class UserBase(SQLModel):
@@ -49,6 +51,7 @@ class UserRegister(SQLModel):
     telegram_id: int
     birth_date: datetime.date
     sex: str
+    region_id: int 
 
 class UserUpdate(UserBase):
     email: Optional[EmailStr] = Field(default=None, max_length=255)
@@ -74,7 +77,10 @@ class User(UserBase, table=True):
     __tablename__ = 'users'
     id: Optional[int] = Field(primary_key=True, default=None)
     hashed_password: Optional[str] = Field(default=None, nullable=True)
+    
+    region_id: Optional[int] = Field(foreign_key="regions.id")
 
+    region: "Region" = Relationship(back_populates="users")
     tournaments: List["Tournament"] = Relationship(back_populates="owner")
 
 class UsersPublic(SQLModel):

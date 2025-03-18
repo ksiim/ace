@@ -16,6 +16,7 @@ from backend.app.api.deps import (
 )
 from backend.app.messaging.producer import send_tournament_money_request_task
 from common.db.models.category import Category
+from common.db.models.enums import TournamentType
 from common.db.models.participant import TournamentParticipant, TournamentParticipantsPublic
 from common.db.models.region import Region
 from common.db.models.sex import Sex
@@ -68,14 +69,32 @@ async def read_all_tournaments(
     session: SessionDep,
     skip: int = 0,
     limit: int = 100,
+    region_id: Optional[int] = None,
+    category_id: Optional[int] = None,
+    type: Optional[TournamentType] = None,  # Новый фильтр по типу
 ) -> Any:
     """
-    Retrieve all tournaments
+    Retrieve all tournaments with optional filters by region_id, category_id and type
     """
     count_statement = select(func.count()).select_from(Tournament)
+    if region_id is not None:
+        count_statement = count_statement.where(Tournament.region_id == region_id)
+    if category_id is not None:
+        count_statement = count_statement.where(Tournament.category_id == category_id)
+    if type is not None:
+        count_statement = count_statement.where(Tournament.type == type)
     count = (await session.execute(count_statement)).scalar_one_or_none()
 
-    statement = select(Tournament).offset(skip).limit(limit)
+    statement = select(Tournament)
+    if region_id is not None:
+        statement = statement.where(Tournament.region_id == region_id)
+    if category_id is not None:
+        statement = statement.where(Tournament.category_id == category_id)
+    if type is not None:
+        statement = statement.where(Tournament.type == type)
+    
+    statement = statement.offset(skip).limit(limit)
+    
     tournaments = (await session.execute(statement)).scalars().all()
     return TournamentsPublic(data=tournaments, count=count)
 

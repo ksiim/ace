@@ -5,7 +5,7 @@ from typing import Any, Optional
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import or_, update
+from sqlalchemy import desc, or_, update
 from sqlmodel import col, delete, func, select
 
 from backend.app.crud import user as user_crud
@@ -18,10 +18,11 @@ from backend.app.api.deps import (
 from backend.app.core.config import settings
 from backend.app.core.security import get_password_hash, verify_password
 from common.db.models import Message, UpdatePassword, User, UserCreate, UserFio, UserPublic, UserRegister, UserUpdate, UserUpdateMe, UsersPublic
+from common.db.models.category import Category
+from common.db.models.enums import OrderEnum
 
 
 router = APIRouter()
-
 
 @router.get(
     "/",
@@ -32,14 +33,51 @@ async def read_users(
     session: SessionDep,
     skip: int = 0,
     limit: int = 100,
+    category_id: Optional[int] = None,
+    is_organizer: Optional[bool] = None,
+    is_admin: Optional[bool] = None,
+    score_order: Optional[OrderEnum] = None,
+    age_order: Optional[OrderEnum] = None,
 ) -> Any:
     """
-    Retrieve users.
+    Retrieve users with filters and sorting options.
     """
     count_statement = select(func.count()).select_from(User)
-    count = (await session.execute(count_statement)).scalar_one_or_none()
+    
+    statement = select(User)
 
-    statement = select(User).offset(skip).limit(limit)
+    if category_id is not None:
+        category_stmt = select(Category).where(Category.id == category_id)
+        category = (await session.execute(category_stmt)).scalars().first()
+        if category:
+            statement = statement.where(
+                User.age.between(category.from_age, category.to_age)
+            )
+            count_statement = count_statement.where(
+                User.age.between(category.from_age, category.to_age)
+            )
+
+    if is_organizer is not None:
+        statement = statement.where(User.is_organizer == is_organizer)
+        count_statement = count_statement.where(User.is_organizer == is_organizer)
+
+    if is_admin is not None:
+        statement = statement.where(User.is_admin == is_admin)
+        count_statement = count_statement.where(User.is_admin == is_admin)
+
+    if score_order == OrderEnum.desc:
+        statement = statement.order_by(desc(User.score))
+    elif score_order == OrderEnum.asc:
+        statement = statement.order_by(User.score)
+
+    if age_order == OrderEnum.desc:
+        statement = statement.order_by(desc(User.age))
+    elif age_order == OrderEnum.asc:
+        statement = statement.order_by(User.age)
+
+    statement = statement.offset(skip).limit(limit)
+
+    count = (await session.execute(count_statement)).scalar_one_or_none()
     users = (await session.execute(statement)).scalars().all()
 
     return UsersPublic(data=users, count=count)
