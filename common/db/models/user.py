@@ -1,5 +1,5 @@
 from typing import List, Optional, TYPE_CHECKING
-from pydantic import EmailStr
+from pydantic import EmailStr, computed_field
 from sqlmodel import Field, Relationship, SQLModel
 import datetime
 
@@ -21,6 +21,20 @@ class UserBase(SQLModel):
     email: EmailStr = Field(max_length=255, nullable=True)
     sex: Optional[str] = Field(default=None, nullable=True)
     birth_date: Optional[datetime.date] = Field(default=None, nullable=True)
+    
+    @computed_field
+    @property
+    def subscriber(self) -> bool:
+        if self.end_of_subscription is None:
+            return False
+        return self.end_of_subscription > datetime.datetime.now()
+    
+    @computed_field
+    @property
+    def age(self) -> int:
+        if self.birth_date is None:
+            return 0
+        return datetime.datetime.now().year - self.birth_date.year
 
 class UserCreate(UserBase):
     password: str = Field(min_length=8, max_length=40)
@@ -62,16 +76,6 @@ class User(UserBase, table=True):
     hashed_password: Optional[str] = Field(default=None, nullable=True)
 
     tournaments: List["Tournament"] = Relationship(back_populates="owner")
-    
-    @property
-    def fio(self) -> str:
-        return f"{self.surname} {self.name} {self.patronymic}"
-    
-    @property
-    def subscriber(self) -> bool:
-        if self.end_of_subscription is None:
-            return False
-        return self.end_of_subscription > datetime.datetime.now()
 
 class UsersPublic(SQLModel):
     data: List[UserPublic]

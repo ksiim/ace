@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import or_, update
+from sqlalchemy import desc, or_, update
 from sqlmodel import col, delete, func, select
 
 
@@ -18,6 +18,7 @@ from common.db.models import (
     Message, News, NewsCreate, NewsPublic, NewsUpdate,
     NewsesPublic
 )
+from common.db.models.enums import OrderEnum
 from common.db.models.news_photo import NewsPhoto, NewsPhotosPublic
 
 
@@ -33,14 +34,26 @@ async def read_newses(
     session: SessionDep,
     skip: int = 0,
     limit: int = 100,
+    order: OrderEnum = OrderEnum.asc,  # по умолчанию сортировка по возрастанию
 ) -> Any:
     """
-    Retrieve newses
+    Retrieve newses with optional sorting by id
     """
     count_statement = select(func.count()).select_from(News)
     count = (await session.execute(count_statement)).scalar_one_or_none()
 
-    statement = select(News).offset(skip).limit(limit)
+    # Создаем базовый запрос
+    statement = select(News)
+    
+    # Применяем сортировку в зависимости от параметра order
+    if order == OrderEnum.desc:
+        statement = statement.order_by(desc(News.id))
+    else:  # по умолчанию или при order=asc
+        statement = statement.order_by(News.id)
+    
+    # Добавляем пагинацию
+    statement = statement.offset(skip).limit(limit)
+    
     newses = (await session.execute(statement)).scalars().all()
 
     return NewsesPublic(data=newses, count=count)
