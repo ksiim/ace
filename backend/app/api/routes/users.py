@@ -39,6 +39,7 @@ async def read_users(
     is_organizer: Optional[bool] = None,
     is_admin: Optional[bool] = None,
     score_order: Optional[OrderEnum] = None,
+    fio: Optional[str] = None,
     age_order: Optional[OrderEnum] = None,
 ) -> Any:
     """
@@ -64,22 +65,35 @@ async def read_users(
         count_statement = count_statement.where(User.region_id == region_id)
 
     if is_organizer is not None:
-        statement = statement.where(User.is_organizer == is_organizer)
-        count_statement = count_statement.where(User.is_organizer == is_organizer)
+        statement = statement.where(User.organizer == is_organizer)
+        count_statement = count_statement.where(User.organizer == is_organizer)
 
     if is_admin is not None:
-        statement = statement.where(User.is_admin == is_admin)
-        count_statement = count_statement.where(User.is_admin == is_admin)
+        statement = statement.where(User.admin == is_admin)
+        count_statement = count_statement.where(User.admin == is_admin)
+        
+    if fio is not None:
+        fio_parts = fio.strip().split()
+        
+        if len(fio_parts) >= 1:  # Фамилия
+            statement = statement.where(User.surname.ilike(f"%{fio_parts[0]}%"))
+            count_statement = count_statement.where(User.surname.ilike(f"%{fio_parts[0]}%"))
+        if len(fio_parts) >= 2:  # Имя
+            statement = statement.where(User.name.ilike(f"%{fio_parts[1]}%"))
+            count_statement = count_statement.where(User.name.ilike(f"%{fio_parts[1]}%"))
+        if len(fio_parts) >= 3:  # Отчество
+            statement = statement.where(User.patronymic.ilike(f"%{fio_parts[2]}%"))
+            count_statement = count_statement.where(User.patronymic.ilike(f"%{fio_parts[2]}%"))
 
     if score_order == OrderEnum.desc:
         statement = statement.order_by(desc(User.score))
     elif score_order == OrderEnum.asc:
         statement = statement.order_by(User.score)
 
-    if age_order == OrderEnum.desc:
-        statement = statement.order_by(desc(User.age))
-    elif age_order == OrderEnum.asc:
-        statement = statement.order_by(User.age)
+    if age_order == OrderEnum.asc:
+        statement = statement.order_by(User.birth_date.desc())
+    elif age_order == OrderEnum.desc:
+        statement = statement.order_by(User.birth_date.asc())
 
     statement = statement.offset(skip).limit(limit)
 
