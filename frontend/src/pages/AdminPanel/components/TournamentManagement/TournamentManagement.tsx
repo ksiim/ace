@@ -151,6 +151,8 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       return;
     }
     
+    console.log(newTournament);
+    
     // Отправка данных на сервер
     apiRequest("tournaments/", "POST", newTournament, true)
       .then((data) => {
@@ -160,7 +162,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             return Array.isArray(prevTournaments) ? [...prevTournaments, data] : [data];
           });
           
-          console.log(newTournament);
+          
           
           // Сброс формы
           setNewTournament({
@@ -413,7 +415,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             <select
               id="category_id"
               name="category_id"
-              value={newTournament.category_id || ''}
+              value={newTournament.category_id || 0}
               onChange={handleTournamentInputChange}
               required
             >
@@ -433,7 +435,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             <select
               id="region_id"
               name="region_id"
-              value={newTournament.region_id || ''}
+              value={newTournament.region_id || 0}
               onChange={handleTournamentInputChange}
               required
             >

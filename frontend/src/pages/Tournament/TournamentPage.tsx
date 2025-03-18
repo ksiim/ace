@@ -13,6 +13,7 @@ const TournamentPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isRegistered, setIsRegistered] = useState(false);
   const [userData, setUserData] = useState<User | null>(null);
   const [partnerId, setPartnerId] = useState<string>('');
   const [partnerData, setPartnerData] = useState<User | null>(null);
@@ -20,12 +21,18 @@ const TournamentPage: React.FC = () => {
   const [sexes, setSexes] = useState<Sex[]>([]);
   
   const loadParticipants = async () => {
-    if (!tournament) return;
+    if (!tournament || !userData) return;
     
     try {
-      const response = await apiRequest(`tournaments/${tournament.id}/participants`, 'GET', undefined, true);
+      const response = await apiRequest(`tournaments/${tournament.id}/participants`, 'GET', undefined, false);
       if (response && !response.error) {
         setParticipants(response.data);
+        
+        // Проверяем, зарегистрирован ли текущий пользователь
+        const isUserRegistered = response.data.some(
+          (participant: Participant) => participant.user_id === userData.id
+        );
+        setIsRegistered(isUserRegistered);
       }
     } catch (error) {
       console.error('Ошибка при загрузке списка участников:', error);
@@ -35,9 +42,28 @@ const TournamentPage: React.FC = () => {
   useEffect(() => {
     const fetchTournament = async () => {
       try {
-        const response = await apiRequest(`tournaments/${tournamentId}`, 'GET', undefined, true);
+        const response = await apiRequest(`tournaments/${tournamentId}`, 'GET', undefined, false);
         if (response) {
           setTournament(response);
+          
+          // Загружаем участников сразу после загрузки турнира
+          const participantsResponse = await apiRequest(
+            `tournaments/${response.id}/participants`,
+            'GET',
+            undefined,
+            true
+          );
+          if (participantsResponse && !participantsResponse.error) {
+            setParticipants(participantsResponse.data);
+            
+            // Проверяем, зарегистрирован ли текущий пользователь
+            if (userData) {
+              const isUserRegistered = participantsResponse.data.some(
+                (participant: Participant) => participant.user_id === userData.id
+              );
+              setIsRegistered(isUserRegistered);
+            }
+          }
         }
       } catch (error) {
         console.error('Ошибка загрузки турнира:', error);
@@ -57,9 +83,9 @@ const TournamentPage: React.FC = () => {
       }
     };
     
-    fetchSexes()
+    fetchSexes();
     fetchTournament();
-  }, [tournamentId]);
+  }, [tournamentId, userData]); // Добавляем userData в зависимости
   
   useEffect(() => {
     if (tournament) {
@@ -110,7 +136,7 @@ const TournamentPage: React.FC = () => {
     try {
       if (userData && tournament) {
         // Получаем участников турнира
-        const participantsResponse = await apiRequest(`tournaments/${tournament.id}/participants`, 'GET', undefined, true);
+        const participantsResponse = await apiRequest(`tournaments/${tournament.id}/participants`, 'GET', undefined, false);
         
         // Ищем участие текущего пользователя
         const existingParticipant = participantsResponse.data.find(
@@ -204,7 +230,7 @@ const TournamentPage: React.FC = () => {
     // Если партнёр добавлен, получаем его данные
     if (partnerId) {
       try {
-        const response = await apiRequest(`users/${partnerId}/fio`, 'GET', undefined, true);
+        const response = await apiRequest(`users/${partnerId}/fio`, 'GET', undefined, false);
         if (response) {
           setPartnerData(response);
         } else {
@@ -244,8 +270,7 @@ const TournamentPage: React.FC = () => {
               {new Date(tournament.date).toLocaleDateString()}
             </p>
             <p className={styles.tournamentType}>
-              <strong>Тип
-                турнира:</strong> {tournament.type === 'solo' ? 'Одиночный' : 'Парный'}
+              <strong>Тип турнира:</strong> {tournament.type === 'solo' ? 'Одиночный' : 'Парный'}
             </p>
             <p className={styles.tournamentAddress}>
               <strong>Место проведения:</strong> {tournament.address}
@@ -257,24 +282,26 @@ const TournamentPage: React.FC = () => {
               <strong>Реквизиты:</strong> {tournament.organizer_requisites}
             </p>
             <p className={styles.tournamentPrice}>
-              <strong>Стоимость участия (за
-                человека):</strong> {tournament.price > 0 ? `${tournament.price} ₽` : 'Бесплатно'}
+              <strong>Стоимость участия (за человека):</strong> {tournament.price > 0 ? `${tournament.price} ₽` : 'Бесплатно'}
             </p>
             <p className={styles.tournamentPrizeFund}>
-              <strong>Призовой
-                фонд:</strong> {tournament.prize_fund > 0 ? `${tournament.prize_fund} ₽` : 'Не предусмотрен'}
+              <strong>Призовой фонд:</strong> {tournament.prize_fund > 0 ? `${tournament.prize_fund} ₽` : 'Не предусмотрен'}
             </p>
-            
             <p className={styles.tournamentSex}>
-              <strong>Пол
-                участников:</strong> {sexes.find(sex => sex.id === tournament.sex_id)?.name || 'Не указан'}
+              <strong>Пол участников:</strong> {sexes.find(sex => sex.id === tournament.sex_id)?.name || 'Не указан'}
             </p>
             <div className={styles.registrationContainer}>
               {tournament.can_register && (
-                <button className={styles.registrationButton}
-                        onClick={handleRegisterClick}>
-                  Зарегистрироваться
-                </button>
+                <>
+                  {tournament.type === 'solo' && isRegistered ? null : (
+                    <button
+                      className={styles.registrationButton}
+                      onClick={handleRegisterClick}
+                    >
+                      {isRegistered ? 'Обновить участие' : 'Зарегистрироваться'}
+                    </button>
+                  )}
+                </>
               )}
               {!tournament.can_register && (
                 <p className={styles.registrationClosed}>Регистрация закрыта</p>
