@@ -1,0 +1,22 @@
+{
+  "short_name": "ACE.дети",
+  "name": "ACE.дети - Ваше приложение для детей",
+  "icons": [
+    {
+      "src": "/acepng192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/acepng512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f95e1b"
+}

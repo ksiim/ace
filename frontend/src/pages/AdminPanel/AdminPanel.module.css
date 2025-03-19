@@ -332,7 +332,8 @@ form {
   font-size: 0.9rem;
   cursor: pointer;
   font-weight: 500;
-  padding: 0.4rem 0.5rem;
+  min-height: 50px;
+  padding: 0.5rem 0.5rem;
   font-size: 0.8rem;
 }
 .editButton:hover {

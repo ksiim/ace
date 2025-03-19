@@ -343,7 +343,8 @@ form {
 
 .editButton {
   @include button-style($primary-color, $white);
-  padding: 0.4rem 0.5rem;
+  min-height: 50px;
+  padding: 0.5rem 0.5rem;
   font-size: 0.8rem;
 }
 

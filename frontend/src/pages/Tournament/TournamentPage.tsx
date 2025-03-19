@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 import { apiRequest } from '../../utils/apiRequest.ts';
 import styles from './TournamentPage.module.scss';
 import Header from '../../components/Header/Header.tsx';
@@ -19,6 +19,7 @@ const TournamentPage: React.FC = () => {
   const [partnerData, setPartnerData] = useState<User | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [sexes, setSexes] = useState<Sex[]>([]);
+  const navigate = useNavigate();
   
   const loadParticipants = async () => {
     if (!tournament || !userData) return;
@@ -74,7 +75,7 @@ const TournamentPage: React.FC = () => {
     
     const fetchSexes = async () => {
       try {
-        const response = await apiRequest('sex/', 'GET', undefined, true);
+        const response = await apiRequest('sex/', 'GET', undefined, false);
         if (response && response.data) {
           setSexes(response.data);
         }
@@ -197,7 +198,7 @@ const TournamentPage: React.FC = () => {
             alert('Вы успешно зарегистрировались на турнир!');
             await loadParticipants(); // Перезагружаем список участников
           } else {
-            alert('Ошибка при регистрации!');
+            navigate('/subscription')
           }
         }
         
