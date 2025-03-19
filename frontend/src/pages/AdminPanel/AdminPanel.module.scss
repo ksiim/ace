@@ -333,6 +333,7 @@ form {
 // Кнопки действий
 .actionButtons {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
 
   @media (max-width: 768px) {
@@ -342,7 +343,7 @@ form {
 
 .editButton {
   @include button-style($primary-color, $white);
-  padding: 0.4rem 0.75rem;
+  padding: 0.4rem 0.5rem;
   font-size: 0.8rem;
 }
 
@@ -410,6 +411,7 @@ form {
 
   .actionButtons {
     flex-direction: column;
+
   }
 }
 

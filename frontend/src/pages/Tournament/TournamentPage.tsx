@@ -267,7 +267,7 @@ const TournamentPage: React.FC = () => {
           <div className={styles.tournamentInfo}>
             <h1 className={styles.tournamentName}>{tournament.name}</h1>
             <p className={styles.tournamentDate}>
-              {new Date(tournament.date).toLocaleDateString()}
+              {new Date(tournament.date).toLocaleDateString()} {tournament.description || '00:00'}
             </p>
             <p className={styles.tournamentType}>
               <strong>Тип турнира:</strong> {tournament.type === 'solo' ? 'Одиночный' : 'Парный'}

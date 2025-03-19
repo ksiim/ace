@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { apiRequest } from "../../../../utils/apiRequest.ts";
 import styles from "../../AdminPanel.module.scss";
 import type {Category, Region, Sex, Tournament, TournamentManagementProps } from '../../types.ts';
+import { Trash2 } from 'lucide-react';
 
 
 const TournamentManagement: React.FC<TournamentManagementProps> = ({
@@ -104,6 +105,39 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
         ...prev,
         [name]: parsedValue,
       }));
+    }
+  };
+  
+  const handleDeleteTournament = async (tournamentId: number) => {
+    try {
+      // Send DELETE request to the server
+      const response = await apiRequest(
+        `tournaments/${tournamentId}/`,
+        "DELETE",
+        undefined,
+        true
+      );
+      
+      if (response) {
+        // Remove the deleted tournament from the state
+        setTournaments((prevTournaments) =>
+          prevTournaments.filter((t) => t.id !== tournamentId)
+        );
+        
+        // Update the parent component's tournaments state
+        onTournamentsUpdate((prevTournaments) =>
+          Array.isArray(prevTournaments)
+            ? prevTournaments.filter((t) => t.id !== tournamentId)
+            : []
+        );
+        
+        alert("Турнир успешно удален");
+      } else {
+        onError("Ошибка при удалении турнира");
+      }
+    } catch (err) {
+      console.error("Ошибка при удалении турнира:", err);
+      onError("Ошибка при удалении турнира");
     }
   };
   
@@ -600,9 +634,21 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
                 <td>{new Date(tournament.date).toLocaleDateString()}</td>
                 <td>{tournament.address}</td>
                 <td>{tournament.price}</td>
-                <td>{tournament.sex_id === 1 ? 'Мужчины' : tournament.sex_id === 2 ? 'Женщины' : tournament.sex_id === 3 ? 'Микст' : 'Не указан'}</td>
-                <td>{categories.find(c => c.id === tournament.category_id)?.name || 'Не указана'}</td>
-                <td>{regions.find(r => r.id === tournament.region_id)?.name || 'Не указан'}</td>
+                <td>
+                  {tournament.sex_id === 1
+                    ? 'Мужчины'
+                    : tournament.sex_id === 2
+                      ? 'Женщины'
+                      : tournament.sex_id === 3
+                        ? 'Микст'
+                        : 'Не указан'}
+                </td>
+                <td>
+                  {categories.find((c) => c.id === tournament.category_id)?.name || 'Не указана'}
+                </td>
+                <td>
+                  {regions.find((r) => r.id === tournament.region_id)?.name || 'Не указан'}
+                </td>
                 <td>
                   {canEditTournament(tournament) && (
                     <div className={styles.actionButtons}>
@@ -614,9 +660,13 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
                       </button>
                       <button
                         className={styles.editButton}
-                        onClick={() => handleToggleRegistration(tournament.id, tournament.can_register)}
+                        onClick={() =>
+                          handleToggleRegistration(tournament.id, tournament.can_register)
+                        }
                       >
-                        {tournament.can_register ? "Закрыть регистрацию" : "Открыть регистрацию"}
+                        {tournament.can_register
+                          ? 'Закрыть регистрацию'
+                          : 'Открыть регистрацию'}
                       </button>
                       <button
                         className={styles.editButton}
@@ -624,6 +674,8 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
                       >
                         Запросить взносы
                       </button>
+                      {/* Add the delete button */}
+                      <Trash2 color={'#ff0000'} onClick={() => handleDeleteTournament(tournament.id)} size={30}/>
                     </div>
                   )}
                 </td>

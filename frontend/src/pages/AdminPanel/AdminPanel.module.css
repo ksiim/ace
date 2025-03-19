@@ -314,6 +314,7 @@ form {
 
 .actionButtons {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
 }
 @media (max-width: 768px) {
@@ -331,7 +332,7 @@ form {
   font-size: 0.9rem;
   cursor: pointer;
   font-weight: 500;
-  padding: 0.4rem 0.75rem;
+  padding: 0.4rem 0.5rem;
   font-size: 0.8rem;
 }
 .editButton:hover {
