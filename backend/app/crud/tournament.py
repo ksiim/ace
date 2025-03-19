@@ -18,7 +18,7 @@ async def create_tournament(session: AsyncSession, tournament_in: TournamentCrea
             "region_id": tournament_in.region_id,
             "category_id": tournament_in.category_id,
             "sex_id": tournament_in.sex_id,
-            "date": tournament_in.date.replace(tzinfo=None),
+            "date": tournament_in.date,
         },
     )
     session.add(tournament)
