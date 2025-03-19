@@ -19,7 +19,7 @@ router = APIRouter()
 
 @router.get(
     "/",
-    dependencies=[Depends(get_current_user)],
+    # dependencies=[Depends(get_current_user)],
     response_model=SexesPublic,
 )
 async def read_sexes(
@@ -41,7 +41,7 @@ async def read_sexes(
 
 @router.get(
     '/{sex_id}',
-    dependencies=[Depends(get_current_user)],
+    # dependencies=[Depends(get_current_user)],
     response_model=SexPublic,
 )
 async def read_sex(
