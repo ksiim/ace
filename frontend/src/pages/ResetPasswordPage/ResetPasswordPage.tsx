@@ -68,7 +68,7 @@ const ResetPasswordPage: React.FC = () => {
     
     console.log("Отправляемый payload:", payload); // Проверка перед отправкой запроса
     
-    const response = await apiRequest("login/reset-password/", "POST", payload, false);
+    const response = await apiRequest("login/reset-password", "POST", payload, false);
     
     if (response.error) {
       setError('Ошибка при сбросе пароля');

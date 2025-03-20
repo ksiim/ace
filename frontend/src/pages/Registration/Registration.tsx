@@ -168,7 +168,7 @@ const Registration: React.FC = () => {
     
     console.log(userData);
     
-    const response = await apiRequest('users/signup/', 'POST', userData);
+    const response = await apiRequest('users/signup', 'POST', userData);
     if (response) {
       await login(userData.email, userData.password);
     }

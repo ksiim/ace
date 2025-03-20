@@ -112,7 +112,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     try {
       // Send DELETE request to the server
       const response = await apiRequest(
-        `tournaments/${tournamentId}/`,
+        `tournaments/${tournamentId}`,
         "DELETE",
         undefined,
         true
@@ -264,7 +264,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     e.preventDefault();
     if (!editTournamentId) return;
     
-    apiRequest(`tournaments/${editTournamentId}/`, "PUT", newTournament, true)
+    apiRequest(`tournaments/${editTournamentId}`, "PUT", newTournament, true)
       .then((data) => {
         if (data) {
           setTournaments(prevTournaments =>
@@ -322,7 +322,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       
       // Send the PUT request with the updated tournament data
       const response = await apiRequest(
-        `tournaments/${tournamentId}/`,
+        `tournaments/${tournamentId}`,
         "PUT",
         updatedTournament,
         true
@@ -360,7 +360,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   const handleSendMoneyRequest = async (tournamentId: number) => {
     try {
       const response = await apiRequest(
-        `tournaments/${tournamentId}/send-money-request/`,
+        `tournaments/${tournamentId}/send-money-request`,
         "POST",
         undefined,
         true
