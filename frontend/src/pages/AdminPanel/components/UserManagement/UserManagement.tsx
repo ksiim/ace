@@ -1,10 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { apiRequest } from "../../../../utils/apiRequest";
-import styles from "../../AdminPanel.module.scss";
-import type {UserManagementProps, UserToManage} from '../../types.ts';
-
-
-
+import React, { useEffect, useState } from 'react';
+import { apiRequest } from '../../../../utils/apiRequest';
+import styles from '../../AdminPanel.module.scss';
+import type { UserManagementProps, UserToManage } from '../../types.ts';
 
 type UserRole = "Администратор" | "Организатор" | "Пользователь";
 
@@ -13,10 +10,13 @@ const UserManagement: React.FC<UserManagementProps> = ({
                                                          onError,
                                                        }) => {
   const [users, setUsers] = useState<UserToManage[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [roleFilter, setRoleFilter] = useState<UserRole | "">("");
+  const [skip, setSkip] = useState<number>(0);
+  const [limit] = useState<number>(10);
   const [subscriptionFilter, setSubscriptionFilter] = useState<boolean | null>(null);
   const [sortByPoints, setSortByPoints] = useState<"asc" | "desc" | null>(null);
+  const [roleFilter, setRoleFilter] = useState<UserRole | "">("");
+  const [fioFilter, setFioFilter] = useState<string>("");
+  const [ageOrder, setAgeOrder] = useState<"asc" | "desc" | null>(null);
   
   const [editUserData, setEditUserData] = useState<{
     userId: number | null;
@@ -30,18 +30,40 @@ const UserManagement: React.FC<UserManagementProps> = ({
     role: null,
   });
   
-  // Загрузка данных пользователей при монтировании компонента
+  // Функция для сброса всех фильтров
+  const resetFilters = () => {
+    setSubscriptionFilter(null);
+    setRoleFilter("");
+    setFioFilter("");
+    setAgeOrder(null);
+    setSortByPoints(null);
+  };
+  
+  // Загрузка данных пользователей с фильтрами и сортировкой
   useEffect(() => {
-    apiRequest("users/", "GET", undefined, true)
-      .then((data) => {
-        if (data && data.data) {
-          setUsers(data.data); // Обновляем состояние с пользователями
-        } else {
-          onError("Ошибка при загрузке пользователей");
-        }
-      })
-      .catch(() => onError("Ошибка при загрузке пользователей"));
-  }, []);
+    const fetchUsers = async () => {
+      const params = new URLSearchParams({
+        skip: skip.toString(),
+        limit: limit.toString(),
+        ...(roleFilter && {
+          is_admin: (roleFilter === "Администратор").toString(),
+          is_organizer: (roleFilter === "Организатор").toString(),
+        }),
+        ...(sortByPoints && { score_order: sortByPoints }),
+        ...(fioFilter && { fio: fioFilter }),
+        ...(ageOrder && { age_order: ageOrder }),
+      }).toString();
+      
+      const response = await apiRequest(`users/?${params}`, "GET", undefined, true);
+      if (response && response.data) {
+        setUsers(response.data);
+      } else {
+        onError("Ошибка при загрузке пользователей");
+      }
+    };
+    
+    fetchUsers();
+  }, [skip, limit, roleFilter, sortByPoints, fioFilter, ageOrder]);
   
   const getUserRole = (user: UserToManage): UserRole => {
     if (user.admin) return "Администратор";
@@ -62,25 +84,11 @@ const UserManagement: React.FC<UserManagementProps> = ({
   };
   
   const filteredUsers = users.filter((user) => {
-    // Поиск по имени, фамилии, email или телефону
-    const matchesSearchQuery =
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.surname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.phone_number.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    // Фильтр по роли
-    const matchesRoleFilter =
-      roleFilter === "" || getUserRole(user) === roleFilter;
-    
     // Фильтр по подписке
-    const matchesSubscriptionFilter =
-      subscriptionFilter === null ||
+    return subscriptionFilter === null ||
       (subscriptionFilter
         ? user.end_of_subscription && new Date(user.end_of_subscription).getTime() !== 0
         : !user.end_of_subscription || new Date(user.end_of_subscription).getTime() === 0);
-    
-    return matchesSearchQuery && matchesRoleFilter && matchesSubscriptionFilter;
   });
   
   const sortedUsers = [...filteredUsers].sort((a, b) => {
@@ -228,26 +236,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
   
   return (
     <div className={styles.tabContent}>
-      <div className={styles.filtersContainer}>
-        <input
-          type="text"
-          placeholder="Поиск по имени, фамилии, email или телефону"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className={styles.searchInput}
-        />
-        
-        <select
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value as UserRole | "")}
-          className={styles.filterSelect}
-        >
-          <option value="">Все роли</option>
-          <option value="Администратор">Администратор</option>
-          <option value="Организатор">Организатор</option>
-          <option value="Пользователь">Пользователь</option>
-        </select>
-        
+      <div className={styles.filters}>
         <select
           value={subscriptionFilter === null ? "" : subscriptionFilter ? "active" : "inactive"}
           onChange={(e) => {
@@ -260,6 +249,46 @@ const UserManagement: React.FC<UserManagementProps> = ({
           <option value="active">С активной подпиской</option>
           <option value="inactive">Без активной подписки</option>
         </select>
+        
+        {/* Фильтр по роли */}
+        <select
+          value={roleFilter}
+          onChange={(e) => setRoleFilter(e.target.value as UserRole | "")}
+          className={styles.filterSelect}
+        >
+          <option value="">Все роли</option>
+          <option value="Администратор">Администратор</option>
+          <option value="Организатор">Организатор</option>
+          <option value="Пользователь">Пользователь</option>
+        </select>
+        
+        {/* Фильтр по ФИО */}
+        <input
+          type="text"
+          placeholder="Фильтр по ФИО"
+          value={fioFilter}
+          onChange={(e) => setFioFilter(e.target.value)}
+          className={styles.filterInput}
+        />
+        
+        {/* Сортировка по возрасту */}
+        <select
+          value={ageOrder || ""}
+          onChange={(e) => setAgeOrder(e.target.value as "asc" | "desc" | null)}
+          className={styles.filterSelect}
+        >
+          <option value="">Сортировка по возрасту</option>
+          <option value="asc">По возрастанию</option>
+          <option value="desc">По убыванию</option>
+        </select>
+        
+        {/* Кнопка сброса фильтров */}
+        <button
+          onClick={resetFilters}
+          className={styles.resetButton}
+        >
+          Сбросить фильтры
+        </button>
       </div>
       
       <div className={styles.tableContainer}>
@@ -274,7 +303,8 @@ const UserManagement: React.FC<UserManagementProps> = ({
               <th>Телефон</th>
               <th>Роль</th>
               <th>Подписка до</th>
-              <th onClick={handleSortByPoints} className={styles.sortableHeader} style={{ cursor: "pointer" }}>
+              <th onClick={handleSortByPoints} className={styles.sortableHeader}
+                  style={{cursor: "pointer"}}>
                 Очки{" "}
                 {sortByPoints === "asc" && "↑"}
                 {sortByPoints === "desc" && "↓"}
@@ -323,12 +353,10 @@ const UserManagement: React.FC<UserManagementProps> = ({
                       value={editUserData.points === null ? '' : editUserData.points.toString()}
                       onChange={(e) => {
                         const value = e.target.value;
-                        // Убираем ведущие нули
                         const trimmedValue = value.replace(/^0+/, '') || '0';
-                        // Обновляем состояние как строку
                         setEditUserData({
                           ...editUserData,
-                          points: trimmedValue === '' ? null : parseInt(trimmedValue, 10)
+                          points: trimmedValue === '' ? null : parseInt(trimmedValue, 10),
                         });
                       }}
                       className={styles.pointsInput}
@@ -388,8 +416,19 @@ const UserManagement: React.FC<UserManagementProps> = ({
           <p className={styles.noData}>Пользователи не найдены</p>
         )}
       </div>
-    </div>
-  );
+      
+      <div className={styles.pagination}>
+        <button
+          onClick={() => setSkip(Math.max(skip - limit, 0))}
+          disabled={skip === 0}
+        >
+          Назад
+        </button>
+        <button onClick={() => setSkip(skip + limit)}>Вперёд</button>
+      </div>
+</div>
+)
+  ;
 };
 
 export default UserManagement;

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Registration.module.scss';
 import OTPInput from '../../components/OTPInput/OTPInput.tsx';
-import type {OTPInputRef} from '../../components/OTPInput/types.ts';
+import type { OTPInputRef } from '../../components/OTPInput/types.ts';
 import { apiRequest } from '../../utils/apiRequest.ts';
 import { saveToken, setAuthHeader } from '../../utils/serviceToken.ts';
 import axios from 'axios';
@@ -19,8 +19,10 @@ const Registration: React.FC = () => {
     birth_date: '',
     password: '',
     verificationCode: '',
-    sex: '' as 'мужчина' | 'женщина' | '' // Добавляем поле для пола
+    sex: '' as string // Обновляем тип
   });
+  
+  const [sexOptions, setSexOptions] = useState<{ id: number; name: string }[]>([]);
   
   const [step, setStep] = useState(1);
   const [requestId, setRequestId] = useState('');
@@ -31,8 +33,27 @@ const Registration: React.FC = () => {
     password: false,
     verificationCode: false,
     telegram_id: false,
-    sex: false // Ошибка для пола
+    sex: false
   });
+  
+  useEffect(() => {
+    const fetchSexOptions = async () => {
+      try {
+        const response = await apiRequest('sex/', 'GET', undefined, false);
+        if (response && response.data) {
+          // Фильтруем данные, исключая "Микст"
+          const filteredSexOptions = response.data.filter(
+            (sex: { shortname: string }) => sex.shortname !== 'mixed'
+          );
+          setSexOptions(filteredSexOptions);
+        }
+      } catch (error) {
+        console.error('Ошибка при загрузке данных о полах:', error);
+      }
+    };
+    
+    fetchSexOptions();
+  }, []);
   
   useEffect(() => {
     validateField('email', formData.email);
@@ -147,7 +168,7 @@ const Registration: React.FC = () => {
     
     console.log(userData);
     
-    const response = await apiRequest('users/signup/', 'POST', userData);
+    const response = await apiRequest('users/signup', 'POST', userData);
     if (response) {
       await login(userData.email, userData.password);
     }
@@ -221,16 +242,46 @@ const Registration: React.FC = () => {
             placeholder="Иванов Иван Иванович"
             required
           />
-          {errors.fullName && <div className={styles.errorMessage}>Ф.И.О. должно содержать три слова</div>}
+          {errors.fullName &&
+						<div className={styles.errorMessage}>Ф.И.О. должно содержать три
+							слова</div>}
         </div>
         
         {[
-          { label: 'Введите Email', name: 'email', type: 'email', placeholder: 'example@mail.ru', error: errors.email, errorMessage: 'Укажите корректный email' },
-          { label: 'Телефон', name: 'phone', type: 'tel', placeholder: '+7 (999)-000-00-00', error: errors.phone, errorMessage: 'Укажите корректный номер телефона' },
-          { label: 'Пароль', name: 'password', type: 'password', placeholder: 'Введите пароль', error: errors.password, errorMessage: 'Пароль должен содержать минимум 8 символов' },
-          { label: 'Телеграм ID', name: 'telegram_id', type: 'number', placeholder: '111111111', error: errors.telegram_id, errorMessage: 'Телеграм ID должен содержать 9 цифр' },
-          { label: 'Дата рождения игрока', name: 'birth_date', type: 'date' }
-        ].map(({ label, name, type, placeholder, error, errorMessage }) => (
+          {
+            label: 'Введите Email',
+            name: 'email',
+            type: 'email',
+            placeholder: 'example@mail.ru',
+            error: errors.email,
+            errorMessage: 'Укажите корректный email'
+          },
+          {
+            label: 'Телефон',
+            name: 'phone',
+            type: 'tel',
+            placeholder: '+7 (999)-000-00-00',
+            error: errors.phone,
+            errorMessage: 'Укажите корректный номер телефона'
+          },
+          {
+            label: 'Пароль',
+            name: 'password',
+            type: 'password',
+            placeholder: 'Введите пароль',
+            error: errors.password,
+            errorMessage: 'Пароль должен содержать минимум 8 символов'
+          },
+          {
+            label: 'Телеграм ID',
+            name: 'telegram_id',
+            type: 'number',
+            placeholder: '111111111',
+            error: errors.telegram_id,
+            errorMessage: 'Телеграм ID должен содержать 9 цифр'
+          },
+          {label: 'Дата рождения игрока', name: 'birth_date', type: 'date'}
+        ].map(({label, name, type, placeholder, error, errorMessage}) => (
           <div key={name} className={styles.formGroup}>
             <div className={styles.labelWrapper}>
               <label className={styles.label}>{label}</label>
@@ -244,7 +295,8 @@ const Registration: React.FC = () => {
               placeholder={placeholder}
               required
             />
-            {error && errorMessage && <div className={styles.errorMessage}>{errorMessage}</div>}
+            {error && errorMessage &&
+							<div className={styles.errorMessage}>{errorMessage}</div>}
           </div>
         ))}
         
@@ -261,10 +313,14 @@ const Registration: React.FC = () => {
             required
           >
             <option value="">Выберите пол</option>
-            <option value="мужчина">Мужчина</option>
-            <option value="женщина">Женщина</option>
+            {sexOptions.map((sex) => (
+              <option key={sex.id} value={sex.name}>
+                {sex.name}
+              </option>
+            ))}
           </select>
-          {errors.sex && <div className={styles.errorMessage}>Пожалуйста, выберите пол</div>}
+          {errors.sex &&
+						<div className={styles.errorMessage}>Пожалуйста, выберите пол</div>}
         </div>
         
         {step === 2 && (
@@ -273,7 +329,7 @@ const Registration: React.FC = () => {
             <OTPInput ref={otpRef} onComplete={(otp) => setFormData({
               ...formData,
               verificationCode: otp
-            })} />
+            })}/>
             <div className={styles.otp__buttons}>
               <button onClick={() => otpRef.current?.clear()}>Очистить</button>
             </div>
@@ -286,7 +342,8 @@ const Registration: React.FC = () => {
         </button>
         
         <p className={styles.consentText}>
-          Нажимая на кнопку, вы даете согласие на обработку персональных данных и соглашаетесь с политикой конфиденциальности.
+          Нажимая на кнопку, вы даете согласие на обработку персональных данных
+          и соглашаетесь с политикой конфиденциальности.
         </p>
       </form>
     </div>

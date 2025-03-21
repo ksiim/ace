@@ -2,24 +2,70 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Schedule.module.scss';
 import { apiRequest } from '../../../../utils/apiRequest';
-import {Tournament} from '../../types.ts';
-
-
+import { Tournament, Region, Category } from '../../types.ts';
 
 const Schedule: React.FC = () => {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [regions, setRegions] = useState<Region[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [skip, setSkip] = useState<number>(0);
+  const [limit] = useState<number>(10);
+  const [regionId, setRegionId] = useState<number | null>(null);
+  const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [type, setType] = useState<string | null>(null);
   const navigate = useNavigate();
   
+  // Загрузка турниров
   useEffect(() => {
     const fetchTournaments = async () => {
-      const response = await apiRequest('tournaments/all?skip=0&limit=100', 'GET', undefined, false);
+      const params = new URLSearchParams({
+        skip: skip.toString(),
+        limit: limit.toString(),
+        ...(regionId && { region_id: regionId.toString() }),
+        ...(categoryId && { category_id: categoryId.toString() }),
+        ...(type && { type }),
+      }).toString();
+      
+      const response = await apiRequest(`tournaments/all?${params}`, 'GET', undefined, false);
       if (response && response.data) {
         setTournaments(response.data);
       }
     };
     
     fetchTournaments();
+  }, [skip, limit, regionId, categoryId, type]);
+  
+  // Загрузка регионов
+  useEffect(() => {
+    const fetchRegions = async () => {
+      const response = await apiRequest('regions/', 'GET', undefined, true);
+      if (response && response.data) {
+        setRegions(response.data);
+      }
+    };
+    
+    fetchRegions();
   }, []);
+  
+  // Загрузка категорий
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const response = await apiRequest('categories/', 'GET', undefined, true);
+      if (response && response.data) {
+        setCategories(response.data);
+      }
+    };
+    
+    fetchCategories();
+  }, []);
+  
+  // Сброс фильтров
+  const resetFilters = () => {
+    setRegionId(null);
+    setCategoryId(null);
+    setType(null);
+    setSkip(0); // Сбрасываем пагинацию
+  };
   
   const handleRowClick = (tournamentId: number) => {
     navigate(`/tournaments/${tournamentId}`);
@@ -27,6 +73,46 @@ const Schedule: React.FC = () => {
   
   return (
     <div className={styles.tableContainer}>
+      <div className={styles.filters}>
+        {/* Фильтр по региону */}
+        <select
+          value={regionId || ''}
+          onChange={(e) => setRegionId(Number(e.target.value) || null)}
+        >
+          <option value="">Выберите регион</option>
+          {regions.map((region) => (
+            <option key={region.id} value={region.id}>
+              {region.name}
+            </option>
+          ))}
+        </select>
+        
+        {/* Фильтр по категории */}
+        <select
+          value={categoryId || ''}
+          onChange={(e) => setCategoryId(Number(e.target.value) || null)}
+        >
+          <option value="">Выберите категорию</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
+        </select>
+        
+        {/* Фильтр по типу турнира */}
+        <select value={type || ''} onChange={(e) => setType(e.target.value || null)}>
+          <option value="">Выберите тип</option>
+          <option value="solo">Одиночный</option>
+          <option value="duo">Парный</option>
+        </select>
+        
+        {/* Кнопка сброса фильтров */}
+        <button className={styles.resetButton} onClick={resetFilters}>
+          Сбросить фильтры
+        </button>
+      </div>
+      
       <table className={styles.Schedule}>
         <thead>
         <tr>
@@ -48,11 +134,22 @@ const Schedule: React.FC = () => {
             <td className={styles.nameCell}>{tournament.name}</td>
             <td>{tournament.address}</td>
             <td>{tournament.organizer_name_and_contacts}</td>
-            <td>{tournament.type === "solo" ? "Одиночный" : "Парный"}</td>
+            <td>{tournament.type === 'solo' ? 'Одиночный' : 'Парный'}</td>
           </tr>
         ))}
         </tbody>
       </table>
+      
+      {/* Пагинация */}
+      <div className={styles.pagination}>
+        <button
+          onClick={() => setSkip(Math.max(skip - limit, 0))}
+          disabled={skip === 0}
+        >
+          Назад
+        </button>
+        <button onClick={() => setSkip(skip + limit)}>Вперёд</button>
+      </div>
     </div>
   );
 };

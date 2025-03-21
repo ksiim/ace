@@ -55,7 +55,7 @@ const AdminPanel: React.FC = () => {
   
   const loadTournaments = () => {
     setLoading(true);
-    apiRequest("tournaments", "GET", undefined, true)
+    apiRequest("tournaments/", "GET", undefined, true)
       .then((data) => {
         if (data) {
           setTournaments(data);
@@ -75,7 +75,7 @@ const AdminPanel: React.FC = () => {
     }
     
     setLoading(true);
-    apiRequest("users", "GET", undefined, true)
+    apiRequest("users/", "GET", undefined, true)
       .then((data) => {
         if (data) {
           setUsers(data);

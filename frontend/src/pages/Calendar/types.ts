@@ -4,7 +4,7 @@ export interface Tournament {
   name: string;
   address: string;
   organizer_name_and_contacts: string;
-  type: string;
+  type: 'solo' | 'duo';
   photo_path: string;
   organizer_requisites: string;
   description: string;
@@ -15,4 +15,17 @@ export interface Tournament {
   sex_id: number;
   category_id: number;
   region_id: number;
+}
+
+export interface Region {
+  id: number;
+  name: string;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  is_child: boolean;
+  from_age: number | null;
+  to_age: number | null;
 }

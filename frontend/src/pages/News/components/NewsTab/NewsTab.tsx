@@ -155,7 +155,7 @@ const NewsTab: React.FC = () => {
         news_id: postId
       };
       
-      const response = await apiRequest(`news/comments/${postId}/`, "POST", payload, true);
+      const response = await apiRequest(`news/comments/${postId}`, "POST", payload, true);
       if (!response) throw new Error('Не удалось добавить комментарий');
       
       const updatedComments = await fetchCommentsForNews(postId);
@@ -181,7 +181,7 @@ const NewsTab: React.FC = () => {
   // Функция удаления новости
   const handleDeleteNews = async (newsId: number) => {
     try {
-      const response = await apiRequest(`news/${newsId}/`, 'DELETE', undefined, true);
+      const response = await apiRequest(`news/${newsId}`, 'DELETE', undefined, true);
       if (!response) {
         throw new Error('Не удалось удалить новость');
       }
