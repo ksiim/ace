@@ -13,6 +13,7 @@ const Schedule: React.FC = () => {
   const [regionId, setRegionId] = useState<number | null>(null);
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [type, setType] = useState<string | null>(null);
+  const [actual, setActual] = useState<boolean | null>(null); // Новое состояние для актуальных турниров
   const navigate = useNavigate();
   
   // Загрузка турниров
@@ -24,6 +25,7 @@ const Schedule: React.FC = () => {
         ...(regionId && { region_id: regionId.toString() }),
         ...(categoryId && { category_id: categoryId.toString() }),
         ...(type && { type }),
+        ...(actual !== null && { actual: actual.toString() }), // Добавляем параметр actual, если он не null
       }).toString();
       
       const response = await apiRequest(`tournaments/all?${params}`, 'GET', undefined, false);
@@ -33,7 +35,7 @@ const Schedule: React.FC = () => {
     };
     
     fetchTournaments();
-  }, [skip, limit, regionId, categoryId, type]);
+  }, [skip, limit, regionId, categoryId, type, actual]); // Добавляем actual в зависимости
   
   // Загрузка регионов
   useEffect(() => {
@@ -64,6 +66,7 @@ const Schedule: React.FC = () => {
     setRegionId(null);
     setCategoryId(null);
     setType(null);
+    setActual(null); // Сбрасываем фильтр актуальности
     setSkip(0); // Сбрасываем пагинацию
   };
   
@@ -101,11 +104,24 @@ const Schedule: React.FC = () => {
         </select>
         
         {/* Фильтр по типу турнира */}
-        <select value={type || ''} onChange={(e) => setType(e.target.value || null)}>
+        <select value={type || ''}
+                onChange={(e) => setType(e.target.value || null)}>
           <option value="">Выберите тип</option>
           <option value="solo">Одиночный</option>
           <option value="duo">Парный</option>
         </select>
+        
+        {/* Чекбокс для фильтрации по актуальным турнирам */}
+        <div className={styles.checkboxLabel}>
+          <input
+            type="checkbox"
+            checked={actual || false}
+            onChange={(e) => setActual(e.target.checked)}
+            className={styles.checkboxInput}
+          />
+          <span className={styles.checkboxCustom}></span>
+          Показывать актуальные
+        </div>
         
         {/* Кнопка сброса фильтров */}
         <button className={styles.resetButton} onClick={resetFilters}>

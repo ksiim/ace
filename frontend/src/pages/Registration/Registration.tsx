@@ -19,10 +19,12 @@ const Registration: React.FC = () => {
     birth_date: '',
     password: '',
     verificationCode: '',
-    sex: '' as string // Обновляем тип
+    sex: '' as string,
+    region_id: null as number | null // Добавляем region_id
   });
   
   const [sexOptions, setSexOptions] = useState<{ id: number; name: string }[]>([]);
+  const [regionOptions, setRegionOptions] = useState<{ id: number; name: string }[]>([]); // Состояние для регионов
   
   const [step, setStep] = useState(1);
   const [requestId, setRequestId] = useState('');
@@ -33,7 +35,8 @@ const Registration: React.FC = () => {
     password: false,
     verificationCode: false,
     telegram_id: false,
-    sex: false
+    sex: false,
+    region_id: false // Добавляем ошибку для региона
   });
   
   useEffect(() => {
@@ -52,7 +55,19 @@ const Registration: React.FC = () => {
       }
     };
     
+    const fetchRegions = async () => {
+      try {
+        const response = await apiRequest('regions/', 'GET', undefined, false);
+        if (response && response.data) {
+          setRegionOptions(response.data);
+        }
+      } catch (error) {
+        console.error('Ошибка при загрузке данных о регионах:', error);
+      }
+    };
+    
     fetchSexOptions();
+    fetchRegions();
   }, []);
   
   useEffect(() => {
@@ -71,6 +86,7 @@ const Registration: React.FC = () => {
     validateField('telegram_id', formData.telegram_id); // Проверка для telegram_id
   }, [formData.telegram_id]);
   
+  
   const validateField = (fieldName: string, value: string | number | null) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^\+?\d{10,}$/;
@@ -87,7 +103,7 @@ const Registration: React.FC = () => {
             ? value !== '' && !passwordRegex.test(value as string)
             : fieldName === 'telegram_id'
               ? value !== null && !telegramIdValid // Проверка для telegram_id
-              : false
+                : false
     }));
   };
   
@@ -111,6 +127,9 @@ const Registration: React.FC = () => {
       const trimmedValue = value.replace(/^0+/, '') || '0';
       const parsedValue = trimmedValue === '' ? null : parseInt(trimmedValue, 10);
       setFormData(prev => ({ ...prev, [name]: parsedValue }));
+    } else if (name === 'region_id') {
+      const parsedValue = value === '' ? null : parseInt(value, 10);
+      setFormData(prev => ({ ...prev, [name]: parsedValue }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -122,7 +141,8 @@ const Registration: React.FC = () => {
     const passwordValid = !errors.password && formData.password !== '';
     const telegramIdValid = !errors.telegram_id && formData.telegram_id !== null;
     const sexValid = formData.sex !== ''; // Проверка на выбор пола
-    return validateFullName() && emailValid && phoneValid && passwordValid && telegramIdValid && sexValid;
+    const regionValid = formData.region_id !== null; // Проверка на выбор региона
+    return validateFullName() && emailValid && phoneValid && passwordValid && telegramIdValid && sexValid && regionValid;
   };
   
   const sendVerificationCode = async () => {
@@ -142,7 +162,7 @@ const Registration: React.FC = () => {
     if (!requestId) return;
     
     const query = new URLSearchParams({ request_id: requestId, code: formData.verificationCode }).toString();
-    const success = await apiRequest(`users/verify_code/?${query}`, 'GET', undefined);
+    const success = await apiRequest(`users/verify_code/?${query}`, 'GET', undefined, false);
     console.log('Ответ верификации:', success);
     
     if (success) {
@@ -154,6 +174,11 @@ const Registration: React.FC = () => {
   
   const registerUser = async () => {
     const [surname, name, patronymic] = formData.fullName.split(' ');
+    
+    // Находим sex_id по выбранному значению пола
+    const selectedSex = sexOptions.find(sex => sex.name === formData.sex);
+    const sex_id = selectedSex ? selectedSex.id : null;
+    
     const userData = {
       email: formData.email,
       password: formData.password,
@@ -163,14 +188,22 @@ const Registration: React.FC = () => {
       phone_number: formData.phone.replace(/\D/g, ''),
       telegram_id: formData.telegram_id,
       birth_date: formData.birth_date,
-      sex: formData.sex // Включаем пол в данные для регистрации
+      sex_id, // Используем sex_id вместо sex
+      region_id: formData.region_id // Используем region_id из формы
     };
     
-    console.log(userData);
+    console.log('Данные для регистрации:', userData);
     
-    const response = await apiRequest('users/signup', 'POST', userData);
-    if (response) {
-      await login(userData.email, userData.password);
+    try {
+      const response = await apiRequest('users/signup', 'POST', userData, false);
+      if (response) {
+        await login(userData.email, userData.password);
+      }
+    } catch (error) {
+      console.error('Ошибка при регистрации:', error);
+      if (error) {
+        console.error('Данные ошибки:', error);
+      }
     }
   };
   
@@ -323,6 +356,29 @@ const Registration: React.FC = () => {
 						<div className={styles.errorMessage}>Пожалуйста, выберите пол</div>}
         </div>
         
+        {/* Добавляем поле для выбора региона */}
+        <div className={styles.formGroup}>
+          <div className={styles.labelWrapper}>
+            <label className={styles.label}>Регион</label>
+          </div>
+          <select
+            name="region_id"
+            value={formData.region_id || ''}
+            onChange={handleChange}
+            className={`${styles.input} ${errors.region_id ? styles.error : ''}`}
+            required
+          >
+            <option value="">Выберите регион</option>
+            {regionOptions.map((region) => (
+              <option key={region.id} value={region.id}>
+                {region.name}
+              </option>
+            ))}
+          </select>
+          {errors.region_id &&
+						<div className={styles.errorMessage}>Пожалуйста, выберите регион</div>}
+        </div>
+        
         {step === 2 && (
           <div className={styles.otp}>
             <h2>Введите код из Telegram</h2>
@@ -337,7 +393,7 @@ const Registration: React.FC = () => {
         )}
         
         <button type="submit" className={styles.submitButton}
-                disabled={errors.email || errors.phone || errors.password || errors.telegram_id || errors.sex}>
+                disabled={errors.email || errors.phone || errors.password || errors.telegram_id || errors.sex || errors.region_id}>
           {step === 1 ? 'Получить код' : 'Завершить регистрацию'}
         </button>
         

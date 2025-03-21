@@ -1,3 +1,4 @@
+@charset "UTF-8";
 .adminContainer {
   max-width: 1200px;
   margin: 2rem auto;
@@ -504,6 +505,7 @@ select:disabled:hover {
 .filters {
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 16px;
   margin-bottom: 20px;
 }
@@ -565,6 +567,164 @@ select:disabled:hover {
   background-color: #ccc;
   border-color: #ccc;
   cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .filters {
+    flex-direction: column; /* Располагаем элементы вертикально */
+    align-items: center; /* Центрируем элементы */
+    gap: 10px; /* Уменьшаем расстояние между элементами */
+  }
+  .filters select, .filters .filterInput, .filters .resetButton {
+    width: 100%; /* Занимаем всю доступную ширину */
+    max-width: 300px; /* Ограничиваем максимальную ширину */
+    font-size: 12px; /* Уменьшаем размер шрифта */
+    padding: 6px 10px; /* Уменьшаем отступы */
+  }
+  .filters .resetButton {
+    width: auto; /* Возвращаем кнопке её естественную ширину */
+    padding: 6px 12px; /* Уменьшаем отступы */
+  }
+}
+/* Мобильные стили для пагинации */
+@media (max-width: 768px) {
+  .pagination {
+    flex-wrap: wrap; /* Разрешаем перенос кнопок на новую строку */
+    gap: 8px; /* Уменьшаем расстояние между кнопками */
+  }
+  .pagination button {
+    padding: 6px 12px; /* Уменьшаем отступы */
+    font-size: 12px; /* Уменьшаем размер шрифта */
+    flex: 1 1 40%; /* Распределяем кнопки по ширине */
+    max-width: 45%; /* Ограничиваем максимальную ширину кнопок */
+  }
+}
+.participantsModal {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin: 20px auto;
+}
+.participantsModal h3 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+  text-align: center;
+}
+.participantsModal .noParticipants {
+  text-align: center;
+  color: #6c757d;
+  font-size: 16px;
+  margin-top: 20px;
+}
+.participantsModal .participantList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.participantsModal .participantList .participantItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid #dee2e6;
+}
+.participantsModal .participantList .participantItem:hover {
+  background-color: #f1f3f5;
+}
+.participantsModal .participantList .participantItem .participantName {
+  flex: 1;
+  font-weight: 500;
+  color: #212529;
+}
+.participantsModal .participantList .participantItem .participantStatus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 20px;
+}
+.participantsModal .participantList .participantItem .participantStatus.confirmed {
+  color: #28a745;
+}
+.participantsModal .participantList .participantItem .participantStatus.pending {
+  color: #f95e1b;
+}
+.participantsModal .participantList .participantItem .participantActions {
+  display: flex;
+  gap: 8px;
+}
+.participantsModal .participantList .participantItem .participantActions button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.participantsModal .participantList .participantItem .participantActions button:first-child {
+  background-color: #28a745;
+  color: #fff;
+}
+.participantsModal .participantList .participantItem .participantActions button:first-child:hover {
+  background-color: #218838;
+}
+.participantsModal .participantList .participantItem .participantActions button:last-child {
+  background-color: #dc3545;
+  color: #fff;
+}
+.participantsModal .participantList .participantItem .participantActions button:last-child:hover {
+  background-color: #c82333;
+}
+.participantsModal > button {
+  display: block;
+  margin: 20px auto 0;
+  padding: 10px 20px;
+  background-color: #f95e1b;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.participantsModal > button:hover {
+  background-color: #f8753d;
+}
+
+/* Мобильные стили */
+@media (max-width: 768px) {
+  .participantsModal {
+    padding: 15px;
+  }
+  .participantsModal h3 {
+    font-size: 20px;
+  }
+  .participantsModal .participantList .participantItem {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px;
+  }
+  .participantsModal .participantList .participantItem .participantName {
+    margin-bottom: 10px;
+  }
+  .participantsModal .participantList .participantItem .participantStatus {
+    margin: 10px 0;
+  }
+  .participantsModal .participantList .participantItem .participantActions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .participantsModal .participantList .participantItem .participantActions button {
+    width: 48%;
+    text-align: center;
+  }
+  .participantsModal > button {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+  }
 }
 
 /*# sourceMappingURL=AdminPanel.module.css.map */

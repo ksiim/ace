@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { apiRequest } from "../../../../utils/apiRequest.ts";
 import styles from "../../AdminPanel.module.scss";
-import type {Category, Region, Sex, Tournament, TournamentManagementProps } from '../../types.ts';
-import { Trash2 } from 'lucide-react';
-
+import type { Category, Region, Sex, Tournament, TournamentManagementProps, Participant, Fio } from '../../types.ts';
+import {Check, Clock, Trash2 } from 'lucide-react';
 
 const TournamentManagement: React.FC<TournamentManagementProps> = ({
                                                                      currentUser,
@@ -21,8 +20,8 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     photo_path: "",
     organizer_name_and_contacts: "",
     organizer_requisites: "",
-    date: new Date().toISOString(),
-    description: "", // Добавлено поле description
+    date: new Date().toISOString().split('T')[0], // Формат "YYYY-MM-DD"
+    description: "",
     price: 0,
     can_register: true,
     address: "",
@@ -33,19 +32,195 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     region_id: 0
   });
   
+  
   const [editTournamentId, setEditTournamentId] = useState<number | null>(null);
+  const [skip, setSkip] = useState<number>(0);
+  const [limit] = useState<number>(10);
+  
+  const [filters, setFilters] = useState({
+    skip: 0,
+    limit: 10,
+    region_id: null as number | null,
+    category_id: null as number | null,
+    sex_id: null as number | null,
+    type: null as string | null,
+    actual: null as boolean | null, // Новый фильтр по актуальности
+  });
+  
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [selectedTournamentId, setSelectedTournamentId] = useState<number | null>(null);
+  const [userDetails, setUserDetails] = useState<Record<number, Fio>>({});
   
   useEffect(() => {
-    apiRequest("tournaments/", "GET", undefined, true)
-      .then((data) => {
-        if (data && data.data) {
-          setTournaments(data.data);
-        } else {
-          onError("Ошибка загрузки турниров");
-        }
-      })
-      .catch(() => onError("Ошибка загрузки турниров"));
+    participants.forEach(participant => {
+      // Загружаем данные о пользователе
+      if (participant.user_id && !userDetails[participant.user_id]) {
+        apiRequest(`users/${participant.user_id}/fio`, "GET", undefined, false)
+          .then(response => {
+            if (!response.error) {
+              setUserDetails(prevDetails => ({
+                ...prevDetails,
+                [participant.user_id]: {
+                  name: response.name,
+                  surname: response.surname,
+                  patronymic: response.patronymic // Добавляем отчество
+                },
+              }));
+            }
+          })
+          .catch(error => console.error("Ошибка запроса данных пользователя:", error));
+      }
+      
+      // Загружаем данные о партнёре, только если partner_id не null
+      if (participant.partner_id !== null && !userDetails[participant.partner_id]) {
+        apiRequest(`users/${participant.partner_id}/fio`, "GET", undefined, false)
+          .then(response => {
+            if (!response.error) {
+              setUserDetails(prevDetails => ({
+                ...prevDetails,
+                [participant.partner_id as number]: {
+                  name: response.name,
+                  surname: response.surname,
+                  patronymic: response.patronymic // Добавляем отчество
+                },
+              }));
+            }
+          })
+          .catch(error => console.error("Ошибка запроса данных партнёра:", error));
+      }
+    });
+  }, [participants, userDetails]);
+  
+  // Функция для загрузки участников турнира
+  const fetchParticipants = async (tournamentId: number) => {
+    try {
+      const data = await apiRequest(`participants/?tournament_id=${tournamentId}`, "GET", undefined, true);
+      if (data && data.data) {
+        setParticipants(data.data);
+      } else {
+        onError("Ошибка загрузки участников");
+      }
+    } catch (error) {
+      onError("Ошибка загрузки участников");
+    }
+  };
+  
+  // Функция для подтверждения участника
+  const confirmParticipant = async (participantId: number) => {
+    try {
+      const participant = participants.find(p => p.id === participantId);
+      if (!participant) {
+        onError("Участник не найден");
+        return;
+      }
+      
+      const response = await apiRequest(
+        `participants/${participantId}`,
+        "PUT",
+        { ...participant, confirmed: true },
+        true
+      );
+      
+      if (response) {
+        setParticipants(prevParticipants =>
+          prevParticipants.map(p =>
+            p.id === participantId ? { ...p, confirmed: true } : p
+          )
+        );
+        alert("Участник подтвержден");
+      } else {
+        onError("Ошибка подтверждения участника");
+      }
+    } catch (err) {
+      console.error("Ошибка подтверждения участника:", err);
+      onError("Ошибка подтверждения участника");
+    }
+  };
+  
+  // Функция для дисквалификации участника
+  const disqualifyParticipant = async (participantId: number) => {
+    try {
+      const response = await apiRequest(
+        `participants/${participantId}`,
+        "DELETE",
+        undefined,
+        true
+      );
+      
+      if (response) {
+        setParticipants(prevParticipants =>
+          prevParticipants.filter(p => p.id !== participantId)
+        );
+        alert("Участник дисквалифицирован");
+      } else {
+        onError("Ошибка дисквалификации участника");
+      }
+    } catch (err) {
+      console.error("Ошибка дисквалификации участника:", err);
+      onError("Ошибка дисквалификации участника");
+    }
+  };
+  
+  const fetchTournaments = async () => {
+    const params = new URLSearchParams({
+      skip: skip.toString(),
+      limit: limit.toString(),
+      ...(filters.region_id !== null && { region_id: filters.region_id.toString() }),
+      ...(filters.category_id !== null && { category_id: filters.category_id.toString() }),
+      ...(filters.sex_id !== null && { sex_id: filters.sex_id.toString() }),
+      ...(filters.type !== null && { type: filters.type }),
+      ...(filters.actual !== null && { actual: filters.actual.toString() }), // Добавляем фильтр по актуальности
+    }).toString();
     
+    try {
+      const data = await apiRequest(`tournaments/?${params}`, "GET", undefined, true);
+      if (data && data.data) {
+        setTournaments(data.data);
+      } else {
+        onError("Ошибка загрузки турниров");
+      }
+    } catch (error) {
+      onError("Ошибка загрузки турниров");
+    }
+  };
+  
+  useEffect(() => {
+    fetchTournaments();
+  }, [skip, limit, filters]);
+  
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    
+    // Обработка фильтра по актуальности
+    if (name === "actual") {
+      setFilters((prev) => ({
+        ...prev,
+        actual: value === "all" ? null : value === "true", // "all" -> null, "true" -> true, "false" -> false
+      }));
+      return;
+    }
+    
+    // Обработка остальных фильтров
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value === "" ? null : name === "region_id" || name === "category_id" || name === "sex_id" ? Number(value) : value,
+    }));
+  };
+  
+  const resetFilters = () => {
+    setFilters({
+      skip: 0,
+      limit: 10,
+      region_id: null,
+      category_id: null,
+      sex_id: null,
+      type: null,
+      actual: null, // Сбрасываем фильтр по актуальности
+    });
+    setSkip(0); // Сбрасываем пагинацию на первую страницу
+  };
+  
+  useEffect(() => {
     apiRequest("categories/", "GET", undefined, true)
       .then((data) => {
         if (data && data.data) {
@@ -66,7 +241,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       })
       .catch(() => onError("Ошибка загрузки регионов"));
     
-    // Добавляем запрос на получение списка полов
     apiRequest("sex/", "GET", undefined, true)
       .then((data) => {
         if (data && data.data) {
@@ -185,18 +359,17 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       return;
     }
     
-    console.log(newTournament);
+    // Форматируем дату в "YYYY-MM-DD"
+    const formattedDate = new Date(newTournament.date).toISOString().split('T')[0];
     
     // Отправка данных на сервер
-    apiRequest("tournaments/", "POST", newTournament, true)
+    apiRequest("tournaments/", "POST", { ...newTournament, date: formattedDate }, true)
       .then((data) => {
         if (data) {
           setTournaments(prevTournaments => [...prevTournaments, data]);
           onTournamentsUpdate(prevTournaments => {
             return Array.isArray(prevTournaments) ? [...prevTournaments, data] : [data];
           });
-          
-          
           
           // Сброс формы
           setNewTournament({
@@ -206,8 +379,8 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             photo_path: "",
             organizer_name_and_contacts: "",
             organizer_requisites: "",
-            date: new Date().toISOString().slice(0, 10), // Формат YYYY-MM-DD
-            description: "", // Сброс поля description
+            date: new Date().toISOString().split('T')[0], // Формат "YYYY-MM-DD"
+            description: "",
             price: 0,
             can_register: true,
             address: "",
@@ -264,7 +437,10 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     e.preventDefault();
     if (!editTournamentId) return;
     
-    apiRequest(`tournaments/${editTournamentId}`, "PUT", newTournament, true)
+    // Форматируем дату в "YYYY-MM-DD"
+    const formattedDate = newTournament.date ? new Date(newTournament.date).toISOString().split('T')[0] : '';
+    
+    apiRequest(`tournaments/${editTournamentId}`, "PUT", { ...newTournament, date: formattedDate }, true)
       .then((data) => {
         if (data) {
           setTournaments(prevTournaments =>
@@ -284,7 +460,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             photo_path: "",
             organizer_name_and_contacts: "",
             organizer_requisites: "",
-            date: new Date().toISOString(),
+            date: new Date().toISOString().split('T')[0], // Формат "YYYY-MM-DD"
             description: '',
             price: 0,
             can_register: true,
@@ -304,6 +480,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
         onError("Ошибка обновления турнира");
       });
   };
+  
   
   const handleToggleRegistration = async (tournamentId: number, canRegister: boolean) => {
     try {
@@ -610,6 +787,113 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       </div>
       
       <div className={styles.tableContainer}>
+        <div className={styles.filters}>
+          <select
+            name="region_id"
+            value={filters.region_id || ''}
+            onChange={handleFilterChange}
+          >
+            <option value="">Все регионы</option>
+            {regions.map(region => (
+              <option key={region.id} value={region.id}>
+                {region.name}
+              </option>
+            ))}
+          </select>
+          
+          <select
+            name="category_id"
+            value={filters.category_id || ''}
+            onChange={handleFilterChange}
+          >
+            <option value="">Все категории</option>
+            {categories.map(category => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+          
+          <select
+            name="sex_id"
+            value={filters.sex_id || ''}
+            onChange={handleFilterChange}
+          >
+            <option value="">Все полы</option>
+            {sexes.map(sex => (
+              <option key={sex.id} value={sex.id}>
+                {sex.name}
+              </option>
+            ))}
+          </select>
+          
+          <select
+            name="type"
+            value={filters.type || ''}
+            onChange={handleFilterChange}
+          >
+            <option value="">Все типы</option>
+            <option value="solo">Одиночный</option>
+            <option value="duo">Парный</option>
+          </select>
+          
+          <select
+            name="actual"
+            value={filters.actual === null ? 'all' : filters.actual ? 'true' : 'false'}
+            onChange={handleFilterChange}
+          >
+            <option value="all">По актуальности</option>
+            <option value="true">Актуальные</option>
+            <option value="false">Неактуальные</option>
+          </select>
+          
+          
+          <button className={styles.resetButton} type="button"
+                  onClick={resetFilters}>
+            Сбросить фильтры
+          </button>
+        </div>
+        
+        {selectedTournamentId && (
+          <div className={styles.participantsModal}>
+            <h3>Участники турнира</h3>
+            {participants.length === 0 ? (
+              <p className={styles.noParticipants}>Пока никто не зарегистрировался</p>
+            ) : (
+              <ul className={styles.participantList}>
+                {participants.map(participant => (
+                  <li key={participant.id} className={styles.participantItem}>
+                    <span className={styles.participantName}>
+                      {userDetails[participant.user_id]?.surname} {userDetails[participant.user_id]?.name}
+                      {userDetails[participant.user_id]?.patronymic && (
+                        <> {userDetails[participant.user_id]?.patronymic}</>
+                      )}
+                      {participant.partner_id !== null && userDetails[participant.partner_id] && (
+                        <> / {userDetails[participant.partner_id]?.surname} {userDetails[participant.partner_id]?.name}
+                          {userDetails[participant.partner_id]?.patronymic && (
+                            <> {userDetails[participant.partner_id]?.patronymic}</>
+                          )}
+                        </>
+                      )}
+                    </span>
+                    {participant.confirmed ? (
+                      <span
+                        className={`${styles.participantStatus} ${styles.confirmed}`}><Check/></span>
+                    ) : <span
+                      className={`${styles.participantStatus} ${styles.confirmed}`}><Clock color={'#f95e1b'}/></span>
+                    }
+                    <div className={styles.participantActions}>
+                      <button onClick={() => confirmParticipant(participant.id)}>Подтвердить</button>
+                      <button onClick={() => disqualifyParticipant(participant.id)}>Дисквалифицировать</button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <button onClick={() => setSelectedTournamentId(null)}>Закрыть</button>
+          </div>
+        )}
+        
         <h2>Список турниров</h2>
         {tournaments.length > 0 ? (
           <table className={styles.dataTable}>
@@ -674,8 +958,21 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
                       >
                         Запросить взносы
                       </button>
+                      
+                      <button
+                        className={styles.editButton}
+                        onClick={() => {
+                          setSelectedTournamentId(tournament.id);
+                          fetchParticipants(tournament.id);
+                        }}
+                      >
+                        Управление участниками
+                      </button>
+                      
                       {/* Add the delete button */}
-                      <Trash2 color={'#ff0000'} onClick={() => handleDeleteTournament(tournament.id)} size={30}/>
+                      <Trash2 color={'#ff0000'}
+                              onClick={() => handleDeleteTournament(tournament.id)}
+                              size={30}/>
                     </div>
                   )}
                 </td>
@@ -686,6 +983,15 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
         ) : (
           <p className={styles.noData}>Турниры не найдены</p>
         )}
+      </div>
+      <div className={styles.pagination}>
+        <button
+          onClick={() => setSkip(Math.max(skip - limit, 0))}
+          disabled={skip === 0}
+        >
+          Назад
+        </button>
+        <button onClick={() => setSkip(skip + limit)}>Вперёд</button>
       </div>
     </div>
   );

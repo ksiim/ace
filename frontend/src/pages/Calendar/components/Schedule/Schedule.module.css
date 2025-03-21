@@ -234,4 +234,54 @@
   cursor: not-allowed;
 }
 
+@media (max-width: 768px) {
+  .filters {
+    flex-direction: column; /* Располагаем элементы вертикально */
+    align-items: center; /* Центрируем элементы */
+    gap: 10px; /* Уменьшаем расстояние между элементами */
+  }
+  .filters input, .filters select, .filters .resetButton {
+    width: 100%; /* Занимаем всю доступную ширину */
+    max-width: 300px; /* Ограничиваем максимальную ширину */
+    font-size: 12px; /* Уменьшаем размер шрифта */
+    padding: 6px 10px; /* Уменьшаем отступы */
+  }
+  .filters .resetButton {
+    width: auto; /* Возвращаем кнопке её естественную ширину */
+    padding: 6px 12px; /* Уменьшаем отступы */
+  }
+}
+/* Мобильные стили для пагинации */
+@media (max-width: 768px) {
+  .pagination {
+    flex-wrap: wrap; /* Разрешаем перенос кнопок на новую строку */
+    gap: 8px; /* Уменьшаем расстояние между кнопками */
+  }
+  .pagination button {
+    padding: 6px 12px; /* Уменьшаем отступы */
+    font-size: 12px; /* Уменьшаем размер шрифта */
+    flex: 1 1 40%; /* Распределяем кнопки по ширине */
+    max-width: 45%; /* Ограничиваем максимальную ширину кнопок */
+  }
+}
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 16px;
+  color: #333;
+}
+
+.checkboxInput:checked + .checkboxCustom::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
 /*# sourceMappingURL=Schedule.module.css.map */

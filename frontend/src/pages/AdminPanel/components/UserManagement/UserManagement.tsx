@@ -17,6 +17,8 @@ const UserManagement: React.FC<UserManagementProps> = ({
   const [roleFilter, setRoleFilter] = useState<UserRole | "">("");
   const [fioFilter, setFioFilter] = useState<string>("");
   const [ageOrder, setAgeOrder] = useState<"asc" | "desc" | null>(null);
+  const [sexFilter, setSexFilter] = useState<number | null>(null);
+  const [sexOptions, setSexOptions] = useState<{ id: number; name: string }[]>([]);
   
   const [editUserData, setEditUserData] = useState<{
     userId: number | null;
@@ -30,6 +32,22 @@ const UserManagement: React.FC<UserManagementProps> = ({
     role: null,
   });
   
+  // Загрузка данных о полах
+  useEffect(() => {
+    const fetchSexOptions = async () => {
+      try {
+        const sexResponse = await apiRequest('sex/', 'GET', undefined, true);
+        if (sexResponse && sexResponse.data) {
+          setSexOptions(sexResponse.data.filter((sex: { shortname: string }) => sex.shortname !== 'mixed'));
+        }
+      } catch (error) {
+        onError("Ошибка при загрузке данных о полах");
+      }
+    };
+    
+    fetchSexOptions();
+  }, []);
+  
   // Функция для сброса всех фильтров
   const resetFilters = () => {
     setSubscriptionFilter(null);
@@ -37,6 +55,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
     setFioFilter("");
     setAgeOrder(null);
     setSortByPoints(null);
+    setSexFilter(null);
   };
   
   // Загрузка данных пользователей с фильтрами и сортировкой
@@ -52,6 +71,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
         ...(sortByPoints && { score_order: sortByPoints }),
         ...(fioFilter && { fio: fioFilter }),
         ...(ageOrder && { age_order: ageOrder }),
+        ...(sexFilter !== null && { sex_id: sexFilter.toString() }),
       }).toString();
       
       const response = await apiRequest(`users/?${params}`, "GET", undefined, true);
@@ -63,7 +83,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
     };
     
     fetchUsers();
-  }, [skip, limit, roleFilter, sortByPoints, fioFilter, ageOrder]);
+  }, [skip, limit, roleFilter, sortByPoints, fioFilter, ageOrder, sexFilter]);
   
   const getUserRole = (user: UserToManage): UserRole => {
     if (user.admin) return "Администратор";
@@ -131,8 +151,10 @@ const UserManagement: React.FC<UserManagementProps> = ({
         email: user.email,
         score: points,
         end_of_subscription: user.end_of_subscription,
-        created_at: user.created_at,
         updated_at: new Date().toISOString(),
+        created_at: user.created_at,
+        birth_date: user.birth_date,
+        sex_id: user.sex_id,
       },
       true
     )
@@ -176,8 +198,10 @@ const UserManagement: React.FC<UserManagementProps> = ({
         email: user.email,
         score: user.score || 0,
         end_of_subscription: user.end_of_subscription,
-        created_at: user.created_at,
         updated_at: new Date().toISOString(),
+        created_at: user.created_at,
+        birth_date: user.birth_date,
+        sex_id: user.sex_id,
       },
       true
     )
@@ -237,6 +261,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
   return (
     <div className={styles.tabContent}>
       <div className={styles.filters}>
+        {/* Фильтр по подписке */}
         <select
           value={subscriptionFilter === null ? "" : subscriptionFilter ? "active" : "inactive"}
           onChange={(e) => {
@@ -270,6 +295,18 @@ const UserManagement: React.FC<UserManagementProps> = ({
           onChange={(e) => setFioFilter(e.target.value)}
           className={styles.filterInput}
         />
+        
+        {/* Фильтр по полу */}
+        <select
+          value={sexFilter || ""}
+          onChange={(e) => setSexFilter(e.target.value ? parseInt(e.target.value) : null)}
+          className={styles.filterSelect}
+        >
+          <option value="">Все полы</option>
+          {sexOptions.map((sex) => (
+            <option key={sex.id} value={sex.id}>{sex.name}</option>
+          ))}
+        </select>
         
         {/* Сортировка по возрасту */}
         <select
@@ -426,9 +463,8 @@ const UserManagement: React.FC<UserManagementProps> = ({
         </button>
         <button onClick={() => setSkip(skip + limit)}>Вперёд</button>
       </div>
-</div>
-)
-  ;
+    </div>
+  );
 };
 
 export default UserManagement;

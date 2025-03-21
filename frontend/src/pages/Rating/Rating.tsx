@@ -2,37 +2,102 @@ import React, { useState, useEffect } from 'react';
 import styles from './Rating.module.scss';
 import Header from '../../components/Header/Header.tsx';
 import Footer from '../../components/Footer/Footer.tsx';
+import { apiRequest } from '../../utils/apiRequest.ts'; // Импортируем ваш apiRequest
 
 interface Player {
-  place: number;
+  id: number;
   name: string;
-  birthDate?: string;
-  city: string;
-  points: number;
+  surname: string;
+  patronymic: string;
+  birth_date: string;
+  region_id: number;
+  score: number;
   tournaments: number;
-  category?: string; // Категория игрока
+  sex_id: number;
+}
+
+interface Sex {
+  id: number;
+  name: string;
+}
+
+interface Region {
+  id: number;
+  name: string;
 }
 
 const Rating: React.FC = () => {
-  // Обновлённые данные с новыми категориями
-  const [players] = useState<Player[]>([
-    { place: 1, name: 'Захарченко Валерия', city: 'Ростов-на-Дону', points: 75, tournaments: 1, category: 'До 17 лет' },
-    { place: 2, name: 'Ширяева Александрина', city: 'Ростов-на-Дону', points: 60, tournaments: 1, category: 'До 15 лет' },
-    { place: 3, name: 'Ващенко Артем', city: 'Таганрог', points: 45, tournaments: 1, category: 'До 13 лет' },
-    { place: 4, name: 'Шитова Милана', city: 'Таганрог', points: 45, tournaments: 1, category: '9-10 лет' },
-    { place: 5, name: 'Лукашева Вера', city: 'Ростов-на-Дону', points: 30, tournaments: 1, category: 'Зеленый мяч' },
-    { place: 6, name: 'Иванов Иван', city: 'Москва', points: 25, tournaments: 1, category: 'Оранжевый мяч' },
-    { place: 7, name: 'Петров Петр', city: 'Санкт-Петербург', points: 20, tournaments: 1, category: 'Красный мяч' },
-  ]);
-  
-  const [filteredPlayers, setFilteredPlayers] = useState<Player[]>(players);
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [filteredPlayers, setFilteredPlayers] = useState<Player[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [selectedCity, setSelectedCity] = useState<string>('');
+  const [selectedSex, setSelectedSex] = useState<number | null>(null);
+  const [selectedRegion, setSelectedRegion] = useState<number | null>(null);
+  const [sexes, setSexes] = useState<Sex[]>([]);
+  const [regions, setRegions] = useState<Region[]>([]);
   
-  // Уникальные категории и города для фильтров
-  const categories = ['До 17 лет', 'До 15 лет', 'До 13 лет', '9-10 лет', 'Зеленый мяч', 'Оранжевый мяч', 'Красный мяч'];
-  const cities = Array.from(new Set(players.map(player => player.city)));
+  // Функция для загрузки количества турниров за 52 недели
+  const fetchTournamentCount = async (userId: number) => {
+    const response = await apiRequest(
+      `users/${userId}/tournament-count-per-52-weeks`,
+      'GET',
+      undefined,
+      false // authRequired = false
+    );
+    if (!response.error && response.count_of_tournament_last_52_weeks !== undefined) {
+      return response.count_of_tournament_last_52_weeks;
+    }
+    return 0; // Если произошла ошибка, возвращаем 0
+  };
+  
+  // Загрузка игроков и их количества турниров
+  const fetchPlayers = async () => {
+    const params = new URLSearchParams({
+      ...(searchTerm && { fio: searchTerm }),
+      ...(selectedSex !== null && { sex_id: selectedSex.toString() }),
+      ...(selectedRegion !== null && { region_id: selectedRegion.toString() }),
+    }).toString();
+    
+    const response = await apiRequest(`users/?${params}`, 'GET', undefined, false); // authRequired = false
+    if (!response.error && response.data) {
+      // Для каждого игрока загружаем количество турниров
+      const playersWithTournaments = await Promise.all(
+        response.data.map(async (player: Player) => {
+          const tournaments = await fetchTournamentCount(player.id);
+          return { ...player, tournaments };
+        })
+      );
+      setPlayers(playersWithTournaments);
+      setFilteredPlayers(playersWithTournaments);
+    } else {
+      console.error('Ошибка при загрузке игроков:', response);
+    }
+  };
+  
+  // Загрузка категорий
+  const fetchSexes = async () => {
+    const response = await apiRequest('sex/', 'GET');
+    if (!response.error && response.data) {
+      setSexes(response.data);
+    } else {
+      console.error('Ошибка при загрузке полов:', response);
+    }
+  };
+  
+  // Загрузка регионов
+  const fetchRegions = async () => {
+    const response = await apiRequest('regions/', 'GET');
+    if (!response.error && response.data) {
+      setRegions(response.data);
+    } else {
+      console.error('Ошибка при загрузке регионов:', response);
+    }
+  };
+  
+  useEffect(() => {
+    fetchPlayers();
+    fetchSexes();
+    fetchRegions();
+  }, [searchTerm, selectedSex, selectedRegion]);
   
   useEffect(() => {
     let result = [...players];
@@ -40,22 +105,22 @@ const Rating: React.FC = () => {
     // Фильтр по поисковому запросу (имя)
     if (searchTerm) {
       result = result.filter(player =>
-        player.name.toLowerCase().includes(searchTerm.toLowerCase())
+        `${player.name} ${player.surname} ${player.patronymic}`.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     
     // Фильтр по категории
-    if (selectedCategory) {
-      result = result.filter(player => player.category === selectedCategory);
+    if (selectedSex) {
+      result = result.filter(player => player.sex_id === selectedSex);
     }
     
-    // Фильтр по городу
-    if (selectedCity) {
-      result = result.filter(player => player.city === selectedCity);
+    // Фильтр по региону
+    if (selectedRegion) {
+      result = result.filter(player => player.region_id === selectedRegion);
     }
     
     // Сортировка по очкам (по убыванию)
-    result.sort((a, b) => b.points - a.points);
+    result.sort((a, b) => b.score - a.score);
     
     // Обновление мест после фильтрации и сортировки
     result = result.map((player, index) => ({
@@ -64,7 +129,7 @@ const Rating: React.FC = () => {
     }));
     
     setFilteredPlayers(result);
-  }, [players, searchTerm, selectedCategory, selectedCity]);
+  }, [players, searchTerm, selectedSex, selectedRegion]);
   
   return (
     <div className={styles.wrapper}>
@@ -81,54 +146,37 @@ const Rating: React.FC = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className={styles.searchInput}
             />
-            {searchTerm && (
-              <div className={styles.searchSuggestions}>
-                {players
-                  .filter(player => player.name.toLowerCase().includes(searchTerm.toLowerCase()))
-                  .slice(0, 5)
-                  .map((player, index) => (
-                    <div
-                      key={index}
-                      className={styles.suggestion}
-                      onClick={() => setSearchTerm(player.name)}
-                    >
-                      {player.name}
-                    </div>
-                  ))
-                }
-              </div>
-            )}
           </div>
           
           <div className={styles.filterSelect}>
-            <label htmlFor="category">Категория:</label>
+            <label htmlFor="sexes">Пол:</label>
             <select
-              id="category"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              id="sexes"
+              value={selectedSex || ''}
+              onChange={(e) => setSelectedSex(Number(e.target.value) || null)}
               className={styles.select}
             >
-              <option value="">Все категории</option>
-              {categories.map(category => (
-                <option key={category} value={category}>
-                  {category}
+              <option value="">Все полы</option>
+              {sexes.map(sex => (
+                <option key={sex.id} value={sex.id}>
+                  {sex.name}
                 </option>
               ))}
             </select>
           </div>
           
           <div className={styles.filterSelect}>
-            <label htmlFor="city">Город:</label>
+            <label htmlFor="region">Регион:</label>
             <select
-              id="city"
-              value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
+              id="region"
+              value={selectedRegion || ''}
+              onChange={(e) => setSelectedRegion(Number(e.target.value) || null)}
               className={styles.select}
             >
-              <option value="">Все города</option>
-              {cities.map(city => (
-                <option key={city} value={city}>
-                  {city}
+              <option value="">Все регионы</option>
+              {regions.map(region => (
+                <option key={region.id} value={region.id}>
+                  {region.name}
                 </option>
               ))}
             </select>
@@ -142,19 +190,19 @@ const Rating: React.FC = () => {
               <th>Место</th>
               <th>ФИО</th>
               <th>Дата рождения</th>
-              <th>Город</th>
+              <th>Регион</th>
               <th>Очки</th>
               <th>Кол-во турниров за 52 недели</th>
             </tr>
             </thead>
             <tbody>
             {filteredPlayers.map((player, index) => (
-              <tr key={index} className={index % 2 === 0 ? styles.evenRow : ''}>
-                <td>{player.place}</td>
-                <td>{player.name}</td>
-                <td>{player.birthDate || '-'}</td>
-                <td>{player.city}</td>
-                <td>{player.points}</td>
+              <tr key={player.id} className={index % 2 === 0 ? styles.evenRow : ''}>
+                <td>{index + 1}</td>
+                <td>{`${player.surname} ${player.name} ${player.patronymic}`}</td>
+                <td>{player.birth_date || '-'}</td>
+                <td>{regions.find(region => region.id === player.region_id)?.name || '-'}</td>
+                <td>{player.score}</td>
                 <td>{player.tournaments}</td>
               </tr>
             ))}

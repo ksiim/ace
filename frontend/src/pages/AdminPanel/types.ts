@@ -18,6 +18,21 @@ export interface Tournament {
   region_id: number;
 }
 
+export interface Participant {
+  id: number;
+  confirmed: boolean;
+  user_id: number;
+  partner_id: number | null;
+  participant_name: string;
+  tournament_id: number;
+}
+
+export interface Fio {
+  name: string;
+  surname: string;
+  patronymic: string;
+}
+
 export interface User {
   id: number;
   admin: boolean;
@@ -48,18 +63,21 @@ export interface TournamentManagementProps {
 }
 
 export interface UserToManage {
-  id: number;
+  id: number,
   name: string;
   surname: string;
   patronymic: string;
+  score: number;
   admin: boolean;
+  telegram_id: number;
   organizer: boolean;
+  end_of_subscription: string;
+  updated_at: string;
+  created_at: string;
   phone_number: string;
   email: string;
-  end_of_subscription: string;
-  created_at: string;
-  updated_at: string;
-  score?: number;
+  birth_date: string;
+  sex_id: number;
 }
 
 export interface UserManagementProps {
