@@ -19,7 +19,7 @@ router = APIRouter()
 
 @router.get(
     "/",
-    dependencies=[Depends(get_current_user)],
+    # dependencies=[Depends(get_current_user)],
     response_model=RegionsPublic,
 )
 async def read_regions(
@@ -41,7 +41,7 @@ async def read_regions(
 
 @router.get(
     '/{region_id}',
-    dependencies=[Depends(get_current_user)],
+    # dependencies=[Depends(get_current_user)],
     response_model=RegionPublic,
 )
 async def read_region(

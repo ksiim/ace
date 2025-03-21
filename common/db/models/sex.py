@@ -3,6 +3,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from .tournament import Tournament
+    from .user import User
 
 class SexBase(SQLModel):
     name: str
@@ -12,6 +13,7 @@ class Sex(SexBase, table=True):
     __tablename__ = "sex"
     id: Optional[int] = Field(primary_key=True, default=None)
     tournaments: List["Tournament"] = Relationship(back_populates="sex")
+    users: List["User"] = Relationship(back_populates="sex")
 
 class SexCreate(SexBase):
     pass

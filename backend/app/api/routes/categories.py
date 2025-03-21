@@ -19,7 +19,7 @@ router = APIRouter()
 
 @router.get(
     "/",
-    dependencies=[Depends(get_current_user)],
+    # dependencies=[Depends(get_current_user)],
     response_model=CategoriesPublic,
 )
 async def read_categories(
@@ -41,7 +41,7 @@ async def read_categories(
 
 @router.get(
     '/{category_id}',
-    dependencies=[Depends(get_current_user)],
+    # dependencies=[Depends(get_current_user)],
     response_model=CategoryPublic,
 )
 async def read_category(

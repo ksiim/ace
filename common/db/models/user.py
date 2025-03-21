@@ -7,6 +7,7 @@ import datetime
 if TYPE_CHECKING:
     from .region import Region
     from .tournament import Tournament
+    from .sex import Sex
 
 class UserBase(SQLModel):
     name: str = Field(max_length=255, nullable=True)
@@ -21,7 +22,6 @@ class UserBase(SQLModel):
     created_at: Optional[datetime.datetime] = Field(default_factory=datetime.datetime.now, nullable=True)
     phone_number: Optional[str] = Field(default=None, nullable=True)
     email: EmailStr = Field(max_length=255, nullable=True)
-    sex: Optional[str] = Field(default=None, nullable=True)
     birth_date: Optional[datetime.date] = Field(default=None, nullable=True)
     
     @computed_field
@@ -52,7 +52,7 @@ class UserRegister(SQLModel):
     phone_number: str
     telegram_id: int
     birth_date: datetime.date
-    sex: str
+    sex_id: int
     region_id: int 
 
 class UserUpdate(UserBase):
@@ -81,8 +81,10 @@ class User(UserBase, table=True):
     hashed_password: Optional[str] = Field(default=None, nullable=True)
     
     region_id: Optional[int] = Field(foreign_key="regions.id")
+    sex_id: Optional[int] = Field(foreign_key="sex.id")
 
     region: "Region" = Relationship(back_populates="users")
+    sex: "Sex" = Relationship(back_populates="users")
     tournaments: List["Tournament"] = Relationship(back_populates="owner")
 
 class UsersPublic(SQLModel):
