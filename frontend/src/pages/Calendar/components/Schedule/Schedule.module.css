@@ -163,5 +163,75 @@
     width: 15%;
   }
 }
+.filters {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.filters input {
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 32px;
+  background-color: #fff;
+  cursor: pointer;
+}
+.filters select {
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 32px;
+  background-color: #fff;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+.filters select:hover {
+  border-color: #888;
+}
+.filters select:focus {
+  outline: none;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+}
+.filters .resetButton {
+  padding: 8px 16px;
+  font-size: 14px;
+  border: 1px solid #f95e1b;
+  border-radius: 32px;
+  background-color: #f95e1b;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+.filters .resetButton:hover {
+  background-color: #f9521b;
+  border-color: #f9521b;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+.pagination button {
+  padding: 8px 16px;
+  font-size: 14px;
+  border: 1px solid #f95e1b;
+  border-radius: 32px;
+  background-color: #f95e1b;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+.pagination button:hover {
+  background-color: #f87f4c;
+  border-color: #f87f4c;
+}
+.pagination button:disabled {
+  background-color: #ccc;
+  border-color: #ccc;
+  cursor: not-allowed;
+}
 
 /*# sourceMappingURL=Schedule.module.css.map */
