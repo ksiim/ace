@@ -69,6 +69,8 @@ class UpdatePassword(SQLModel):
 
 class UserPublic(UserBase):
     id: int
+    region_id: Optional[int]
+    sex_id: Optional[int]
 
 class UserFio(SQLModel):
     name: str

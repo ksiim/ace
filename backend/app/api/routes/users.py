@@ -42,6 +42,7 @@ async def read_users(
     is_organizer: Optional[bool] = None,
     is_admin: Optional[bool] = None,
     score_order: Optional[OrderEnum] = None,
+    sex_id: Optional[int] = None,
     fio: Optional[str] = None,
     age_order: Optional[OrderEnum] = None,
 ) -> Any:
@@ -74,6 +75,10 @@ async def read_users(
     if is_admin is not None:
         statement = statement.where(User.admin == is_admin)
         count_statement = count_statement.where(User.admin == is_admin)
+        
+    if sex_id is not None:
+        statement = statement.where(User.sex_id == sex_id)
+        count_statement = count_statement.where(User.sex_id == sex_id)
         
     if fio is not None:
         fio_parts = fio.strip().split()
