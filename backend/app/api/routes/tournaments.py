@@ -38,27 +38,36 @@ async def read_user_tournaments(
     current_user: CurrentUser,
     skip: int = 0,
     limit: int = 100,
+    region_id: Optional[int] = None,
+    category_id: Optional[int] = None,
+    sex_id: Optional[int] = None,
+    type: Optional[TournamentType] = None,
 ) -> Any:
     """
     Retrieve tournaments. If user is not an admin, only return tournaments owned by the user.
+    Optional filters by region_id, category_id and type can be applied.
     """
-    if current_user.admin:
-        count_statement = select(func.count()).select_from(Tournament)
-        count = (await session.execute(count_statement)).scalar_one_or_none()
+    def build_query(base_statement):
+        statement = base_statement
+        if not current_user.admin:
+            statement = statement.where(Tournament.owner_id == current_user.id)
+        if region_id is not None:
+            statement = statement.where(Tournament.region_id == region_id)
+        if category_id is not None:
+            statement = statement.where(Tournament.category_id == category_id)
+        if type is not None:
+            statement = statement.where(Tournament.type == type)
+        if sex_id is not None:
+            statement = statement.where(Tournament.sex_id == sex_id)
+        return statement
 
-        statement = select(Tournament).offset(skip).limit(limit)
-        tournaments = (await session.execute(statement)).scalars().all()
-    else:
-        count_statement = select(func.count()).where(
-            Tournament.owner_id == current_user.id)
-        count = (await session.execute(count_statement)).scalar_one_or_none()
+    count_statement = build_query(select(func.count()).select_from(Tournament))
+    count = (await session.execute(count_statement)).scalar_one_or_none()
 
-        statement = select(Tournament).where(
-            Tournament.owner_id == current_user.id).offset(skip).limit(limit)
-        tournaments = (await session.execute(statement)).scalars().all()
+    statement = build_query(select(Tournament)).offset(skip).limit(limit)
+    tournaments = (await session.execute(statement)).scalars().all()
 
     return TournamentsPublic(data=tournaments, count=count)
-
 
 @router.get(
     "/all",
@@ -71,6 +80,7 @@ async def read_all_tournaments(
     limit: int = 100,
     region_id: Optional[int] = None,
     category_id: Optional[int] = None,
+    sex_id: Optional[int] = None,
     type: Optional[TournamentType] = None,  # Новый фильтр по типу
 ) -> Any:
     """
@@ -83,6 +93,8 @@ async def read_all_tournaments(
         count_statement = count_statement.where(Tournament.category_id == category_id)
     if type is not None:
         count_statement = count_statement.where(Tournament.type == type)
+    if sex_id is not None:
+        count_statement = count_statement.where(Tournament.sex_id == sex_id)
     count = (await session.execute(count_statement)).scalar_one_or_none()
 
     statement = select(Tournament)
@@ -92,6 +104,8 @@ async def read_all_tournaments(
         statement = statement.where(Tournament.category_id == category_id)
     if type is not None:
         statement = statement.where(Tournament.type == type)
+    if sex_id is not None:
+        statement = statement.where(Tournament.sex_id == sex_id)
     
     statement = statement.offset(skip).limit(limit)
     
