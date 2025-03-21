@@ -12,6 +12,7 @@ async def create_user(*, session: AsyncSession, user_create: UserCreate) -> User
         update={
             "hashed_password": await get_password_hash(user_create.password),
             "region_id": user_create.region_id,
+            "sex_id": user_create.sex_id
         }
     )
     session.add(db_obj)
@@ -44,6 +45,8 @@ async def update_user(session: AsyncSession, user_in: User, db_user: User) -> An
         "updated_at": user_in.updated_at.replace(tzinfo=None) if user_in.updated_at else None,
         "created_at": user_in.created_at.replace(tzinfo=None) if user_in.created_at else None,
         "end_of_subscription": user_in.end_of_subscription.replace(tzinfo=None) if user_in.end_of_subscription else None,
+        "sex_id": user_in.sex_id,
+        "region_id": user_in.region_id
     }
 
     if "password" in user_data:

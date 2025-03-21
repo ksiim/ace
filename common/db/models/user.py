@@ -42,6 +42,7 @@ class UserBase(SQLModel):
 class UserCreate(UserBase):
     password: str = Field(min_length=8, max_length=40)
     region_id: int
+    sex_id: int
 
 class UserRegister(SQLModel):
     email: EmailStr
@@ -58,6 +59,7 @@ class UserRegister(SQLModel):
 class UserUpdate(UserBase):
     email: Optional[EmailStr] = Field(default=None, max_length=255)
     updated_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
+    sex_id: Optional[int]
 
 class UserUpdateMe(UserBase):
     email: Optional[EmailStr] = Field(default=None, max_length=255)
