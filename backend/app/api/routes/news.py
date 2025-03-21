@@ -34,7 +34,7 @@ async def read_newses(
     session: SessionDep,
     skip: int = 0,
     limit: int = 100,
-    order: OrderEnum = OrderEnum.asc,  # по умолчанию сортировка по возрастанию
+    order: OrderEnum = OrderEnum.ASC,  # по умолчанию сортировка по возрастанию
 ) -> Any:
     """
     Retrieve newses with optional sorting by id
@@ -44,16 +44,16 @@ async def read_newses(
 
     # Создаем базовый запрос
     statement = select(News)
-    
+
     # Применяем сортировку в зависимости от параметра order
-    if order == OrderEnum.desc:
+    if order == OrderEnum.DESC:
         statement = statement.order_by(desc(News.id))
     else:  # по умолчанию или при order=asc
         statement = statement.order_by(News.id)
-    
+
     # Добавляем пагинацию
     statement = statement.offset(skip).limit(limit)
-    
+
     newses = (await session.execute(statement)).scalars().all()
 
     return NewsesPublic(data=newses, count=count)

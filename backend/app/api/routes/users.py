@@ -28,6 +28,7 @@ from common.db.models.tournament import Tournament, TournamentCountResponse
 
 router = APIRouter()
 
+
 @router.get(
     "/",
     # dependencies=[Depends(get_current_user)],
@@ -50,7 +51,7 @@ async def read_users(
     Retrieve users with filters and sorting options.
     """
     count_statement = select(func.count()).select_from(User)
-    
+
     statement = select(User)
 
     if category_id is not None:
@@ -63,7 +64,7 @@ async def read_users(
             count_statement = count_statement.where(
                 User.age.between(category.from_age, category.to_age)
             )
-    
+
     if region_id is not None:
         statement = statement.where(User.region_id == region_id)
         count_statement = count_statement.where(User.region_id == region_id)
@@ -75,32 +76,37 @@ async def read_users(
     if is_admin is not None:
         statement = statement.where(User.admin == is_admin)
         count_statement = count_statement.where(User.admin == is_admin)
-        
+
     if sex_id is not None:
         statement = statement.where(User.sex_id == sex_id)
         count_statement = count_statement.where(User.sex_id == sex_id)
-        
+
     if fio is not None:
         fio_parts = fio.strip().split()
-        
+
         if len(fio_parts) >= 1:  # Фамилия
-            statement = statement.where(User.surname.ilike(f"%{fio_parts[0]}%"))
-            count_statement = count_statement.where(User.surname.ilike(f"%{fio_parts[0]}%"))
+            statement = statement.where(
+                User.surname.ilike(f"%{fio_parts[0]}%"))
+            count_statement = count_statement.where(
+                User.surname.ilike(f"%{fio_parts[0]}%"))
         if len(fio_parts) >= 2:  # Имя
             statement = statement.where(User.name.ilike(f"%{fio_parts[1]}%"))
-            count_statement = count_statement.where(User.name.ilike(f"%{fio_parts[1]}%"))
+            count_statement = count_statement.where(
+                User.name.ilike(f"%{fio_parts[1]}%"))
         if len(fio_parts) >= 3:  # Отчество
-            statement = statement.where(User.patronymic.ilike(f"%{fio_parts[2]}%"))
-            count_statement = count_statement.where(User.patronymic.ilike(f"%{fio_parts[2]}%"))
+            statement = statement.where(
+                User.patronymic.ilike(f"%{fio_parts[2]}%"))
+            count_statement = count_statement.where(
+                User.patronymic.ilike(f"%{fio_parts[2]}%"))
 
-    if score_order == OrderEnum.desc:
+    if score_order == OrderEnum.DESC:
         statement = statement.order_by(desc(User.score))
-    elif score_order == OrderEnum.asc:
+    elif score_order == OrderEnum.ASC:
         statement = statement.order_by(User.score)
 
-    if age_order == OrderEnum.asc:
+    if age_order == OrderEnum.ASC:
         statement = statement.order_by(User.birth_date.desc())
-    elif age_order == OrderEnum.desc:
+    elif age_order == OrderEnum.DESC:
         statement = statement.order_by(User.birth_date.asc())
 
     statement = statement.offset(skip).limit(limit)
@@ -177,7 +183,7 @@ async def register_user(session: SessionDep, user_in: UserRegister) -> Any:
     region = await session.get(Region, user_in.region_id)
     if not region:
         raise HTTPException(status_code=400, detail="Invalid region_id")
-    
+
     user_create = UserCreate.model_validate(user_in)
     user = await user_crud.create_user(session=session, user_create=user_create)
     return user
@@ -220,6 +226,7 @@ async def update_user_me(
     await user_crud.update_user(session=session, db_user=current_user, user_in=user_in)
     return current_user
 
+
 @router.delete(
     "/{user_id}",
     dependencies=[Depends(get_current_admin)],
@@ -243,7 +250,7 @@ async def delete_user_by_id(
 
 @router.put(
     "/{user_id}",
-    #dependencies=[Depends(get_current_admin)],
+    # dependencies=[Depends(get_current_admin)],
 )
 async def update_user_by_id(
     session: SessionDep,
@@ -326,6 +333,7 @@ async def check_verification_status(session: SessionDep, request_id: str, code: 
         raise HTTPException(status_code=400, detail={
                             "detail": "Failed to verify phone verification code", "response": response.json()})
     return {"message": "Phone verification code verified successfully", "response": response.json()}
+
 
 @router.get(
     "/{user_id}/tournament-count-per-52-weeks",

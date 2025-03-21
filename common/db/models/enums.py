@@ -2,9 +2,10 @@ from enum import Enum
 
 
 class OrderEnum(str, Enum):
-    asc = "asc" 
-    desc = "desc"
-    
+    ASC = "asc"
+    DESC = "desc"
+
+
 class TournamentType(str, Enum):
-    duo = "duo"
-    solo = "solo"
+    DUO = "duo"
+    SOLO = "solo"

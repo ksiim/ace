@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import or_, update, select
+from sqlalchemy import desc, or_, update, select
 from sqlalchemy.orm import joinedload
 from sqlmodel import col, delete, func
 
@@ -16,7 +16,7 @@ from backend.app.api.deps import (
 )
 from backend.app.messaging.producer import send_tournament_money_request_task
 from common.db.models.category import Category
-from common.db.models.enums import TournamentType
+from common.db.models.enums import TournamentType, OrderEnum
 from common.db.models.participant import TournamentParticipant, TournamentParticipantsPublic
 from common.db.models.region import Region
 from common.db.models.sex import Sex
@@ -26,6 +26,28 @@ from common.db.models.user import User
 
 
 router = APIRouter()
+
+
+def build_tournament_query(
+    base_statement, region_id: int = None,
+    category_id: int = None, type: TournamentType = None,
+    current_user: CurrentUser = None,
+    sex_id: int = None, actual: bool = False
+):
+    statement = base_statement
+    if current_user is not None and not current_user.admin:
+        statement = statement.where(Tournament.owner_id == current_user.id)
+    if region_id is not None:
+        statement = statement.where(Tournament.region_id == region_id)
+    if category_id is not None:
+        statement = statement.where(Tournament.category_id == category_id)
+    if type is not None:
+        statement = statement.where(Tournament.type == type)
+    if sex_id is not None:
+        statement = statement.where(Tournament.sex_id == sex_id)
+    if actual:
+        statement = statement.where(Tournament.date >= func.now())
+    return statement
 
 
 @router.get(
@@ -42,32 +64,34 @@ async def read_user_tournaments(
     category_id: Optional[int] = None,
     sex_id: Optional[int] = None,
     type: Optional[TournamentType] = None,
+    sort_by_id: Optional[OrderEnum] = OrderEnum.ASC,
+    actual: Optional[bool] = None,
 ) -> Any:
     """
     Retrieve tournaments. If user is not an admin, only return tournaments owned by the user.
     Optional filters by region_id, category_id and type can be applied.
     """
-    def build_query(base_statement):
-        statement = base_statement
-        if not current_user.admin:
-            statement = statement.where(Tournament.owner_id == current_user.id)
-        if region_id is not None:
-            statement = statement.where(Tournament.region_id == region_id)
-        if category_id is not None:
-            statement = statement.where(Tournament.category_id == category_id)
-        if type is not None:
-            statement = statement.where(Tournament.type == type)
-        if sex_id is not None:
-            statement = statement.where(Tournament.sex_id == sex_id)
-        return statement
 
-    count_statement = build_query(select(func.count()).select_from(Tournament))
+    if sort_by_id == OrderEnum.ASC:
+        base_statement = select(Tournament).order_by(Tournament.id)
+    elif sort_by_id == OrderEnum.DESC:
+        base_statement = select(Tournament).order_by(desc(Tournament.id))
+
+    count_statement = build_tournament_query(
+        select(func.count()).select_from(Tournament),
+        region_id, category_id, type, current_user,
+        sex_id, actual
+    )
     count = (await session.execute(count_statement)).scalar_one_or_none()
 
-    statement = build_query(select(Tournament)).offset(skip).limit(limit)
+    statement = build_tournament_query(
+        base_statement,
+        actual=actual
+    ).offset(skip).limit(limit)
     tournaments = (await session.execute(statement)).scalars().all()
 
     return TournamentsPublic(data=tournaments, count=count)
+
 
 @router.get(
     "/all",
@@ -81,35 +105,27 @@ async def read_all_tournaments(
     region_id: Optional[int] = None,
     category_id: Optional[int] = None,
     sex_id: Optional[int] = None,
+    actual: Optional[bool] = None,
     type: Optional[TournamentType] = None,  # Новый фильтр по типу
 ) -> Any:
     """
     Retrieve all tournaments with optional filters by region_id, category_id and type
     """
-    count_statement = select(func.count()).select_from(Tournament)
-    if region_id is not None:
-        count_statement = count_statement.where(Tournament.region_id == region_id)
-    if category_id is not None:
-        count_statement = count_statement.where(Tournament.category_id == category_id)
-    if type is not None:
-        count_statement = count_statement.where(Tournament.type == type)
-    if sex_id is not None:
-        count_statement = count_statement.where(Tournament.sex_id == sex_id)
+    base_statement = build_tournament_query(
+        select(Tournament), region_id,
+        category_id, type, None, sex_id,
+        actual
+    )
+    count_statement = build_tournament_query(
+        select(func.count()).select_from(Tournament),
+        region_id, category_id, type, None, sex_id, actual
+    )
+
     count = (await session.execute(count_statement)).scalar_one_or_none()
 
-    statement = select(Tournament)
-    if region_id is not None:
-        statement = statement.where(Tournament.region_id == region_id)
-    if category_id is not None:
-        statement = statement.where(Tournament.category_id == category_id)
-    if type is not None:
-        statement = statement.where(Tournament.type == type)
-    if sex_id is not None:
-        statement = statement.where(Tournament.sex_id == sex_id)
-    
-    statement = statement.offset(skip).limit(limit)
-    
+    statement = base_statement.offset(skip).limit(limit)
     tournaments = (await session.execute(statement)).scalars().all()
+
     return TournamentsPublic(data=tournaments, count=count)
 
 
@@ -134,12 +150,12 @@ async def send_money_request(
         )
     )
     tournament = (await session.execute(statement)).scalar_one_or_none()
-    
+
     if not tournament:
         raise HTTPException(status_code=404, detail="Tournament not found")
     if not tournament.owner_id == current_user.id and not current_user.admin:
         raise HTTPException(status_code=400, detail="Not enough permissions")
-    
+
     statement = (
         select(TournamentParticipant)
         .where(TournamentParticipant.tournament_id == tournament_id)
@@ -150,11 +166,11 @@ async def send_money_request(
     )
 
     participants = (await session.execute(statement)).scalars().all()
-    
+
     await session.refresh(tournament)
-    
+
     await send_tournament_money_request_task(tournament, participants)
-    
+
     return Message(message="Money request sent successfully")
 
 
