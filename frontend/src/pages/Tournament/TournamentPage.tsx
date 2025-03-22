@@ -73,6 +73,8 @@ const TournamentPage: React.FC = () => {
       }
     };
     
+    
+    
     const fetchSexes = async () => {
       try {
         const response = await apiRequest('sex/', 'GET', undefined, false);
@@ -113,10 +115,22 @@ const TournamentPage: React.FC = () => {
     const tournamentDate = new Date(tournament.date);
     const today = new Date();
     
+    // Убираем время из дат для корректного сравнения
+    tournamentDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    
+    // Вычисляем разницу в днях между датой турнира и текущей датой
     const diffTime = tournamentDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    if (diffDays > 14 && tournament.can_register) {
+    // Проверяем, прошла ли дата турнира
+    const isTournamentInPast = tournamentDate < today;
+    
+    // Проверяем, осталось ли до турнира больше 14 дней
+    const isRegistrationClosedDueToTime = diffDays > 14;
+    
+    // Если турнир уже прошел или до него осталось больше 14 дней, закрываем регистрацию
+    if ((isTournamentInPast || isRegistrationClosedDueToTime) && tournament.can_register) {
       setTournament((prev) => {
         if (!prev) return prev; // Защита от null
         

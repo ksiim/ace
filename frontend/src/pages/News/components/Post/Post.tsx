@@ -15,10 +15,19 @@ const Post: React.FC<PostProps> = ({ post, commentText, onCommentTextChange, onA
   const [photos, setPhotos] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('ru-RU', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(date);
+  };
+  
   useEffect(() => {
     const fetchPhotos = async () => {
       try {
-        const response = await apiRequest(`news/${post.id}/photos`, 'GET', undefined, true);
+        const response = await apiRequest(`news/${post.id}/photos`, 'GET', undefined, false);
         if (!response.error) {
           setPhotos(response.data.map((photo: { photo_path: string }) => photo.photo_path));
         }
@@ -46,7 +55,7 @@ const Post: React.FC<PostProps> = ({ post, commentText, onCommentTextChange, onA
         <h2 className={styles.title}>{post.title}</h2>
         <div className={styles.meta}>
           <span className={styles.author}>Отправлено {post.author}</span>
-          <time className={styles.date}>{post.date}</time>
+          <time className={styles.date}>{formatDate(post.date)}</time>
         </div>
       </header>
       

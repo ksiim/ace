@@ -175,7 +175,10 @@
     background-color: #f95e1b;
     color: white;
     font-weight: 600;
-    white-space: nowrap;
+    white-space: normal;
+    word-wrap: break-word;
+    width: 150px;
+    max-width: 150px;
 
     @media (max-width: 768px) {
       font-size: 14px;
@@ -201,6 +204,129 @@
 
     &:hover {
       background-color: #eef4ff;
+    }
+  }
+}
+
+.tournaments {
+  @media (max-width: 768px) {
+    width: 80px; /* Фиксированная ширина */
+    font-size: 8px; /* Уменьшаем размер шрифта */
+    white-space: nowrap; /* Запрещаем перенос текста */
+    overflow: hidden; /* Скрываем лишний текст */
+    text-overflow: ellipsis; /* Добавляем многоточие */
+  }
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: left;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+
+  select, .filterInput {
+    padding: 8px 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 32px;
+    background-color: #fff;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+
+    &:hover {
+      border-color: #888;
+    }
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  .filterInput {
+    width: 200px;  // Ширина инпута
+  }
+
+  .resetButton {
+    padding: 8px 16px;
+    font-size: 12px;
+    border: 1px solid #f95e1b;
+    border-radius: 32px;
+    background-color: #f95e1b;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+
+    &:hover {
+      background-color: #f9521b;
+      border-color: #f9521b;
+    }
+  }
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+
+  button {
+    padding: 8px 16px;
+    font-size: 14px;
+    border: 1px solid #f95e1b;
+    border-radius: 32px;
+    background-color: #f95e1b;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+
+    &:hover {
+      background-color: #f87f4c;
+      border-color: #f87f4c;
+    }
+
+    &:disabled {
+      background-color: #ccc;
+      border-color: #ccc;
+      cursor: not-allowed;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .filters {
+    flex-direction: column; /* Располагаем элементы вертикально */
+    align-items: center; /* Центрируем элементы */
+    gap: 10px; /* Уменьшаем расстояние между элементами */
+    padding-top: 10px;
+
+    select, .filterInput, .resetButton {
+      width: 100%; /* Занимаем всю доступную ширину */
+      max-width: 300px; /* Ограничиваем максимальную ширину */
+      font-size: 12px; /* Уменьшаем размер шрифта */
+      padding: 6px 10px; /* Уменьшаем отступы */
+    }
+
+    .resetButton {
+      width: auto; /* Возвращаем кнопке её естественную ширину */
+      padding: 6px 12px; /* Уменьшаем отступы */
+    }
+  }
+}
+
+/* Мобильные стили для пагинации */
+@media (max-width: 768px) {
+  .pagination {
+    flex-wrap: wrap; /* Разрешаем перенос кнопок на новую строку */
+    gap: 8px; /* Уменьшаем расстояние между кнопками */
+
+    button {
+      padding: 6px 12px; /* Уменьшаем отступы */
+      font-size: 12px; /* Уменьшаем размер шрифта */
+      flex: 1 1 40%; /* Распределяем кнопки по ширине */
+      max-width: 45%; /* Ограничиваем максимальную ширину кнопок */
     }
   }
 }

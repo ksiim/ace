@@ -21,7 +21,7 @@ const NewsTab: React.FC = () => {
       
       // Убедимся, что skip не отрицательный
       const safeSkip = Math.max(0, skipValue);
-      const response = await apiRequest(`news/?skip=${safeSkip}&limit=5&order=desc`, 'GET', undefined, true);
+      const response = await apiRequest(`news/?skip=${safeSkip}&limit=5&order=desc`, 'GET', undefined, false);
       if (!response || !response.data) throw new Error('Не удалось получить данные');
       
       // Сохраняем общее количество новостей
@@ -79,7 +79,7 @@ const NewsTab: React.FC = () => {
   // Функция получения комментариев для конкретной новости
   const fetchCommentsForNews = async (newsId: number): Promise<CommentType[]> => {
     try {
-      const response = await apiRequest(`news/comments/${newsId}`, 'GET', undefined, true);
+      const response = await apiRequest(`news/comments/${newsId}`, 'GET', undefined, false);
       if (!response) return [];
       const commentsWithAuthors = await Promise.all(
         response.data.map(async (comment: any) => {
@@ -128,9 +128,12 @@ const NewsTab: React.FC = () => {
       const userResponse = await apiRequest('users/me', 'GET', undefined, true);
       if (userResponse && userResponse.admin) {
         setIsAdmin(true);
+      } else {
+        setIsAdmin(false); // Пользователь авторизован, но не админ
       }
     } catch (err) {
       console.error('Ошибка при получении данных пользователя:', err);
+      setIsAdmin(false); // Пользователь не авторизован
     }
   };
   
@@ -142,11 +145,11 @@ const NewsTab: React.FC = () => {
   };
   
   const handleAddComment = async (postId: number) => {
-    if (!commentTexts[postId]?.trim()) return;
-    
     try {
       const userResponse = await apiRequest("users/me", "GET", undefined, true);
-      if (!userResponse || !userResponse.id) throw new Error("Не удалось получить данные пользователя");
+      if (!userResponse || !userResponse.id) {
+        throw new Error("Необходимо авторизоваться для добавления комментария");
+      }
       
       const payload = {
         text: commentTexts[postId],
@@ -164,7 +167,6 @@ const NewsTab: React.FC = () => {
         post.id === postId ? { ...post, comments: updatedComments } : post
       ));
       
-      // Очищаем текст комментария только для данного поста
       setCommentTexts(prev => ({ ...prev, [postId]: '' }));
       
     } catch (err) {
@@ -173,24 +175,28 @@ const NewsTab: React.FC = () => {
     }
   };
   
-  // Функция редактирования новости
   const handleEditNews = (newsId: number) => {
+    if (!isAdmin) {
+      alert('Необходимо авторизоваться для редактирования новости');
+      return;
+    }
     navigate(`/create-news/${newsId}`);
   };
   
-  // Функция удаления новости
   const handleDeleteNews = async (newsId: number) => {
+    if (!isAdmin) {
+      alert('Необходимо авторизоваться для удаления новости');
+      return;
+    }
     try {
       const response = await apiRequest(`news/${newsId}`, 'DELETE', undefined, true);
       if (!response) {
         throw new Error('Не удалось удалить новость');
       }
-      // Сохраняем удаленные новости в localStorage
       const deletedNews = JSON.parse(localStorage.getItem('deletedNews') || '[]');
       deletedNews.push(newsId);
       localStorage.setItem('deletedNews', JSON.stringify(deletedNews));
       
-      // Обновляем список новостей после удаления
       setPosts(posts.filter(post => post.id !== newsId));
       
     } catch (err) {

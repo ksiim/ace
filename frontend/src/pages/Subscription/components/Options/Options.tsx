@@ -14,7 +14,7 @@ const plans: SubscriptionPlan[] = [
       { text: 'Начисление рейтинга' },
       { text: 'Участие в розыгрышах ценных призов' }
     ],
-    price: 1100
+    price: 1
   },
   {
     type: 'annual',
