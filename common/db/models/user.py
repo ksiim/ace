@@ -36,7 +36,8 @@ class UserBase(SQLModel):
     def age(self) -> int:
         if self.birth_date is None:
             return 0
-        return datetime.datetime.now().year - self.birth_date.year
+        today = datetime.datetime.now().date()
+        return today.year - self.birth_date.year - ((today.month, today.day) < (self.birth_date.month, self.birth_date.day))
     
     
 class UserCreate(UserBase):

@@ -8,6 +8,7 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import desc, or_, update
 from sqlmodel import col, delete, func, select
+from dateutil.relativedelta import relativedelta
 
 from backend.app.crud import user as user_crud
 from backend.app.api.deps import (
@@ -58,11 +59,14 @@ async def read_users(
         category_stmt = select(Category).where(Category.id == category_id)
         category = (await session.execute(category_stmt)).scalars().first()
         if category:
+            today = datetime.datetime.now().date()
+            max_birth_date = today - relativedelta(years=category.from_age)
+            min_birth_date = today - relativedelta(years=category.to_age)
             statement = statement.where(
-                User.age.between(category.from_age, category.to_age)
+                User.birth_date.between(min_birth_date, max_birth_date)
             )
             count_statement = count_statement.where(
-                User.age.between(category.from_age, category.to_age)
+                User.birth_date.between(min_birth_date, max_birth_date)
             )
 
     if region_id is not None:
