@@ -85,8 +85,8 @@ async def read_user_tournaments(
     count = (await session.execute(count_statement)).scalar_one_or_none()
 
     statement = build_tournament_query(
-        base_statement,
-        actual=actual
+        base_statement, region_id, category_id, type, current_user,
+        sex_id, actual
     ).offset(skip).limit(limit)
     tournaments = (await session.execute(statement)).scalars().all()
 
