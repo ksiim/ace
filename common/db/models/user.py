@@ -60,10 +60,13 @@ class UserUpdate(UserBase):
     email: Optional[EmailStr] = Field(default=None, max_length=255)
     updated_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
     sex_id: Optional[int]
+    region_id: Optional[int]
 
 class UserUpdateMe(UserBase):
     email: Optional[EmailStr] = Field(default=None, max_length=255)
     updated_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
+    sex_id: Optional[int]
+    region_id: Optional[int]
 
 class UpdatePassword(SQLModel):
     current_password: str = Field(min_length=8, max_length=40)
