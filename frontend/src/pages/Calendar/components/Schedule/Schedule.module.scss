@@ -8,10 +8,10 @@
 .tableContainer {
   width: 90%;
   max-width: 1200px;
-  max-height: 70vh;
   margin: 0 auto;
   padding: 20px 0;
   overflow-x: auto; /* Горизонтальная прокрутка для мобильных устройств */
+  overflow-y: hidden; /* Убираем вертикальную прокрутку */
   text-align: center;
 }
 
@@ -229,20 +229,20 @@
   }
 
   .resetButton {
-     padding: 8px 16px;
-     font-size: 14px;
-     border: 1px solid #f95e1b;
-     border-radius: 32px;
-     background-color: #f95e1b;
-     color: #fff;
-     cursor: pointer;
-     transition: background-color 0.3s ease, border-color 0.3s ease;
+    padding: 8px 16px;
+    font-size: 14px;
+    border: 1px solid #f95e1b;
+    border-radius: 32px;
+    background-color: #f95e1b;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 
-     &:hover {
-       background-color: #f9521b;
-       border-color: #f9521b;
-     }
-   }
+    &:hover {
+      background-color: #f9521b;
+      border-color: #f9521b;
+    }
+  }
 }
 
 .pagination {
@@ -328,4 +328,3 @@
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
-

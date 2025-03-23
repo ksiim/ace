@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { saveToken, setAuthHeader } from '../../utils/serviceToken.ts';
 import axios from 'axios';
 import styles from './LoginPage.module.scss';
+import {ArrowLeft} from 'lucide-react';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -121,12 +122,19 @@ const LoginPage: React.FC = () => {
     }
   };
   
-  
-  
   return (
     <div className={styles.loginContainer}>
       <div className={styles.loginForm}>
-        <h1 className={styles.title}>Вход в аккаунт</h1>
+        <div className={styles.headerContainer}>
+          <button
+            onClick={() => navigate('/')}
+            className={styles.homeButton}
+          >
+            <ArrowLeft color="#ffffff" size={18}/>
+          </button>
+          <h1 className={styles.title}>Вход в аккаунт</h1>
+        </div>
+        
         <div className={styles.registerLink}>
           <p>Еще нет аккаунта? <Link className={styles.toregister}
                                      to="/registration">Зарегистрироваться</Link>
@@ -187,7 +195,6 @@ const LoginPage: React.FC = () => {
           >
             Забыли пароль?
           </button>
-          
           
           <button
             type="submit"

@@ -70,7 +70,7 @@ const Rating: React.FC = () => {
       limit: limit.toString(),
     }).toString();
     
-    const response = await apiRequest(`users/?${params}`, 'GET', undefined, false);
+    const response = await apiRequest(`users/?${params}&is_admin=false`, 'GET', undefined, false);
     if (!response.error && response.data) {
       const playersWithTournaments = await Promise.all(
         response.data.map(async (player: Player) => {

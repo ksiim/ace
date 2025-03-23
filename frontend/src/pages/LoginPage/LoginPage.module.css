@@ -137,4 +137,28 @@ form {
   margin-bottom: 10px;
 }
 
+.headerContainer {
+  display: flex;
+  gap: 5px;
+}
+
+.homeButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 28px;
+  height: 28px;
+  font-size: 8px;
+  border: 1px solid #f95e1b;
+  border-radius: 32px;
+  background-color: #f95e1b;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+.homeButton:hover {
+  background-color: #f9521b;
+  border-color: #f9521b;
+}
+
 /*# sourceMappingURL=LoginPage.module.css.map */

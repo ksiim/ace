@@ -21,6 +21,12 @@
   h1 {
     margin-bottom: 5px;
   }
+
+  &__header {
+      display: flex;
+    align-items: center;
+      gap: 5px;
+  }
 }
 
 .tologin {
@@ -47,11 +53,16 @@
 
 .labelWrapper {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   width: 100%;
   font-weight: 300;
   color: #000000;
   gap: 8px;
+
+  &__title{
+    display: flex;
+    gap: 8px;
+  }
 }
 
 .input {
@@ -138,5 +149,65 @@
       border-radius: 16px;
       background-color: #ffffff;
     }
+  }
+}
+
+.homeButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 28px;
+  height: 28px;
+  font-size: 8px;
+  border: 1px solid #f95e1b;
+  border-radius: 32px;
+  background-color: #f95e1b;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+
+  &:hover {
+    background-color: #f9521b;
+    border-color: #f9521b;
+  }
+}
+
+.telegramHintButton {
+  background: none;
+  border: none;
+  color: #f95e1b;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  font-size: 14px;
+}
+
+.telegramHint {
+  margin-top: 10px;
+  padding: 10px;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.telegramBotButton {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background: #f95e1b;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .labelWrapper {
+    flex-direction: column; /* Располагаем элементы в колонку */
+    align-items: flex-start; /* Выравниваем элементы по левому краю */
+  }
+
+  .telegramHint {
+    width: 100%; /* Растягиваем подсказку на всю ширину */
+    box-sizing: border-box; /* Учитываем padding и border в ширине */
   }
 }

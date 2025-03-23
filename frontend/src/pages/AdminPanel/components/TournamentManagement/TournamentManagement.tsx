@@ -15,12 +15,6 @@ const formatDateToDisplay = (dateString: string): string => {
   });
 };
 
-const formatDateToBackend = (dateString: string): string => {
-  if (!dateString) return '';
-  const [day, month, year] = dateString.split('.');
-  return `${year}-${month}-${day}`;
-};
-
 const TournamentManagement: React.FC<TournamentManagementProps> = ({
                                                                      currentUser,
                                                                      onTournamentsUpdate,
@@ -54,8 +48,8 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   const [limit] = useState<number>(10);
   
   const [filters, setFilters] = useState({
-    skip: 0,
-    limit: 10,
+    skip: skip,
+    limit: limit,
     region_id: null as number | null,
     category_id: null as number | null,
     sex_id: null as number | null,
@@ -219,7 +213,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   const resetFilters = () => {
     setFilters({
       skip: 0,
-      limit: 10,
+      limit: limit,
       region_id: null,
       category_id: null,
       sex_id: null,
@@ -271,16 +265,16 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     }
     
     if (name === 'date') {
-      // Сохраняем введенное значение как есть, преобразование будет при отправке
       parsedValue = value;
     }
     
     if (type === 'checkbox' && name === 'is_child' && 'checked' in e.target) {
       const checked = (e.target as HTMLInputElement).checked;
+      const mixedSexId = getMixedSexId();
       setNewTournament(prev => ({
         ...prev,
         [name]: checked,
-        sex_id: checked ? 3 : prev.sex_id || 0,
+        sex_id: checked ? mixedSexId || prev.sex_id || 0 : prev.sex_id || 0,
       }));
     } else {
       setNewTournament(prev => ({
@@ -347,10 +341,16 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     }
   };
   
+  const getMixedSexId = () => {
+    const mixedSex = sexes.find(sex => sex.shortname === 'mixed');
+    return mixedSex ? mixedSex.id : null;
+  };
+  
   const handleCreateTournament = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (newTournament.is_child && newTournament.sex_id !== 3) {
+    const mixedSexId = getMixedSexId();
+    if (newTournament.is_child && newTournament.sex_id !== mixedSexId) {
       onError("Для детского турнира пол должен быть 'Микст'.");
       return;
     }
@@ -360,10 +360,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       return;
     }
     
-    // Преобразуем дату перед отправкой
-    const formattedDate = formatDateToBackend(newTournament.date);
-    
-    apiRequest("tournaments/", "POST", { ...newTournament, date: formattedDate }, true)
+    apiRequest("tournaments/", "POST", newTournament, true)
       .then((data) => {
         if (data) {
           setTournaments(prevTournaments => [...prevTournaments, data]);
@@ -378,7 +375,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             photo_path: "",
             organizer_name_and_contacts: "",
             organizer_requisites: "",
-            date: "", // Сбрасываем на пустую строку
+            date: "",
             description: "",
             price: 0,
             can_register: true,
@@ -423,7 +420,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   
   const startEditTournament = (tournament: Tournament) => {
     setEditTournamentId(tournament.id);
-    setNewTournament({ 
+    setNewTournament({
       ...tournament,
       date: formatDateToDisplay(tournament.date) // Преобразуем дату в дд.мм.гггг для редактирования
     });
@@ -438,10 +435,8 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     e.preventDefault();
     if (!editTournamentId) return;
     
-    // Преобразуем дату перед отправкой
-    const formattedDate = formatDateToBackend(newTournament.date || '');
     
-    apiRequest(`tournaments/${editTournamentId}`, "PUT", { ...newTournament, date: formattedDate }, true)
+    apiRequest(`tournaments/${editTournamentId}`, "PUT", newTournament, true)
       .then((data) => {
         if (data) {
           setTournaments(prevTournaments =>
@@ -525,6 +520,11 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       console.error("Ошибка при изменении статуса регистрации:", err);
       onError("Ошибка при изменении статуса регистрации");
     }
+  };
+  
+  const getSexNameById = (sexId: number) => {
+    const sex = sexes.find(sex => sex.id === sexId);
+    return sex ? sex.name : 'Не указан';
   };
   
   const handleSendMoneyRequest = async (tournamentId: number) => {
@@ -648,7 +648,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
           <div className={styles.formGroup}>
             <label htmlFor="date">Дата проведения</label>
             <input
-              type="text"
+              type="date"
               id="date"
               name="date"
               value={newTournament.date || ''} // Отображаем как есть
@@ -898,15 +898,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
                 <td>{formatDateToDisplay(tournament.date)}</td>
                 <td>{tournament.address}</td>
                 <td>{tournament.price}</td>
-                <td>
-                  {tournament.sex_id === 1
-                    ? 'Мужчины'
-                    : tournament.sex_id === 2
-                      ? 'Женщины'
-                      : tournament.sex_id === 3
-                        ? 'Микст'
-                        : 'Не указан'}
-                </td>
+                <td>{getSexNameById(tournament.sex_id)}</td>
                 <td>
                   {categories.find((c) => c.id === tournament.category_id)?.name || 'Не указана'}
                 </td>

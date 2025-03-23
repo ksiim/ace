@@ -9,10 +9,10 @@
 .tableContainer {
   width: 90%;
   max-width: 1200px;
-  max-height: 70vh;
   margin: 0 auto;
   padding: 20px 0;
   overflow-x: auto; /* Горизонтальная прокрутка для мобильных устройств */
+  overflow-y: hidden; /* Убираем вертикальную прокрутку */
   text-align: center;
 }
 

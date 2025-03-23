@@ -6,6 +6,7 @@ import type { OTPInputRef } from '../../components/OTPInput/types.ts';
 import { apiRequest } from '../../utils/apiRequest.ts';
 import { saveToken, setAuthHeader } from '../../utils/serviceToken.ts';
 import axios from 'axios';
+import { ArrowLeft, HelpCircle } from 'lucide-react'; // Добавлена иконка HelpCircle
 
 const Registration: React.FC = () => {
   const navigate = useNavigate();
@@ -20,11 +21,12 @@ const Registration: React.FC = () => {
     password: '',
     verificationCode: '',
     sex: '' as string,
-    region_id: null as number | null // Добавляем region_id
+    region_id: null as number | null,
   });
   
   const [sexOptions, setSexOptions] = useState<{ id: number; name: string }[]>([]);
-  const [regionOptions, setRegionOptions] = useState<{ id: number; name: string }[]>([]); // Состояние для регионов
+  const [regionOptions, setRegionOptions] = useState<{ id: number; name: string }[]>([]);
+  const [showTelegramHint, setShowTelegramHint] = useState(false); // Состояние для отображения подсказки
   
   const [step, setStep] = useState(1);
   const [requestId, setRequestId] = useState('');
@@ -36,7 +38,7 @@ const Registration: React.FC = () => {
     verificationCode: false,
     telegram_id: false,
     sex: false,
-    region_id: false // Добавляем ошибку для региона
+    region_id: false,
   });
   
   useEffect(() => {
@@ -44,7 +46,6 @@ const Registration: React.FC = () => {
       try {
         const response = await apiRequest('sex/', 'GET', undefined, false);
         if (response && response.data) {
-          // Фильтруем данные, исключая "Микст"
           const filteredSexOptions = response.data.filter(
             (sex: { shortname: string }) => sex.shortname !== 'mixed'
           );
@@ -83,17 +84,16 @@ const Registration: React.FC = () => {
   }, [formData.password]);
   
   useEffect(() => {
-    validateField('telegram_id', formData.telegram_id); // Проверка для telegram_id
+    validateField('telegram_id', formData.telegram_id);
   }, [formData.telegram_id]);
-  
   
   const validateField = (fieldName: string, value: string | number | null) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^\+?\d{10,}$/;
-    const passwordRegex = /^.{8,}$/; // Минимум 8 символов
-    const telegramIdValid = value === null || (typeof value === 'number' && value.toString().length === 9); // Проверка на длину telegram_id
+    const passwordRegex = /^.{8,}$/;
+    const telegramIdValid = value === null || (typeof value === 'number' && (value.toString().length === 9 || value.toString().length === 9));
     
-    setErrors(prev => ({
+    setErrors((prev) => ({
       ...prev,
       [fieldName]: fieldName === 'email'
         ? value !== '' && !emailRegex.test(value as string)
@@ -102,15 +102,15 @@ const Registration: React.FC = () => {
           : fieldName === 'password'
             ? value !== '' && !passwordRegex.test(value as string)
             : fieldName === 'telegram_id'
-              ? value !== null && !telegramIdValid // Проверка для telegram_id
-                : false
+              ? value !== null && !telegramIdValid
+              : false,
     }));
   };
   
   const validateFullName = () => {
     const words = formData.fullName.trim().split(/\s+/);
     const hasError = words.length !== 3;
-    setErrors(prev => ({ ...prev, fullName: hasError }));
+    setErrors((prev) => ({ ...prev, fullName: hasError }));
     return !hasError;
   };
   
@@ -122,16 +122,16 @@ const Registration: React.FC = () => {
       if (cleanedValue.length > 0 && !cleanedValue.startsWith('7')) {
         cleanedValue = '7' + cleanedValue;
       }
-      setFormData(prev => ({ ...prev, [name]: `+7 ${cleanedValue.slice(1)}` }));
+      setFormData((prev) => ({ ...prev, [name]: `+7 ${cleanedValue.slice(1)}` }));
     } else if (name === 'telegram_id') {
       const trimmedValue = value.replace(/^0+/, '') || '0';
       const parsedValue = trimmedValue === '' ? null : parseInt(trimmedValue, 10);
-      setFormData(prev => ({ ...prev, [name]: parsedValue }));
+      setFormData((prev) => ({ ...prev, [name]: parsedValue }));
     } else if (name === 'region_id') {
       const parsedValue = value === '' ? null : parseInt(value, 10);
-      setFormData(prev => ({ ...prev, [name]: parsedValue }));
+      setFormData((prev) => ({ ...prev, [name]: parsedValue }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
   
@@ -140,8 +140,8 @@ const Registration: React.FC = () => {
     const phoneValid = !errors.phone && formData.phone !== '';
     const passwordValid = !errors.password && formData.password !== '';
     const telegramIdValid = !errors.telegram_id && formData.telegram_id !== null;
-    const sexValid = formData.sex !== ''; // Проверка на выбор пола
-    const regionValid = formData.region_id !== null; // Проверка на выбор региона
+    const sexValid = formData.sex !== '';
+    const regionValid = formData.region_id !== null;
     return validateFullName() && emailValid && phoneValid && passwordValid && telegramIdValid && sexValid && regionValid;
   };
   
@@ -154,7 +154,7 @@ const Registration: React.FC = () => {
       setRequestId(data.response.result.request_id);
       setStep(2);
     } else {
-      console.error("Ошибка: request_id не получен!");
+      console.error('Ошибка: request_id не получен!');
     }
   };
   
@@ -168,15 +168,14 @@ const Registration: React.FC = () => {
     if (success) {
       await registerUser();
     } else {
-      setErrors(prev => ({ ...prev, verificationCode: true }));
+      setErrors((prev) => ({ ...prev, verificationCode: true }));
     }
   };
   
   const registerUser = async () => {
     const [surname, name, patronymic] = formData.fullName.split(' ');
     
-    // Находим sex_id по выбранному значению пола
-    const selectedSex = sexOptions.find(sex => sex.name === formData.sex);
+    const selectedSex = sexOptions.find((sex) => sex.name === formData.sex);
     const sex_id = selectedSex ? selectedSex.id : null;
     
     const userData = {
@@ -188,8 +187,8 @@ const Registration: React.FC = () => {
       phone_number: formData.phone.replace(/\D/g, ''),
       telegram_id: formData.telegram_id,
       birth_date: formData.birth_date,
-      sex_id, // Используем sex_id вместо sex
-      region_id: formData.region_id // Используем region_id из формы
+      sex_id,
+      region_id: formData.region_id,
     };
     
     console.log('Данные для регистрации:', userData);
@@ -243,6 +242,14 @@ const Registration: React.FC = () => {
     }
   };
   
+  const handleTelegramHintClick = () => {
+    setShowTelegramHint(!showTelegramHint); // Переключаем видимость подсказки
+  };
+  
+  const handleTelegramBotClick = () => {
+    window.open('https://t.me/Ace_tournament_bot', '_blank');
+  };
+  
   const navigateToLogin = () => {
     navigate('/login');
   };
@@ -251,20 +258,21 @@ const Registration: React.FC = () => {
     <div className={styles.formContainer}>
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.formHeader}>
-          <h1>Регистрация</h1>
-          <button
-            type="button"
-            className={styles.loginButton}
-            onClick={navigateToLogin}
-          >
+          <div className={styles.formHeader__header}>
+            <button onClick={() => navigate('/')} className={styles.homeButton}>
+              <ArrowLeft color="#ffffff" size={18} />
+            </button>
+            <h1>Регистрация</h1>
+          </div>
+          
+          <button type="button" className={styles.loginButton} onClick={navigateToLogin}>
             Уже есть аккаунт? <span className={styles.tologin}>Войти</span>
           </button>
         </div>
         
         <div className={styles.formGroup}>
           <div className={styles.labelWrapper}>
-            <label className={styles.label}>
-              Введите Ф.И.О. игрока</label>
+            <label className={styles.label}>Введите Ф.И.О. игрока</label>
           </div>
           <input
             type="text"
@@ -275,9 +283,7 @@ const Registration: React.FC = () => {
             placeholder="Иванов Иван Иванович"
             required
           />
-          {errors.fullName &&
-						<div className={styles.errorMessage}>Ф.И.О. должно содержать три
-							слова</div>}
+          {errors.fullName && <div className={styles.errorMessage}>Ф.И.О. должно содержать три слова</div>}
         </div>
         
         {[
@@ -287,7 +293,7 @@ const Registration: React.FC = () => {
             type: 'email',
             placeholder: 'example@mail.ru',
             error: errors.email,
-            errorMessage: 'Укажите корректный email'
+            errorMessage: 'Укажите корректный email',
           },
           {
             label: 'Телефон',
@@ -295,7 +301,7 @@ const Registration: React.FC = () => {
             type: 'tel',
             placeholder: '+7 (999)-000-00-00',
             error: errors.phone,
-            errorMessage: 'Укажите корректный номер телефона'
+            errorMessage: 'Укажите корректный номер телефона',
           },
           {
             label: 'Пароль',
@@ -303,7 +309,7 @@ const Registration: React.FC = () => {
             type: 'password',
             placeholder: 'Введите пароль',
             error: errors.password,
-            errorMessage: 'Пароль должен содержать минимум 8 символов'
+            errorMessage: 'Пароль должен содержать минимум 8 символов',
           },
           {
             label: 'Телеграм ID',
@@ -311,13 +317,34 @@ const Registration: React.FC = () => {
             type: 'number',
             placeholder: '111111111',
             error: errors.telegram_id,
-            errorMessage: 'Телеграм ID должен содержать 9 цифр'
+            errorMessage: 'Телеграм ID должен содержать 9-10 цифр',
           },
-          {label: 'Дата рождения игрока', name: 'birth_date', type: 'date'}
-        ].map(({label, name, type, placeholder, error, errorMessage}) => (
+          { label: 'Дата рождения игрока', name: 'birth_date', type: 'date' },
+        ].map(({ label, name, type, placeholder, error, errorMessage }) => (
           <div key={name} className={styles.formGroup}>
             <div className={styles.labelWrapper}>
-              <label className={styles.label}>{label}</label>
+              <div className={styles.labelWrapper__title}>
+                <label className={styles.label}>{label}</label>
+                {name === 'telegram_id' && (
+                  <HelpCircle
+                    size={18}
+                    className={styles.helpIcon}
+                    onClick={handleTelegramHintClick}
+                  />
+                )}
+              </div>
+              
+              {/* Всплывающая подсказка */}
+              { (name === 'telegram_id' && showTelegramHint) && (
+                <div className={styles.telegramHint}>
+                  <p>
+                    Отправьте боту команду <strong>/id</strong> чтобы получить ваш Telegram ID.
+                  </p>
+                  <button type="button" className={styles.telegramBotButton} onClick={handleTelegramBotClick}>
+                    Перейти к боту
+                  </button>
+                </div>
+              )}
             </div>
             <input
               type={type}
@@ -328,8 +355,7 @@ const Registration: React.FC = () => {
               placeholder={placeholder}
               required
             />
-            {error && errorMessage &&
-							<div className={styles.errorMessage}>{errorMessage}</div>}
+            {error && errorMessage && <div className={styles.errorMessage}>{errorMessage}</div>}
           </div>
         ))}
         
@@ -352,8 +378,7 @@ const Registration: React.FC = () => {
               </option>
             ))}
           </select>
-          {errors.sex &&
-						<div className={styles.errorMessage}>Пожалуйста, выберите пол</div>}
+          {errors.sex && <div className={styles.errorMessage}>Пожалуйста, выберите пол</div>}
         </div>
         
         {/* Добавляем поле для выбора региона */}
@@ -375,31 +400,40 @@ const Registration: React.FC = () => {
               </option>
             ))}
           </select>
-          {errors.region_id &&
-						<div className={styles.errorMessage}>Пожалуйста, выберите регион</div>}
+          {errors.region_id && <div className={styles.errorMessage}>Пожалуйста, выберите регион</div>}
         </div>
         
         {step === 2 && (
           <div className={styles.otp}>
             <h2>Введите код из Telegram</h2>
-            <OTPInput ref={otpRef} onComplete={(otp) => setFormData({
-              ...formData,
-              verificationCode: otp
-            })}/>
+            <OTPInput
+              ref={otpRef}
+              onComplete={(otp) => setFormData({ ...formData, verificationCode: otp })}
+            />
             <div className={styles.otp__buttons}>
               <button onClick={() => otpRef.current?.clear()}>Очистить</button>
             </div>
           </div>
         )}
         
-        <button type="submit" className={styles.submitButton}
-                disabled={errors.email || errors.phone || errors.password || errors.telegram_id || errors.sex || errors.region_id}>
+        <button
+          type="submit"
+          className={styles.submitButton}
+          disabled={
+            errors.email ||
+            errors.phone ||
+            errors.password ||
+            errors.telegram_id ||
+            errors.sex ||
+            errors.region_id
+          }
+        >
           {step === 1 ? 'Получить код' : 'Завершить регистрацию'}
         </button>
         
         <p className={styles.consentText}>
-          Нажимая на кнопку, вы даете согласие на обработку персональных данных
-          и соглашаетесь с политикой конфиденциальности.
+          Нажимая на кнопку, вы даете согласие на обработку персональных данных и соглашаетесь с
+          политикой конфиденциальности.
         </p>
       </form>
     </div>
