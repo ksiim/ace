@@ -22,7 +22,8 @@ class TournamentBase(SQLModel):
     price: Optional[int] = None
     can_register: bool = Field(default=True)
     address: Optional[str] = None
-    prize_fund: Optional[int] = None
+    prize_fund: Optional[str] = None
+    comment: Optional[str] = None
 
 class Tournament(TournamentBase, table=True):
     __tablename__ = "tournaments"
