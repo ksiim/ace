@@ -98,6 +98,7 @@ class User(UserBase, table=True):
     tournaments: List["Tournament"] = Relationship(back_populates="owner")
     transactions: List["Transaction"] = Relationship(back_populates="user")
     comments: List["Comment"] = Relationship(back_populates="creator")
+    news: List["News"] = Relationship(back_populates="creator")
 
 class UsersPublic(SQLModel):
     data: List[UserPublic]
