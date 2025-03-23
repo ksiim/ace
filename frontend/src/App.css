@@ -10,3 +10,10 @@ button, input, textarea, select, a {
     font-family: 'Mulish', sans-serif;
     font-weight: 600;
 }
+
+html, body {
+    touch-action: pan-y; /* Разрешает только вертикальную прокрутку */
+    overflow-x: hidden; /* Скрывает горизонтальную прокрутку */
+    width: 100%; /* Фиксирует ширину */
+    height: 100%; /* Фиксирует высоту */
+}
