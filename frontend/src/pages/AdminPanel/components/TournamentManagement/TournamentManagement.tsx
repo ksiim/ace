@@ -2,7 +2,24 @@ import React, { useEffect, useState } from 'react';
 import { apiRequest } from "../../../../utils/apiRequest.ts";
 import styles from "../../AdminPanel.module.scss";
 import type { Category, Region, Sex, Tournament, TournamentManagementProps, Participant, Fio } from '../../types.ts';
-import {Check, Clock, Trash2 } from 'lucide-react';
+import { Check, Clock, Trash2 } from 'lucide-react';
+
+// Вспомогательные функции для работы с датами
+const formatDateToDisplay = (dateString: string): string => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+};
+
+const formatDateToBackend = (dateString: string): string => {
+  if (!dateString) return '';
+  const [day, month, year] = dateString.split('.');
+  return `${year}-${month}-${day}`;
+};
 
 const TournamentManagement: React.FC<TournamentManagementProps> = ({
                                                                      currentUser,
@@ -20,7 +37,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     photo_path: "",
     organizer_name_and_contacts: "",
     organizer_requisites: "",
-    date: new Date().toISOString().split('T')[0], // Формат "YYYY-MM-DD"
+    date: "", // Изначально пустая строка
     description: "",
     price: 0,
     can_register: true,
@@ -31,7 +48,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     category_id: 0,
     region_id: 0
   });
-  
   
   const [editTournamentId, setEditTournamentId] = useState<number | null>(null);
   const [skip, setSkip] = useState<number>(0);
@@ -44,7 +60,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     category_id: null as number | null,
     sex_id: null as number | null,
     type: null as string | null,
-    actual: null as boolean | null, // Новый фильтр по актуальности
+    actual: null as boolean | null,
   });
   
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -53,7 +69,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   
   useEffect(() => {
     participants.forEach(participant => {
-      // Загружаем данные о пользователе
       if (participant.user_id && !userDetails[participant.user_id]) {
         apiRequest(`users/${participant.user_id}/fio`, "GET", undefined, false)
           .then(response => {
@@ -63,7 +78,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
                 [participant.user_id]: {
                   name: response.name,
                   surname: response.surname,
-                  patronymic: response.patronymic // Добавляем отчество
+                  patronymic: response.patronymic
                 },
               }));
             }
@@ -71,7 +86,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
           .catch(error => console.error("Ошибка запроса данных пользователя:", error));
       }
       
-      // Загружаем данные о партнёре, только если partner_id не null
       if (participant.partner_id !== null && !userDetails[participant.partner_id]) {
         apiRequest(`users/${participant.partner_id}/fio`, "GET", undefined, false)
           .then(response => {
@@ -81,7 +95,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
                 [participant.partner_id as number]: {
                   name: response.name,
                   surname: response.surname,
-                  patronymic: response.patronymic // Добавляем отчество
+                  patronymic: response.patronymic
                 },
               }));
             }
@@ -91,7 +105,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     });
   }, [participants, userDetails]);
   
-  // Функция для загрузки участников турнира
   const fetchParticipants = async (tournamentId: number) => {
     try {
       const data = await apiRequest(`participants/?tournament_id=${tournamentId}`, "GET", undefined, true);
@@ -105,7 +118,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     }
   };
   
-  // Функция для подтверждения участника
   const confirmParticipant = async (participantId: number) => {
     try {
       const participant = participants.find(p => p.id === participantId);
@@ -137,7 +149,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     }
   };
   
-  // Функция для дисквалификации участника
   const disqualifyParticipant = async (participantId: number) => {
     try {
       const response = await apiRequest(
@@ -169,7 +180,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       ...(filters.category_id !== null && { category_id: filters.category_id.toString() }),
       ...(filters.sex_id !== null && { sex_id: filters.sex_id.toString() }),
       ...(filters.type !== null && { type: filters.type }),
-      ...(filters.actual !== null && { actual: filters.actual.toString() }), // Добавляем фильтр по актуальности
+      ...(filters.actual !== null && { actual: filters.actual.toString() }),
     }).toString();
     
     try {
@@ -191,16 +202,14 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
-    // Обработка фильтра по актуальности
     if (name === "actual") {
       setFilters((prev) => ({
         ...prev,
-        actual: value === "all" ? null : value === "true", // "all" -> null, "true" -> true, "false" -> false
+        actual: value === "all" ? null : value === "true",
       }));
       return;
     }
     
-    // Обработка остальных фильтров
     setFilters((prev) => ({
       ...prev,
       [name]: value === "" ? null : name === "region_id" || name === "category_id" || name === "sex_id" ? Number(value) : value,
@@ -215,9 +224,9 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       category_id: null,
       sex_id: null,
       type: null,
-      actual: null, // Сбрасываем фильтр по актуальности
+      actual: null,
     });
-    setSkip(0); // Сбрасываем пагинацию на первую страницу
+    setSkip(0);
   };
   
   useEffect(() => {
@@ -262,17 +271,16 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     }
     
     if (name === 'date') {
-      // Преобразуем значение в формат YYYY-MM-DD
-      parsedValue = value; // Значение уже в формате YYYY-MM-DD
+      // Сохраняем введенное значение как есть, преобразование будет при отправке
+      parsedValue = value;
     }
     
-    // Обработка чекбокса "Детский турнир"
     if (type === 'checkbox' && name === 'is_child' && 'checked' in e.target) {
       const checked = (e.target as HTMLInputElement).checked;
       setNewTournament(prev => ({
         ...prev,
         [name]: checked,
-        sex_id: checked ? 3 : prev.sex_id || 0, // Устанавливаем пол на "Микст" (3), если галочка установлена, иначе оставляем текущее значение
+        sex_id: checked ? 3 : prev.sex_id || 0,
       }));
     } else {
       setNewTournament(prev => ({
@@ -284,7 +292,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   
   const handleDeleteTournament = async (tournamentId: number) => {
     try {
-      // Send DELETE request to the server
       const response = await apiRequest(
         `tournaments/${tournamentId}`,
         "DELETE",
@@ -293,12 +300,10 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       );
       
       if (response) {
-        // Remove the deleted tournament from the state
         setTournaments((prevTournaments) =>
           prevTournaments.filter((t) => t.id !== tournamentId)
         );
         
-        // Update the parent component's tournaments state
         onTournamentsUpdate((prevTournaments) =>
           Array.isArray(prevTournaments)
             ? prevTournaments.filter((t) => t.id !== tournamentId)
@@ -318,7 +323,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Проверка на изображение
       if (!file.type.startsWith("image/")) {
         onError("Загружать можно только изображения");
         return;
@@ -330,11 +334,10 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       apiRequest("photos/", "POST", formData, true)
         .then((data) => {
           if (data && data.file_path) {
-            // Изменяем путь
             const correctPath = `${(data.file_path).slice(4)}`;
             setNewTournament(prev => ({
               ...prev,
-              photo_path: correctPath // Сохраняем исправленный путь
+              photo_path: correctPath
             }));
           } else {
             onError("Ошибка загрузки фото");
@@ -347,22 +350,19 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   const handleCreateTournament = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Проверка данных перед отправкой
     if (newTournament.is_child && newTournament.sex_id !== 3) {
       onError("Для детского турнира пол должен быть 'Микст'.");
       return;
     }
     
-    // Проверка других обязательных полей
     if (!newTournament.name || !newTournament.type || !newTournament.date || !newTournament.description) {
       onError("Заполните все обязательные поля.");
       return;
     }
     
-    // Форматируем дату в "YYYY-MM-DD"
-    const formattedDate = new Date(newTournament.date).toISOString().split('T')[0];
+    // Преобразуем дату перед отправкой
+    const formattedDate = formatDateToBackend(newTournament.date);
     
-    // Отправка данных на сервер
     apiRequest("tournaments/", "POST", { ...newTournament, date: formattedDate }, true)
       .then((data) => {
         if (data) {
@@ -371,7 +371,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             return Array.isArray(prevTournaments) ? [...prevTournaments, data] : [data];
           });
           
-          // Сброс формы
           setNewTournament({
             name: "",
             type: "",
@@ -379,7 +378,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             photo_path: "",
             organizer_name_and_contacts: "",
             organizer_requisites: "",
-            date: new Date().toISOString().split('T')[0], // Формат "YYYY-MM-DD"
+            date: "", // Сбрасываем на пустую строку
             description: "",
             price: 0,
             can_register: true,
@@ -400,7 +399,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       });
   };
   
-  
   const cancelEdit = () => {
     setEditTournamentId(null);
     setNewTournament({
@@ -410,7 +408,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       photo_path: "",
       organizer_name_and_contacts: "",
       organizer_requisites: "",
-      date: new Date().toISOString(),
+      date: "", // Пустая строка при отмене
       description: '',
       price: 0,
       can_register: true,
@@ -425,7 +423,10 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   
   const startEditTournament = (tournament: Tournament) => {
     setEditTournamentId(tournament.id);
-    setNewTournament({ ...tournament });
+    setNewTournament({ 
+      ...tournament,
+      date: formatDateToDisplay(tournament.date) // Преобразуем дату в дд.мм.гггг для редактирования
+    });
   };
   
   const canEditTournament = (tournament: Tournament) => {
@@ -437,8 +438,8 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     e.preventDefault();
     if (!editTournamentId) return;
     
-    // Форматируем дату в "YYYY-MM-DD"
-    const formattedDate = newTournament.date ? new Date(newTournament.date).toISOString().split('T')[0] : '';
+    // Преобразуем дату перед отправкой
+    const formattedDate = formatDateToBackend(newTournament.date || '');
     
     apiRequest(`tournaments/${editTournamentId}`, "PUT", { ...newTournament, date: formattedDate }, true)
       .then((data) => {
@@ -460,7 +461,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             photo_path: "",
             organizer_name_and_contacts: "",
             organizer_requisites: "",
-            date: new Date().toISOString().split('T')[0], // Формат "YYYY-MM-DD"
+            date: "", // Сбрасываем на пустую строку
             description: '',
             price: 0,
             can_register: true,
@@ -481,23 +482,19 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       });
   };
   
-  
   const handleToggleRegistration = async (tournamentId: number, canRegister: boolean) => {
     try {
-      // Find the tournament by ID
       const tournament = tournaments.find(t => t.id === tournamentId);
       if (!tournament) {
         onError("Турнир не найден");
         return;
       }
       
-      // Create an updated tournament object with the opposite can_register value
       const updatedTournament = {
         ...tournament,
-        can_register: !canRegister, // Toggle the registration status
+        can_register: !canRegister,
       };
       
-      // Send the PUT request with the updated tournament data
       const response = await apiRequest(
         `tournaments/${tournamentId}`,
         "PUT",
@@ -506,22 +503,18 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       );
       
       if (response) {
-        // Update the tournaments state with the new can_register value
         setTournaments(prevTournaments =>
           prevTournaments.map(t =>
             t.id === tournamentId ? { ...t, can_register: !canRegister } : t
           )
         );
         
-        // Update the parent component's tournaments state
         onTournamentsUpdate(prevTournaments => {
-          // Check if prevTournaments is an array before mapping
           if (Array.isArray(prevTournaments)) {
             return prevTournaments.map(t =>
               t.id === tournamentId ? { ...t, can_register: !canRegister } : t
             );
           } else {
-            // If it's not an array, return a new array with the updated tournament
             return [{ ...tournament, can_register: !canRegister }];
           }
         });
@@ -544,7 +537,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       );
       
       if (response && response.message) {
-        alert(response.message); // Показываем сообщение об успехе
+        alert(response.message);
       } else {
         onError("Ошибка при запросе взносов");
       }
@@ -558,8 +551,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     <div className={styles.tabContent}>
       <div className={styles.formContainer}>
         <h2>{editTournamentId ? "Редактировать турнир" : "Добавить новый турнир"}</h2>
-        <form
-          onSubmit={editTournamentId ? handleUpdateTournament : handleCreateTournament}>
+        <form onSubmit={editTournamentId ? handleUpdateTournament : handleCreateTournament}>
           <div className={styles.formGroup}>
             <label htmlFor="name">Название турнира</label>
             <input
@@ -587,7 +579,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             </select>
           </div>
           
-          {/* Галочка "Детский турнир" */}
           <div className={styles.checkboxContainer}>
             <input
               type="checkbox"
@@ -599,7 +590,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             <label htmlFor="is_child">Детский турнир</label>
           </div>
           
-          {/* Добавляем выбор пола, только если турнир не детский */}
           <div className={styles.formGroup}>
             <label htmlFor="sex_id">Пол участников</label>
             <select
@@ -612,15 +602,13 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             >
               <option value="">Выберите пол</option>
               {sexes.map(sex => (
-                <option key={sex.id}
-                        value={sex.id}> {/* Уникальный ключ для каждого пола */}
+                <option key={sex.id} value={sex.id}>
                   {sex.name}
                 </option>
               ))}
             </select>
           </div>
           
-          {/* Добавляем выбор категории */}
           <div className={styles.formGroup}>
             <label htmlFor="category_id">Категория</label>
             <select
@@ -632,15 +620,13 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             >
               <option value="">Выберите категорию</option>
               {categories.map(category => (
-                <option key={category.id}
-                        value={category.id}> {/* Уникальный ключ для каждой категории */}
+                <option key={category.id} value={category.id}>
                   {category.name} {category.is_child ? '(Детская)' : ''}
                 </option>
               ))}
             </select>
           </div>
           
-          {/* Добавляем выбор региона */}
           <div className={styles.formGroup}>
             <label htmlFor="region_id">Регион</label>
             <select
@@ -652,8 +638,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             >
               <option value="">Выберите регион</option>
               {regions.map(region => (
-                <option key={region.id}
-                        value={region.id}> {/* Уникальный ключ для каждого региона */}
+                <option key={region.id} value={region.id}>
                   {region.name}
                 </option>
               ))}
@@ -663,18 +648,19 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
           <div className={styles.formGroup}>
             <label htmlFor="date">Дата проведения</label>
             <input
-              type="datetime"
+              type="text"
               id="date"
               name="date"
-              value={(newTournament.date || '').slice(0, 10)}
+              value={newTournament.date || ''} // Отображаем как есть
               onChange={handleTournamentInputChange}
+              placeholder="дд.мм.гггг"
+              pattern="\d{2}\.\d{2}\.\d{4}"
               required
             />
           </div>
           
           <div className={styles.formGroup}>
-            <label htmlFor="description">Время проведения (по местному
-              времени)</label>
+            <label htmlFor="description">Время проведения (по местному времени)</label>
             <input
               type="text"
               id="description"
@@ -699,8 +685,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
           </div>
           
           <div className={styles.formGroup}>
-            <label htmlFor="photo" className={styles.fileLabel}>Фотография
-              турнира</label>
+            <label htmlFor="photo" className={styles.fileLabel}>Фотография турнира</label>
             <input
               type="file"
               id="photo"
@@ -746,8 +731,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
           </div>
           
           <div className={styles.formGroup}>
-            <label htmlFor="organizer_name_and_contacts">Контакты
-              организатора</label>
+            <label htmlFor="organizer_name_and_contacts">Контакты организатора</label>
             <input
               type="text"
               id="organizer_name_and_contacts"
@@ -847,9 +831,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             <option value="false">Неактуальные</option>
           </select>
           
-          
-          <button className={styles.resetButton} type="button"
-                  onClick={resetFilters}>
+          <button className={styles.resetButton} type="button" onClick={resetFilters}>
             Сбросить фильтры
           </button>
         </div>
@@ -877,10 +859,8 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
                       )}
                     </span>
                     {participant.confirmed ? (
-                      <span
-                        className={`${styles.participantStatus} ${styles.confirmed}`}><Check/></span>
-                    ) : <span
-                      className={`${styles.participantStatus} ${styles.confirmed}`}><Clock color={'#f95e1b'}/></span>
+                      <span className={`${styles.participantStatus} ${styles.confirmed}`}><Check/></span>
+                    ) : <span className={`${styles.participantStatus} ${styles.confirmed}`}><Clock color={'#f95e1b'}/></span>
                     }
                     <div className={styles.participantActions}>
                       <button onClick={() => confirmParticipant(participant.id)}>Подтвердить</button>
@@ -915,7 +895,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
               <tr key={tournament.id}>
                 <td>{tournament.id}</td>
                 <td>{tournament.name}</td>
-                <td>{new Date(tournament.date).toLocaleDateString()}</td>
+                <td>{formatDateToDisplay(tournament.date)}</td>
                 <td>{tournament.address}</td>
                 <td>{tournament.price}</td>
                 <td>
@@ -958,7 +938,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
                       >
                         Запросить взносы
                       </button>
-                      
                       <button
                         className={styles.editButton}
                         onClick={() => {
@@ -968,11 +947,11 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
                       >
                         Управление участниками
                       </button>
-                      
-                      {/* Add the delete button */}
-                      <Trash2 color={'#ff0000'}
-                              onClick={() => handleDeleteTournament(tournament.id)}
-                              size={30}/>
+                      <Trash2
+                        color={'#ff0000'}
+                        onClick={() => handleDeleteTournament(tournament.id)}
+                        size={30}
+                      />
                     </div>
                   )}
                 </td>
