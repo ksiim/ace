@@ -10,11 +10,12 @@ export interface Tournament {
   description: string;
   price: number;
   can_register: boolean;
-  prize_fund: number;
+  prize_fund: string;
   owner_id: number;
   sex_id: number;
   category_id: number;
   region_id: number;
+  comment: string;
 }
 
 export interface Region {

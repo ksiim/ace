@@ -11,11 +11,12 @@ export interface Tournament {
   price: number;
   can_register: boolean;
   address: string;
-  prize_fund: number;
+  prize_fund: string;
   owner_id: number;
   sex_id: number;
   category_id: number;
   region_id: number;
+  comment: string;
 }
 
 export interface Participant {

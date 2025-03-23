@@ -15,6 +15,37 @@ const formatDateToDisplay = (dateString: string): string => {
   });
 };
 
+// Форматирование даты для input type="date" (гггг-мм-дд)
+const formatDateForInput = (dateString: string): string => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // +1, так как месяцы начинаются с 0
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+// Начальное состояние турнира
+const getInitialTournamentState = (ownerId: number): Partial<Tournament> => ({
+  name: "",
+  type: "",
+  is_child: false,
+  photo_path: "",
+  organizer_name_and_contacts: "",
+  organizer_requisites: "",
+  date: "",
+  description: "",
+  price: 0,
+  can_register: true,
+  address: "",
+  prize_fund: "",
+  owner_id: ownerId,
+  sex_id: 0,
+  category_id: 0,
+  region_id: 0,
+  comment: "",
+});
+
 const TournamentManagement: React.FC<TournamentManagementProps> = ({
                                                                      currentUser,
                                                                      onTournamentsUpdate,
@@ -24,24 +55,9 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   const [categories, setCategories] = useState<Category[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
   const [sexes, setSexes] = useState<Sex[]>([]);
-  const [newTournament, setNewTournament] = useState<Partial<Tournament>>({
-    name: "",
-    type: "",
-    is_child: false,
-    photo_path: "",
-    organizer_name_and_contacts: "",
-    organizer_requisites: "",
-    date: "", // Изначально пустая строка
-    description: "",
-    price: 0,
-    can_register: true,
-    address: "",
-    prize_fund: 0,
-    owner_id: currentUser.id,
-    sex_id: 0,
-    category_id: 0,
-    region_id: 0
-  });
+  const [newTournament, setNewTournament] = useState<Partial<Tournament>>(
+    getInitialTournamentState(currentUser.id)
+  );
   
   const [editTournamentId, setEditTournamentId] = useState<number | null>(null);
   const [skip, setSkip] = useState<number>(0);
@@ -265,7 +281,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
     }
     
     if (name === 'date') {
-      parsedValue = value;
+      parsedValue = value; // Уже в формате гггг-мм-дд от input
     }
     
     if (type === 'checkbox' && name === 'is_child' && 'checked' in e.target) {
@@ -368,24 +384,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
             return Array.isArray(prevTournaments) ? [...prevTournaments, data] : [data];
           });
           
-          setNewTournament({
-            name: "",
-            type: "",
-            is_child: false,
-            photo_path: "",
-            organizer_name_and_contacts: "",
-            organizer_requisites: "",
-            date: "",
-            description: "",
-            price: 0,
-            can_register: true,
-            address: "",
-            prize_fund: 0,
-            owner_id: currentUser.id,
-            sex_id: 0,
-            category_id: 0,
-            region_id: 0,
-          });
+          setNewTournament(getInitialTournamentState(currentUser.id));
         } else {
           onError("Ошибка создания турнира");
         }
@@ -398,31 +397,14 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   
   const cancelEdit = () => {
     setEditTournamentId(null);
-    setNewTournament({
-      name: "",
-      type: "",
-      is_child: false,
-      photo_path: "",
-      organizer_name_and_contacts: "",
-      organizer_requisites: "",
-      date: "", // Пустая строка при отмене
-      description: '',
-      price: 0,
-      can_register: true,
-      address: "",
-      prize_fund: 0,
-      owner_id: currentUser.id,
-      sex_id: 0,
-      category_id: 0,
-      region_id: 0
-    });
+    setNewTournament(getInitialTournamentState(currentUser.id));
   };
   
   const startEditTournament = (tournament: Tournament) => {
     setEditTournamentId(tournament.id);
     setNewTournament({
       ...tournament,
-      date: formatDateToDisplay(tournament.date) // Преобразуем дату в дд.мм.гггг для редактирования
+      date: formatDateForInput(tournament.date) // Преобразуем дату в формат гггг-мм-дд
     });
   };
   
@@ -434,7 +416,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   const handleUpdateTournament = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editTournamentId) return;
-    
     
     apiRequest(`tournaments/${editTournamentId}`, "PUT", newTournament, true)
       .then((data) => {
@@ -449,24 +430,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
           });
           
           setEditTournamentId(null);
-          setNewTournament({
-            name: "",
-            type: "",
-            is_child: false,
-            photo_path: "",
-            organizer_name_and_contacts: "",
-            organizer_requisites: "",
-            date: "", // Сбрасываем на пустую строку
-            description: '',
-            price: 0,
-            can_register: true,
-            address: "",
-            prize_fund: 0,
-            owner_id: currentUser.id,
-            sex_id: 0,
-            category_id: 0,
-            region_id: 0
-          });
+          setNewTournament(getInitialTournamentState(currentUser.id));
         } else {
           onError("Ошибка обновления турнира");
         }
@@ -653,8 +617,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
               name="date"
               value={newTournament.date || ''} // Отображаем как есть
               onChange={handleTournamentInputChange}
-              placeholder="дд.мм.гггг"
-              pattern="\d{2}\.\d{2}\.\d{4}"
               required
             />
           </div>
@@ -710,10 +672,10 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
           <div className={styles.formGroup}>
             <label htmlFor="prize_fund">Призовой фонд</label>
             <input
-              type="number"
+              type="string"
               id="prize_fund"
               name="prize_fund"
-              value={newTournament.prize_fund || 0}
+              value={newTournament.prize_fund || ''}
               onChange={handleTournamentInputChange}
               required
             />
@@ -749,6 +711,18 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
               name="organizer_requisites"
               value={newTournament.organizer_requisites || ''}
               onChange={handleTournamentInputChange}
+            />
+          </div>
+          
+          <div className={styles.formGroup}>
+            <label htmlFor="comment">Комментарий</label>
+            <textarea
+              id="comment"
+              name="comment"
+              value={newTournament.comment || ''}
+              onChange={handleTournamentInputChange}
+              placeholder="Введите комментарий к турниру"
+              rows={4}
             />
           </div>
           

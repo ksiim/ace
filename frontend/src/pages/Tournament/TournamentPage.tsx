@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import {useNavigate, useParams} from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { apiRequest } from '../../utils/apiRequest.ts';
 import styles from './TournamentPage.module.scss';
 import Header from '../../components/Header/Header.tsx';
 import ParticipantsList from './components/ParticipantsList/ParticipantsList.tsx';
-import type {TournamentPage, User, Sex, Participant} from './types.ts';
-
+import type { TournamentPage, User, Sex, Participant } from './types.ts';
 
 const TournamentPage: React.FC = () => {
   const { tournamentId } = useParams<{ tournamentId: string }>();
@@ -73,8 +72,6 @@ const TournamentPage: React.FC = () => {
       }
     };
     
-    
-    
     const fetchSexes = async () => {
       try {
         const response = await apiRequest('sex/', 'GET', undefined, false);
@@ -138,9 +135,6 @@ const TournamentPage: React.FC = () => {
       });
     }
   }, [tournament]);
-  
-  
-  
   
   const handleRegisterClick = () => {
     setIsModalOpen(true);
@@ -233,7 +227,6 @@ const TournamentPage: React.FC = () => {
     }
   };
   
-  
   const handleCancelRegistration = () => {
     setIsModalOpen(false);
   };
@@ -259,8 +252,6 @@ const TournamentPage: React.FC = () => {
       setPartnerData(null); // Сбрасываем данные, если поле пустое
     }
   };
-  
-  
   
   const renderContent = () => {
     if (loading) {
@@ -296,6 +287,11 @@ const TournamentPage: React.FC = () => {
             <p className={styles.tournamentRequisites}>
               <strong>Реквизиты:</strong> {tournament.organizer_requisites}
             </p>
+            {tournament.comment && (
+              <p className={styles.tournamentComment}>
+                <strong>Комментарий:</strong> {tournament.comment}
+              </p>
+            )}
             <p className={styles.tournamentPrice}>
               <strong>Стоимость участия (за человека):</strong> {tournament.price > 0 ? `${tournament.price} ₽` : 'Бесплатно'}
             </p>
@@ -365,7 +361,6 @@ const TournamentPage: React.FC = () => {
                   {partnerData && partnerData.surname && partnerData.name && partnerData.patronymic && (
                     <p>Партнёр: {partnerData.surname} {partnerData.name} {partnerData.patronymic}</p>
                   )}
-                
                 </div>
               )}
               <div className={styles.modalButtons}>
