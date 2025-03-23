@@ -5,6 +5,7 @@ import styles from './TournamentPage.module.scss';
 import Header from '../../components/Header/Header.tsx';
 import ParticipantsList from './components/ParticipantsList/ParticipantsList.tsx';
 import type { TournamentPage, User, Sex, Participant } from './types.ts';
+import { Category } from '../Calendar/types.ts';
 
 const TournamentPage: React.FC = () => {
   const { tournamentId } = useParams<{ tournamentId: string }>();
@@ -18,6 +19,7 @@ const TournamentPage: React.FC = () => {
   const [partnerData, setPartnerData] = useState<User | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [sexes, setSexes] = useState<Sex[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const navigate = useNavigate();
   
   const loadParticipants = async () => {
@@ -71,6 +73,7 @@ const TournamentPage: React.FC = () => {
         setLoading(false);
       }
     };
+
     
     const fetchSexes = async () => {
       try {
@@ -92,6 +95,18 @@ const TournamentPage: React.FC = () => {
       loadParticipants();
     }
   }, [tournament]);
+
+  // Загрузка категорий
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const response = await apiRequest('categories/', 'GET', undefined, false);
+      if (response && response.data) {
+        setCategories(response.data);
+      }
+    };
+
+    fetchCategories();
+  }, []);
   
   useEffect(() => {
     const fetchUserData = async () => {
@@ -138,6 +153,12 @@ const TournamentPage: React.FC = () => {
   
   const handleRegisterClick = () => {
     setIsModalOpen(true);
+  };
+
+  // Функция для получения имени категории по ID
+  const getCategoryNameById = (categoryId: number): string => {
+    const category = categories.find((cat) => cat.id === categoryId);
+    return category ? category.name : 'Не указана';
   };
   
   const handleConfirmRegistration = async () => {
@@ -277,6 +298,9 @@ const TournamentPage: React.FC = () => {
             </p>
             <p className={styles.tournamentType}>
               <strong>Тип турнира:</strong> {tournament.type === 'solo' ? 'Одиночный' : 'Парный'}
+            </p>
+            <p className={styles.tournamentAddress}>
+              <strong>Категория:</strong> {getCategoryNameById(tournament.category_id)}
             </p>
             <p className={styles.tournamentAddress}>
               <strong>Место проведения:</strong> {tournament.address}
