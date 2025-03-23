@@ -53,6 +53,7 @@
   .content {
     gap: 12px;
     text-align: center;
+    padding-bottom: 10px;
   }
   .logo {
     font-size: 12px;

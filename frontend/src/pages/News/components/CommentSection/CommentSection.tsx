@@ -52,23 +52,27 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   
   const handleDeleteComment = async (commentId: number) => {
     try {
+      const userResponse = await apiRequest('users/me', 'GET', undefined, true);
+      if (!userResponse || !userResponse.id) {
+        throw new Error("Необходимо авторизоваться для удаления комментария");
+      }
+      
       await apiRequest(`news/comments/${commentId}`, 'DELETE', undefined, true);
       const updatedComments = comments.filter(comment => comment.id !== commentId);
-      onCommentTextChange(''); // Очистка поля ввода (если нужно)
-      setComments(updatedComments); // Обновление списка комментариев
+      setComments(updatedComments);
     } catch (error) {
       console.error('Ошибка при удалении комментария', error);
+      alert('Необходимо авторизоваться для удаления комментария');
     }
-  };
-  
-  
-  const handleEditComment = (commentId: number, text: string) => {
-    setEditingCommentId(commentId);
-    setEditedCommentText(text);
   };
   
   const handleSaveEditedComment = async (commentId: number) => {
     try {
+      const userResponse = await apiRequest('users/me', 'GET', undefined, true);
+      if (!userResponse || !userResponse.id) {
+        throw new Error("Необходимо авторизоваться для редактирования комментария");
+      }
+      
       const updatedComment = await apiRequest(`news/comments/${commentId}`, 'PUT', {
         text: editedCommentText,
         created_at: new Date().toISOString(),
@@ -79,10 +83,17 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       );
       
       setEditingCommentId(null);
-      setComments(updatedComments); // Обновление списка комментариев
+      setComments(updatedComments);
     } catch (error) {
       console.error('Ошибка при редактировании комментария', error);
+      alert('Необходимо авторизоваться для редактирования комментария');
     }
+  };
+  
+  
+  const handleEditComment = (commentId: number, text: string) => {
+    setEditingCommentId(commentId);
+    setEditedCommentText(text);
   };
   
   

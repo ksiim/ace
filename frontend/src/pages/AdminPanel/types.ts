@@ -78,6 +78,7 @@ export interface UserToManage {
   email: string;
   birth_date: string;
   sex_id: number;
+  region_id: number;
 }
 
 export interface UserManagementProps {

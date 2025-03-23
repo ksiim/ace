@@ -504,13 +504,14 @@ select:disabled:hover {
 
 .filters {
   display: flex;
-  justify-content: center;
+  flex-wrap: wrap;
+  justify-content: left;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
   margin-bottom: 20px;
 }
 .filters select, .filters .filterInput {
-  padding: 8px 12px;
+  padding: 8px 8px;
   font-size: 14px;
   border: 1px solid #ccc;
   border-radius: 32px;
@@ -530,7 +531,7 @@ select:disabled:hover {
 }
 .filters .resetButton {
   padding: 8px 16px;
-  font-size: 14px;
+  font-size: 12px;
   border: 1px solid #f95e1b;
   border-radius: 32px;
   background-color: #f95e1b;

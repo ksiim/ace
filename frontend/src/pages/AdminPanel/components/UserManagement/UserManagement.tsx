@@ -19,6 +19,8 @@ const UserManagement: React.FC<UserManagementProps> = ({
   const [ageOrder, setAgeOrder] = useState<"asc" | "desc" | null>(null);
   const [sexFilter, setSexFilter] = useState<number | null>(null);
   const [sexOptions, setSexOptions] = useState<{ id: number; name: string }[]>([]);
+  const [regionFilter, setRegionFilter] = useState<number | null>(null);
+  const [regions, setRegions] = useState<{ id: number; name: string }[]>([]);
   
   const [editUserData, setEditUserData] = useState<{
     userId: number | null;
@@ -48,6 +50,21 @@ const UserManagement: React.FC<UserManagementProps> = ({
     fetchSexOptions();
   }, []);
   
+  useEffect(() => {
+    const fetchRegions = async () => {
+      try {
+        const response = await apiRequest('regions/', 'GET', undefined, true);
+        if (response && response.data) {
+          setRegions(response.data);
+        }
+      } catch (error) {
+        onError("Ошибка при загрузке регионов");
+      }
+    };
+    
+    fetchRegions();
+  }, []);
+  
   // Функция для сброса всех фильтров
   const resetFilters = () => {
     setSubscriptionFilter(null);
@@ -56,6 +73,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
     setAgeOrder(null);
     setSortByPoints(null);
     setSexFilter(null);
+    setRegionFilter(null);
   };
   
   // Загрузка данных пользователей с фильтрами и сортировкой
@@ -68,10 +86,11 @@ const UserManagement: React.FC<UserManagementProps> = ({
           is_admin: (roleFilter === "Администратор").toString(),
           is_organizer: (roleFilter === "Организатор").toString(),
         }),
-        ...(sortByPoints && { score_order: sortByPoints }),
+        ...(sortByPoints && { score_order: sortByPoints }), // Сортировка по очкам на сервере
         ...(fioFilter && { fio: fioFilter }),
         ...(ageOrder && { age_order: ageOrder }),
         ...(sexFilter !== null && { sex_id: sexFilter.toString() }),
+        ...(regionFilter !== null && { region_id: regionFilter.toString() }),
       }).toString();
       
       const response = await apiRequest(`users/?${params}`, "GET", undefined, true);
@@ -83,7 +102,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
     };
     
     fetchUsers();
-  }, [skip, limit, roleFilter, sortByPoints, fioFilter, ageOrder, sexFilter]);
+  }, [skip, limit, roleFilter, sortByPoints, fioFilter, ageOrder, sexFilter, regionFilter]);
   
   const getUserRole = (user: UserToManage): UserRole => {
     if (user.admin) return "Администратор";
@@ -111,25 +130,20 @@ const UserManagement: React.FC<UserManagementProps> = ({
         : !user.end_of_subscription || new Date(user.end_of_subscription).getTime() === 0);
   });
   
+  // Сортировка по возрасту на клиенте
   const sortedUsers = [...filteredUsers].sort((a, b) => {
-    if (sortByPoints === "asc") {
-      return (a.score || 0) - (b.score || 0);
-    } else if (sortByPoints === "desc") {
-      return (b.score || 0) - (a.score || 0);
+    if (ageOrder === "asc") {
+      const ageA = new Date(a.birth_date).getTime();
+      const ageB = new Date(b.birth_date).getTime();
+      return ageA - ageB;
+    } else if (ageOrder === "desc") {
+      const ageA = new Date(a.birth_date).getTime();
+      const ageB = new Date(b.birth_date).getTime();
+      return ageB - ageA;
     } else {
       return 0; // Без сортировки
     }
   });
-  
-  const handleSortByPoints = () => {
-    if (sortByPoints === null) {
-      setSortByPoints("asc");
-    } else if (sortByPoints === "asc") {
-      setSortByPoints("desc");
-    } else {
-      setSortByPoints(null);
-    }
-  };
   
   const handleUpdateUserPoints = (userId: number, points: number) => {
     const user = users.find((u) => u.id === userId);
@@ -155,6 +169,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
         created_at: user.created_at,
         birth_date: user.birth_date,
         sex_id: user.sex_id,
+        region_id: user.region_id,
       },
       true
     )
@@ -202,6 +217,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
         created_at: user.created_at,
         birth_date: user.birth_date,
         sex_id: user.sex_id,
+        region_id: user.region_id,
       },
       true
     )
@@ -261,6 +277,15 @@ const UserManagement: React.FC<UserManagementProps> = ({
   return (
     <div className={styles.tabContent}>
       <div className={styles.filters}>
+        {/* Фильтр по ФИО */}
+        <input
+          type="text"
+          placeholder="Поиск по ФИО"
+          value={fioFilter}
+          onChange={(e) => setFioFilter(e.target.value)}
+          className={styles.filterInput}
+        />
+        
         {/* Фильтр по подписке */}
         <select
           value={subscriptionFilter === null ? "" : subscriptionFilter ? "active" : "inactive"}
@@ -281,20 +306,11 @@ const UserManagement: React.FC<UserManagementProps> = ({
           onChange={(e) => setRoleFilter(e.target.value as UserRole | "")}
           className={styles.filterSelect}
         >
-          <option value="">Все роли</option>
+          <option value="">Любая роль</option>
           <option value="Администратор">Администратор</option>
           <option value="Организатор">Организатор</option>
           <option value="Пользователь">Пользователь</option>
         </select>
-        
-        {/* Фильтр по ФИО */}
-        <input
-          type="text"
-          placeholder="Фильтр по ФИО"
-          value={fioFilter}
-          onChange={(e) => setFioFilter(e.target.value)}
-          className={styles.filterInput}
-        />
         
         {/* Фильтр по полу */}
         <select
@@ -302,9 +318,21 @@ const UserManagement: React.FC<UserManagementProps> = ({
           onChange={(e) => setSexFilter(e.target.value ? parseInt(e.target.value) : null)}
           className={styles.filterSelect}
         >
-          <option value="">Все полы</option>
+          <option value="">Любой пол</option>
           {sexOptions.map((sex) => (
             <option key={sex.id} value={sex.id}>{sex.name}</option>
+          ))}
+        </select>
+        
+        {/* Фильтр по региону */}
+        <select
+          value={regionFilter || ""}
+          onChange={(e) => setRegionFilter(e.target.value ? parseInt(e.target.value) : null)}
+          className={styles.filterSelect}
+        >
+          <option value="">Любой регион</option>
+          {regions.map((region) => (
+            <option key={region.id} value={region.id}>{region.name}</option>
           ))}
         </select>
         
@@ -315,6 +343,17 @@ const UserManagement: React.FC<UserManagementProps> = ({
           className={styles.filterSelect}
         >
           <option value="">Сортировка по возрасту</option>
+          <option value="asc">По возрастанию</option>
+          <option value="desc">По убыванию</option>
+        </select>
+        
+        {/* Сортировка по очкам */}
+        <select
+          value={sortByPoints || ""}
+          onChange={(e) => setSortByPoints(e.target.value as "asc" | "desc" | null)}
+          className={styles.filterSelect}
+        >
+          <option value="">Сортировка по очкам</option>
           <option value="asc">По возрастанию</option>
           <option value="desc">По убыванию</option>
         </select>
@@ -340,13 +379,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
               <th>Телефон</th>
               <th>Роль</th>
               <th>Подписка до</th>
-              <th onClick={handleSortByPoints} className={styles.sortableHeader}
-                  style={{cursor: "pointer"}}>
-                Очки{" "}
-                {sortByPoints === "asc" && "↑"}
-                {sortByPoints === "desc" && "↓"}
-                {sortByPoints === null && "↕"}
-              </th>
+              <th>Очки</th>
               <th>Действия</th>
             </tr>
             </thead>
