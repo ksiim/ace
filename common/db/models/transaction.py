@@ -1,6 +1,9 @@
 import datetime
-from typing import Optional
-from sqlmodel import Field, SQLModel
+from typing import TYPE_CHECKING, Optional
+from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+    from .user import User
 
 
 class TransactionBase(SQLModel):
@@ -25,7 +28,9 @@ class Transaction(TransactionBase, table=True):
     
     id: Optional[int] = Field(primary_key=True, default=None)
     
-    user_id: int = Field(foreign_key="users.id")
+    user_id: int = Field(foreign_key="users.id", ondelete="CASCADE")
+    
+    user: "User" = Relationship(back_populates="transactions")
     
 
 class TransactionCreate(TransactionBase):
