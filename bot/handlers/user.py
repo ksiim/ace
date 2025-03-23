@@ -11,7 +11,7 @@ from .callbacks import *
 from .markups import *
 from .states import *
 
-@dp.message(Command('starts'))
+@dp.message(Command('start'))
 async def start_message_handler(message: Message, state: FSMContext):
     await state.clear()
     
