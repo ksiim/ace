@@ -677,7 +677,6 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
               name="prize_fund"
               value={newTournament.prize_fund || ''}
               onChange={handleTournamentInputChange}
-              required
             />
           </div>
           

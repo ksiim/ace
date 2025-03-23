@@ -295,9 +295,11 @@ const TournamentPage: React.FC = () => {
             <p className={styles.tournamentPrice}>
               <strong>Стоимость участия (за человека):</strong> {tournament.price > 0 ? `${tournament.price} ₽` : 'Бесплатно'}
             </p>
-            <p className={styles.tournamentPrizeFund}>
-              <strong>Призовой фонд:</strong> {tournament.prize_fund > 0 ? `${tournament.prize_fund} ₽` : 'Не предусмотрен'}
-            </p>
+            {tournament.prize_fund && (
+              <p className={styles.tournamentPrizeFund}>
+                <strong>Призовой фонд:</strong> {tournament.prize_fund} 
+              </p>
+            )}
             <p className={styles.tournamentSex}>
               <strong>Пол участников:</strong> {sexes.find(sex => sex.id === tournament.sex_id)?.name || 'Не указан'}
             </p>
