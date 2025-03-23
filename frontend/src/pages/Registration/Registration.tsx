@@ -6,7 +6,7 @@ import type { OTPInputRef } from '../../components/OTPInput/types.ts';
 import { apiRequest } from '../../utils/apiRequest.ts';
 import { saveToken, setAuthHeader } from '../../utils/serviceToken.ts';
 import axios from 'axios';
-import { ArrowLeft, HelpCircle } from 'lucide-react'; // Добавлена иконка HelpCircle
+import { ArrowLeft, HelpCircle } from 'lucide-react';
 
 const Registration: React.FC = () => {
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ const Registration: React.FC = () => {
   
   const [sexOptions, setSexOptions] = useState<{ id: number; name: string }[]>([]);
   const [regionOptions, setRegionOptions] = useState<{ id: number; name: string }[]>([]);
-  const [showTelegramHint, setShowTelegramHint] = useState(false); // Состояние для отображения подсказки
+  const [showTelegramHint, setShowTelegramHint] = useState(false);
   
   const [step, setStep] = useState(1);
   const [requestId, setRequestId] = useState('');
@@ -40,6 +40,54 @@ const Registration: React.FC = () => {
     sex: false,
     region_id: false,
   });
+  
+  // Функция для сброса ошибок и формы
+  const resetFormAndErrors = () => {
+    console.log('Сбрасываем состояние формы и ошибок');
+    setFormData({
+      fullName: '',
+      email: '',
+      phone: '',
+      telegram_id: null,
+      birth_date: '',
+      password: '',
+      verificationCode: '',
+      sex: '',
+      region_id: null,
+    });
+    setErrors({
+      fullName: false,
+      email: false,
+      phone: false,
+      password: false,
+      verificationCode: false,
+      telegram_id: false,
+      sex: false,
+      region_id: false,
+    });
+    setStep(1); // Сбрасываем шаг на начальный
+  };
+  
+  // Сброс состояния при размонтировании компонента
+  useEffect(() => {
+    console.log('Компонент Registration смонтирован');
+    
+    return () => {
+      console.log('Компонент Registration размонтирован');
+      resetFormAndErrors(); // Сбрасываем форму и ошибки при размонтировании
+    };
+  }, []);
+  
+  // Сброс состояния при монтировании (на случай, если компонент не размонтируется)
+  useEffect(() => {
+    resetFormAndErrors(); // Сбрасываем состояние при каждом монтировании
+  }, []);
+  
+  // Обработчик кнопки "назад"
+  const handleBackClick = () => {
+    resetFormAndErrors(); // Сбрасываем форму и ошибки
+    navigate('/'); // Переходим на главную страницу
+  };
   
   useEffect(() => {
     const fetchSexOptions = async () => {
@@ -254,12 +302,13 @@ const Registration: React.FC = () => {
     navigate('/login');
   };
   
+  
   return (
     <div className={styles.formContainer}>
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.formHeader}>
           <div className={styles.formHeader__header}>
-            <button onClick={() => navigate('/')} className={styles.homeButton}>
+            <button onClick={handleBackClick} className={styles.homeButton}>
               <ArrowLeft color="#ffffff" size={18} />
             </button>
             <h1>Регистрация</h1>
