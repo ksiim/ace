@@ -139,7 +139,7 @@ const Registration: React.FC = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^\+?\d{10,}$/;
     const passwordRegex = /^.{8,}$/;
-    const telegramIdValid = value === null || (typeof value === 'number' && (value.toString().length === 9 || value.toString().length === 9));
+    const telegramIdValid = value === null || (typeof value === 'number' && (value.toString().length === 9 || value.toString().length === 10));
     
     setErrors((prev) => ({
       ...prev,
