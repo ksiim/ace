@@ -33,7 +33,7 @@ async def read_categories(
     count_statement = select(func.count()).select_from(Category)
     count = (await session.execute(count_statement)).scalar_one_or_none()
 
-    statement = select(Category).offset(skip).limit(limit)
+    statement = select(Category).offset(skip).limit(limit).order_by(Category.name)
     categories = (await session.execute(statement)).scalars().all()
 
     return CategoriesPublic(data=categories, count=count)

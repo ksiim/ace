@@ -9,6 +9,8 @@ if TYPE_CHECKING:
     from .tournament import Tournament
     from .sex import Sex
     from .transaction import Transaction
+    from .comment import Comment
+    from .news import News
 
 class UserBase(SQLModel):
     name: str = Field(max_length=255, nullable=True)
@@ -96,6 +98,8 @@ class User(UserBase, table=True):
     sex: "Sex" = Relationship(back_populates="users")
     tournaments: List["Tournament"] = Relationship(back_populates="owner")
     transactions: List["Transaction"] = Relationship(back_populates="user")
+    comments: List["Comment"] = Relationship(back_populates="creator")
+    news: List["News"] = Relationship(back_populates="creator")
 
 class UsersPublic(SQLModel):
     data: List[UserPublic]
