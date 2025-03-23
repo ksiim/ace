@@ -1,6 +1,11 @@
 import datetime
-from typing import List, Optional
-from sqlmodel import Field, SQLModel
+from typing import TYPE_CHECKING, List, Optional
+from sqlmodel import Field, Relationship, SQLModel
+
+
+if TYPE_CHECKING:
+    from .user import User
+    from .comment import Comment
 
 
 class NewsBase(SQLModel):
@@ -14,7 +19,11 @@ class News(NewsBase, table=True):
     __tablename__ = "news"
     id: Optional[int] = Field(primary_key=True, default=None)
 
-    creator_id: int = Field(foreign_key="users.id")
+    creator_id: int = Field(foreign_key="users.id", ondelete="CASCADE")
+    
+    creator: "User" = Relationship(back_populates="news")
+    comments: List["Comment"] = Relationship(back_populates="news")
+    
 
 
 class NewsCreate(NewsBase):
