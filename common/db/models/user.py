@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from .sex import Sex
     from .transaction import Transaction
     from .comment import Comment
+    from .news import News
 
 class UserBase(SQLModel):
     name: str = Field(max_length=255, nullable=True)

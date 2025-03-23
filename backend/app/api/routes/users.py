@@ -87,21 +87,18 @@ async def read_users(
 
     if fio is not None:
         fio_parts = fio.strip().split()
-
-        if len(fio_parts) >= 1:  # Фамилия
+        
+        for part in fio_parts:
             statement = statement.where(
-                User.surname.ilike(f"%{fio_parts[0]}%"))
+                (User.surname.ilike(f"%{part}%")) |
+                (User.name.ilike(f"%{part}%")) |
+                (User.patronymic.ilike(f"%{part}%"))
+            )
             count_statement = count_statement.where(
-                User.surname.ilike(f"%{fio_parts[0]}%"))
-        if len(fio_parts) >= 2:  # Имя
-            statement = statement.where(User.name.ilike(f"%{fio_parts[1]}%"))
-            count_statement = count_statement.where(
-                User.name.ilike(f"%{fio_parts[1]}%"))
-        if len(fio_parts) >= 3:  # Отчество
-            statement = statement.where(
-                User.patronymic.ilike(f"%{fio_parts[2]}%"))
-            count_statement = count_statement.where(
-                User.patronymic.ilike(f"%{fio_parts[2]}%"))
+                (User.surname.ilike(f"%{part}%")) |
+                (User.name.ilike(f"%{part}%")) |
+                (User.patronymic.ilike(f"%{part}%"))
+            )
 
     if score_order == OrderEnum.DESC:
         statement = statement.order_by(desc(User.score))
