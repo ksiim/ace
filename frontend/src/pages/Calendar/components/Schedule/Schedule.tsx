@@ -13,9 +13,9 @@ const Schedule: React.FC = () => {
   const [regionId, setRegionId] = useState<number | null>(null);
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [type, setType] = useState<string | null>(null);
-  const [actual, setActual] = useState<boolean | null>(null); // Новое состояние для актуальных турниров
+  const [actual, setActual] = useState<boolean | null>(null);
   const navigate = useNavigate();
-  
+
   // Загрузка турниров
   useEffect(() => {
     const fetchTournaments = async () => {
@@ -25,55 +25,61 @@ const Schedule: React.FC = () => {
         ...(regionId && { region_id: regionId.toString() }),
         ...(categoryId && { category_id: categoryId.toString() }),
         ...(type && { type }),
-        ...(actual !== null && { actual: actual.toString() }), // Добавляем параметр actual, если он не null
+        ...(actual !== null && { actual: actual.toString() }),
       }).toString();
-      
+
       const response = await apiRequest(`tournaments/all?${params}`, 'GET', undefined, false);
       if (response && response.data) {
         setTournaments(response.data);
       }
     };
-    
+
     fetchTournaments();
-  }, [skip, limit, regionId, categoryId, type, actual]); // Добавляем actual в зависимости
-  
+  }, [skip, limit, regionId, categoryId, type, actual]);
+
   // Загрузка регионов
   useEffect(() => {
     const fetchRegions = async () => {
-      const response = await apiRequest('regions/', 'GET', undefined, true);
+      const response = await apiRequest('regions/', 'GET', undefined, false);
       if (response && response.data) {
         setRegions(response.data);
       }
     };
-    
+
     fetchRegions();
   }, []);
-  
+
   // Загрузка категорий
   useEffect(() => {
     const fetchCategories = async () => {
-      const response = await apiRequest('categories/', 'GET', undefined, true);
+      const response = await apiRequest('categories/', 'GET', undefined, false);
       if (response && response.data) {
         setCategories(response.data);
       }
     };
-    
+
     fetchCategories();
   }, []);
-  
+
   // Сброс фильтров
   const resetFilters = () => {
     setRegionId(null);
     setCategoryId(null);
     setType(null);
-    setActual(null); // Сбрасываем фильтр актуальности
-    setSkip(0); // Сбрасываем пагинацию
+    setActual(null);
+    setSkip(0);
   };
-  
+
   const handleRowClick = (tournamentId: number) => {
     navigate(`/tournaments/${tournamentId}`);
   };
-  
+
+  // Функция для получения имени категории по ID
+  const getCategoryNameById = (categoryId: number): string => {
+    const category = categories.find((cat) => cat.id === categoryId);
+    return category ? category.name : 'Не указана';
+  };
+
   return (
     <div className={styles.tableContainer}>
       <div className={styles.filters}>
@@ -89,7 +95,7 @@ const Schedule: React.FC = () => {
             </option>
           ))}
         </select>
-        
+
         {/* Фильтр по категории */}
         <select
           value={categoryId || ''}
@@ -102,15 +108,14 @@ const Schedule: React.FC = () => {
             </option>
           ))}
         </select>
-        
+
         {/* Фильтр по типу турнира */}
-        <select value={type || ''}
-                onChange={(e) => setType(e.target.value || null)}>
+        <select value={type || ''} onChange={(e) => setType(e.target.value || null)}>
           <option value="">Выберите тип</option>
           <option value="solo">Одиночный</option>
           <option value="duo">Парный</option>
         </select>
-        
+
         {/* Чекбокс для фильтрации по актуальным турнирам */}
         <div className={styles.checkboxLabel}>
           <input
@@ -122,40 +127,40 @@ const Schedule: React.FC = () => {
           <span className={styles.checkboxCustom}></span>
           Показывать актуальные
         </div>
-        
+
         {/* Кнопка сброса фильтров */}
         <button className={styles.resetButton} onClick={resetFilters}>
           Сбросить фильтры
         </button>
       </div>
-      
+
       <table className={styles.Schedule}>
         <thead>
-        <tr>
-          <th className={styles.dateColumn}>Дата</th>
-          <th className={styles.nameColumn}>Название турнира</th>
-          <th className={styles.locationColumn}>Место проведения</th>
-          <th className={styles.refereeColumn}>Организатор</th>
-          <th className={styles.categoryColumn}>Тип</th>
-        </tr>
+          <tr>
+            <th className={styles.dateColumn}>Дата</th>
+            <th className={styles.nameColumn}>Название турнира</th>
+            <th className={styles.locationColumn}>Место проведения</th>
+            <th className={styles.refereeColumn}>Организатор</th>
+            <th className={styles.categoryColumn}>Категория</th>
+          </tr>
         </thead>
         <tbody>
-        {tournaments.map((tournament, index) => (
-          <tr
-            key={tournament.id}
-            onClick={() => handleRowClick(tournament.id)}
-            className={`${styles.tournamentRow} ${index % 2 === 1 ? styles.evenRow : ''}`}
-          >
-            <td>{new Date(tournament.date).toLocaleDateString()}</td>
-            <td className={styles.nameCell}>{tournament.name}</td>
-            <td>{tournament.address}</td>
-            <td>{tournament.organizer_name_and_contacts}</td>
-            <td>{tournament.type === 'solo' ? 'Одиночный' : 'Парный'}</td>
-          </tr>
-        ))}
+          {tournaments.map((tournament, index) => (
+            <tr
+              key={tournament.id}
+              onClick={() => handleRowClick(tournament.id)}
+              className={`${styles.tournamentRow} ${index % 2 === 1 ? styles.evenRow : ''}`}
+            >
+              <td>{new Date(tournament.date).toLocaleDateString()}</td>
+              <td className={styles.nameCell}>{tournament.name}</td>
+              <td>{tournament.address}</td>
+              <td>{tournament.organizer_name_and_contacts}</td>
+              <td>{getCategoryNameById(tournament.category_id)}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
-      
+
       {/* Пагинация */}
       <div className={styles.pagination}>
         <button
