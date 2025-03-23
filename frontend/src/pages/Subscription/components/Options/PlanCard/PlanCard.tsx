@@ -113,6 +113,8 @@ export const PlanCard: React.FC<PlanCardProps> = ({
       if (response.status === 'APPROVED') {
         await executeTransaction();
         alert('Подписка успешно оформлена!');
+      } else {
+        alert('Вы ещё не оплатили подписку');
       }
       
     } catch (err) {
@@ -144,22 +146,22 @@ export const PlanCard: React.FC<PlanCardProps> = ({
             <div className={styles.transactionContainer}>
               {transaction.status !== 'APPROVED' && (
                 <>
+                  {transaction.payment_link && (
+                    <button
+                      className={`${styles.button} ${styles.button}`}
+                      onClick={() => window.open(transaction.payment_link, '_blank')}
+                    >
+                      Оплатить
+                    </button>
+                  )}
+                  
                   <button
-                    className={styles.button}
+                    className={`${styles.button} ${styles.secondaryButton}`}
                     onClick={checkTransactionStatus}
                     disabled={loading}
                   >
                     {loading ? 'Проверяем...' : 'Проверить оплату'}
                   </button>
-                  
-                  {transaction.payment_link && (
-                    <button
-                      className={`${styles.button} ${styles.secondaryButton}`}
-                      onClick={() => window.open(transaction.payment_link, '_blank')}
-                    >
-                      Оплатить повторно
-                    </button>
-                  )}
                 </>
               )}
             </div>

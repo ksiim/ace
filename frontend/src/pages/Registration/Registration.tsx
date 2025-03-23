@@ -43,7 +43,6 @@ const Registration: React.FC = () => {
   
   // Функция для сброса ошибок и формы
   const resetFormAndErrors = () => {
-    console.log('Сбрасываем состояние формы и ошибок');
     setFormData({
       fullName: '',
       email: '',
@@ -68,12 +67,18 @@ const Registration: React.FC = () => {
     setStep(1); // Сбрасываем шаг на начальный
   };
   
+  useEffect(() => {
+    setTimeout(() => {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    }, 100);
+  }, []);
+  
+  
   // Сброс состояния при размонтировании компонента
   useEffect(() => {
-    console.log('Компонент Registration смонтирован');
-    
     return () => {
-      console.log('Компонент Registration размонтирован');
       resetFormAndErrors(); // Сбрасываем форму и ошибки при размонтировании
     };
   }, []);
@@ -85,9 +90,14 @@ const Registration: React.FC = () => {
   
   // Обработчик кнопки "назад"
   const handleBackClick = () => {
-    resetFormAndErrors(); // Сбрасываем форму и ошибки
-    navigate('/'); // Переходим на главную страницу
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    document.body.style.zoom = '1'; // Принудительно сбрасываем зум
+    resetFormAndErrors();
+    navigate('/');
   };
+  
   
   useEffect(() => {
     const fetchSexOptions = async () => {
@@ -330,7 +340,6 @@ const Registration: React.FC = () => {
             onChange={handleChange}
             className={`${styles.input} ${errors.fullName ? styles.error : ''}`}
             placeholder="Иванов Иван Иванович"
-            required
           />
           {errors.fullName && <div className={styles.errorMessage}>Ф.И.О. должно содержать три слова</div>}
         </div>
@@ -402,7 +411,6 @@ const Registration: React.FC = () => {
               onChange={handleChange}
               className={`${styles.input} ${error ? styles.error : ''}`}
               placeholder={placeholder}
-              required
             />
             {error && errorMessage && <div className={styles.errorMessage}>{errorMessage}</div>}
           </div>
@@ -418,7 +426,6 @@ const Registration: React.FC = () => {
             value={formData.sex}
             onChange={handleChange}
             className={`${styles.input} ${errors.sex ? styles.error : ''}`}
-            required
           >
             <option value="">Выберите пол</option>
             {sexOptions.map((sex) => (
@@ -440,7 +447,6 @@ const Registration: React.FC = () => {
             value={formData.region_id || ''}
             onChange={handleChange}
             className={`${styles.input} ${errors.region_id ? styles.error : ''}`}
-            required
           >
             <option value="">Выберите регион</option>
             {regionOptions.map((region) => (

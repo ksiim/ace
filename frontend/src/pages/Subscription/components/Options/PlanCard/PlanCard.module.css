@@ -141,12 +141,12 @@
 }
 
 .secondaryButton {
-  background-color: transparent;
+  background-color: gray;
   border: 1px solid currentColor;
-  color: #333;
+  color: white;
 }
 .secondaryButton:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: rgba(128, 128, 128, 0.75);
 }
 
 /*# sourceMappingURL=PlanCard.module.css.map */
