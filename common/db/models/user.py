@@ -1,5 +1,6 @@
 from typing import List, Optional, TYPE_CHECKING
 from pydantic import EmailStr, computed_field
+from sqlalchemy import BigInteger, Column
 from sqlmodel import Field, Relationship, SQLModel
 import datetime
 
@@ -18,7 +19,7 @@ class UserBase(SQLModel):
     patronymic: str = Field(max_length=255, nullable=True)
     score: int | None = Field(default=0, nullable=True)
     admin: bool = Field(default=False)
-    telegram_id: Optional[int] = Field(default=None, nullable=True)
+    telegram_id: Optional[int] = Field(default=None, sa_column=Column(BigInteger, nullable=True))
     organizer: bool | None = Field(default=False, nullable=True)
     end_of_subscription: Optional[datetime.datetime] = Field(default=None, nullable=True)
     updated_at: Optional[datetime.datetime] = Field(default_factory=datetime.datetime.now, nullable=True)
