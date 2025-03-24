@@ -138,7 +138,7 @@ const Header: React.FC<HeaderProps> = ({ scrollToBenefits }) => {
     <div className={styles.mobileTopHeader}>
       <div className={styles.content}>
         <div className={styles.social_links}>
-          <a href="https://t.me/Ace_tournament_bot" target="_blank" rel="noopener noreferrer">
+          <a href="https://t.me/ace_supergroup" target="_blank" rel="noopener noreferrer">
             <img alt="Телеграм канал" src="/tgicon.png" />
           </a>
         </div>

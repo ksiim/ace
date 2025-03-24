@@ -176,7 +176,7 @@ const Rating: React.FC = () => {
             onChange={(e) => setSelectedSex(Number(e.target.value) || null)}
             className={styles.select}
           >
-            <option value="">Все полы</option>
+            <option value="">Любой пол</option>
             {sexes.map(sex => (
               <option key={sex.id} value={sex.id}>
                 {sex.name}
