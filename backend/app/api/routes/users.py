@@ -176,7 +176,6 @@ async def register_user(session: SessionDep, user_in: UserRegister) -> Any:
     """
     Create new user without the need to be logged in.
     """
-    print(f"tried to signup: {user_in}")
     user = await user_crud.get_user_by_email(session=session, email=user_in.email)
     if user:
         raise HTTPException(
