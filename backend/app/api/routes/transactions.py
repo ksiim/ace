@@ -61,7 +61,7 @@ async def read_transaction(
     transaction = await session.get(Transaction, transaction_id)
     if not transaction:
         raise HTTPException(status_code=404, detail="Transaction not found")
-    if transaction.user_id != current_user.id and not current_user.is_superuser:
+    if transaction.user_id != current_user.id and not current_user.admin:
         raise HTTPException(status_code=403, detail="Not enough permissions (transaction.user_id != current_user.id)")
     
     payment = Payment()
