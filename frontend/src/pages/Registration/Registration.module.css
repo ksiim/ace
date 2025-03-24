@@ -58,6 +58,7 @@
 }
 .labelWrapper__title {
   display: flex;
+  align-items: center;
   gap: 8px;
 }
 
@@ -197,6 +198,29 @@
   .telegramHint {
     width: 100%; /* Растягиваем подсказку на всю ширину */
     box-sizing: border-box; /* Учитываем padding и border в ширине */
+  }
+}
+.hint {
+  padding: 0 5px;
+  font-size: 12px;
+  border: 1px solid #f95e1b;
+  border-radius: 32px;
+  color: #f95e1b;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.3s ease;
+}
+.hint:hover {
+  color: #f9521b;
+}
+.hint:active {
+  color: #f9521b;
+}
+
+@media (max-width: 768px) {
+  .hint {
+    font-size: 10px;
+    padding: 4px;
   }
 }
 

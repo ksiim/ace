@@ -6,7 +6,7 @@ import type { OTPInputRef } from '../../components/OTPInput/types.ts';
 import { apiRequest } from '../../utils/apiRequest.ts';
 import { saveToken, setAuthHeader } from '../../utils/serviceToken.ts';
 import axios from 'axios';
-import { ArrowLeft, HelpCircle } from 'lucide-react';
+import { ArrowLeft} from 'lucide-react';
 
 const Registration: React.FC = () => {
   const navigate = useNavigate();
@@ -384,11 +384,7 @@ const Registration: React.FC = () => {
               <div className={styles.labelWrapper__title}>
                 <label className={styles.label}>{label}</label>
                 {name === 'telegram_id' && (
-                  <HelpCircle
-                    size={18}
-                    className={styles.helpIcon}
-                    onClick={handleTelegramHintClick}
-                  />
+                  <div className={styles.hint} onClick={handleTelegramHintClick}>Как получить id?</div>
                 )}
               </div>
               
