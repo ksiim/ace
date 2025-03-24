@@ -24,6 +24,7 @@ from common.db.models.category import Category
 from common.db.models.enums import OrderEnum
 from common.db.models.participant import TournamentParticipant
 from common.db.models.region import Region
+from common.db.models.sex import Sex
 from common.db.models.tournament import Tournament, TournamentCountResponse
 
 
@@ -175,6 +176,7 @@ async def register_user(session: SessionDep, user_in: UserRegister) -> Any:
     """
     Create new user without the need to be logged in.
     """
+    print(f"tried to signup: {user_in}")
     user = await user_crud.get_user_by_email(session=session, email=user_in.email)
     if user:
         raise HTTPException(
@@ -184,6 +186,9 @@ async def register_user(session: SessionDep, user_in: UserRegister) -> Any:
     region = await session.get(Region, user_in.region_id)
     if not region:
         raise HTTPException(status_code=400, detail="Invalid region_id")
+    sex = await session.get(Sex, user_in.sex_id)
+    if not sex:
+        raise HTTPException(status_code=400, detail="Invalid sex_id")
 
     user_create = UserCreate.model_validate(user_in)
     user = await user_crud.create_user(session=session, user_create=user_create)
