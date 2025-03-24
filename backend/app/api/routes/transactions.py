@@ -85,7 +85,7 @@ async def get_and_validate_transaction(
     transaction = await session.get(Transaction, transaction_id)
     if not transaction:
         raise HTTPException(status_code=404, detail="Transaction not found")
-    if transaction.user_id != current_user.id and not current_user.is_superuser:
+    if transaction.user_id != current_user.id and not current_user.admin:
         raise HTTPException(status_code=403, detail="Not enough permissions")
     if transaction.status != "APPROVED":
         raise HTTPException(status_code=400, detail="Transaction is not approved")
