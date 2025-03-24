@@ -92,7 +92,6 @@ const LoginPage: React.FC = () => {
       }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
-        console.log(error.response.data); // Логирование ответа сервера
         if (error.response.status === 400) {
           setErrors(prev => ({ ...prev, login: 'Неверные учетные данные' }));
         } else {

@@ -238,3 +238,26 @@
     padding: 4px; // Добавляем отступы для удобства нажатия
   }
 }
+
+.passwordWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.showPasswordButton {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #666;
+
+  &:hover {
+    color: #333;
+  }
+}
+
+

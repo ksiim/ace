@@ -6,7 +6,7 @@ import type { OTPInputRef } from '../../components/OTPInput/types.ts';
 import { apiRequest } from '../../utils/apiRequest.ts';
 import { saveToken, setAuthHeader } from '../../utils/serviceToken.ts';
 import axios from 'axios';
-import { ArrowLeft} from 'lucide-react';
+import {ArrowLeft, Eye, EyeOff} from 'lucide-react';
 
 const Registration: React.FC = () => {
   const navigate = useNavigate();
@@ -22,6 +22,7 @@ const Registration: React.FC = () => {
     verificationCode: '',
     sex: '' as string,
     region_id: null as number | null,
+    confirmPassword: '',
   });
   
   const [sexOptions, setSexOptions] = useState<{ id: number; name: string }[]>([]);
@@ -39,7 +40,17 @@ const Registration: React.FC = () => {
     telegram_id: false,
     sex: false,
     region_id: false,
+    confirmPassword: false,
   });
+  
+  const [showPassword, setShowPassword] = useState({
+    password: false,
+    confirmPassword: false,
+  });
+  
+  const toggleShowPassword = (field: 'password' | 'confirmPassword') => () => {
+    setShowPassword(prev => ({ ...prev, [field]: !prev[field] }));
+  };
   
   // Функция для сброса ошибок и формы
   const resetFormAndErrors = () => {
@@ -53,6 +64,7 @@ const Registration: React.FC = () => {
       verificationCode: '',
       sex: '',
       region_id: null,
+      confirmPassword: ''
     });
     setErrors({
       fullName: false,
@@ -63,6 +75,7 @@ const Registration: React.FC = () => {
       telegram_id: false,
       sex: false,
       region_id: false,
+      confirmPassword: false,
     });
     setStep(1); // Сбрасываем шаг на начальный
   };
@@ -142,6 +155,10 @@ const Registration: React.FC = () => {
   }, [formData.password]);
   
   useEffect(() => {
+    validateField('confirmPassword', formData.confirmPassword);
+  }, [formData.confirmPassword, formData.password]);
+  
+  useEffect(() => {
     validateField('telegram_id', formData.telegram_id);
   }, [formData.telegram_id]);
   
@@ -159,9 +176,11 @@ const Registration: React.FC = () => {
           ? value !== '' && !phoneRegex.test((value as string).replace(/\D/g, ''))
           : fieldName === 'password'
             ? value !== '' && !passwordRegex.test(value as string)
-            : fieldName === 'telegram_id'
-              ? value !== null && !telegramIdValid
-              : false,
+            : fieldName === 'confirmPassword'
+              ? value !== '' && value !== formData.password // Проверяем совпадение паролей
+              : fieldName === 'telegram_id'
+                ? value !== null && !telegramIdValid
+                : false,
     }));
   };
   
@@ -197,10 +216,11 @@ const Registration: React.FC = () => {
     const emailValid = !errors.email && formData.email !== '';
     const phoneValid = !errors.phone && formData.phone !== '';
     const passwordValid = !errors.password && formData.password !== '';
+    const confirmPasswordValid = !errors.confirmPassword && formData.confirmPassword !== '' && formData.confirmPassword === formData.password;
     const telegramIdValid = !errors.telegram_id && formData.telegram_id !== null;
     const sexValid = formData.sex !== '';
     const regionValid = formData.region_id !== null;
-    return validateFullName() && emailValid && phoneValid && passwordValid && telegramIdValid && sexValid && regionValid;
+    return validateFullName() && emailValid && phoneValid && passwordValid && confirmPasswordValid && telegramIdValid && sexValid && regionValid;
   };
   
   const sendVerificationCode = async () => {
@@ -221,7 +241,7 @@ const Registration: React.FC = () => {
     
     const query = new URLSearchParams({ request_id: requestId, code: formData.verificationCode }).toString();
     const success = await apiRequest(`users/verify_code/?${query}`, 'GET', undefined, false);
-    console.log('Ответ верификации:', success);
+    
     
     if (success) {
       await registerUser();
@@ -249,7 +269,7 @@ const Registration: React.FC = () => {
       region_id: formData.region_id,
     };
     
-    console.log('Данные для регистрации:', userData);
+    
     
     try {
       const response = await apiRequest('users/signup', 'POST', userData, false);
@@ -276,7 +296,7 @@ const Registration: React.FC = () => {
         },
       });
       
-      console.log('Ответ от сервера:', response.data);
+      
       
       const token = response.data.access_token;
       if (token) {
@@ -364,10 +384,24 @@ const Registration: React.FC = () => {
           {
             label: 'Пароль',
             name: 'password',
-            type: 'password',
-            placeholder: 'Введите пароль',
+            type: showPassword.password ? 'text' : 'password',
+            placeholder: 'Придумайте пароль',
             error: errors.password,
             errorMessage: 'Пароль должен содержать минимум 8 символов',
+            isPassword: true,
+            showPassword: showPassword.password,
+            toggleShow: () => toggleShowPassword('password'),
+          },
+          {
+            label: 'Повторите пароль',
+            name: 'confirmPassword',
+            type: showPassword.confirmPassword ? 'text' : 'password',
+            placeholder: 'Повторите пароль',
+            error: errors.confirmPassword,
+            errorMessage: 'Пароли не совпадают',
+            isPassword: true,
+            showPassword: showPassword.confirmPassword,
+            toggleShow: () => toggleShowPassword('confirmPassword'),
           },
           {
             label: 'Телеграм ID',
@@ -384,31 +418,47 @@ const Registration: React.FC = () => {
               <div className={styles.labelWrapper__title}>
                 <label className={styles.label}>{label}</label>
                 {name === 'telegram_id' && (
-                  <div className={styles.hint} onClick={handleTelegramHintClick}>Как получить id?</div>
+                  <div className={styles.hint}
+                       onClick={handleTelegramHintClick}>Как получить id?</div>
                 )}
               </div>
               
               {/* Всплывающая подсказка */}
-              { (name === 'telegram_id' && showTelegramHint) && (
+              {(name === 'telegram_id' && showTelegramHint) && (
                 <div className={styles.telegramHint}>
                   <p>
-                    Отправьте боту команду <strong>/id</strong> чтобы получить ваш Telegram ID.
+                    Отправьте боту команду <strong>/id</strong> чтобы получить
+                    ваш Telegram ID.
                   </p>
-                  <button type="button" className={styles.telegramBotButton} onClick={handleTelegramBotClick}>
+                  <button type="button" className={styles.telegramBotButton}
+                          onClick={handleTelegramBotClick}>
                     Перейти к боту
                   </button>
                 </div>
               )}
             </div>
-            <input
-              type={type}
-              name={name}
-              value={formData[name as keyof typeof formData] === null ? '' : formData[name as keyof typeof formData]?.toString()}
-              onChange={handleChange}
-              className={`${styles.input} ${error ? styles.error : ''}`}
-              placeholder={placeholder}
-            />
-            {error && errorMessage && <div className={styles.errorMessage}>{errorMessage}</div>}
+            <div className={styles.passwordWrapper}>
+              <input
+                type={type}
+                name={name}
+                value={formData[name as keyof typeof formData] === null ? '' : formData[name as keyof typeof formData]?.toString()}
+                onChange={handleChange}
+                className={`${styles.input} ${error ? styles.error : ''}`}
+                placeholder={placeholder}
+              />
+              {(name === 'password' && showPassword) && (
+                <button
+                  type="button"
+                  className={styles.showPasswordButton}
+                  onClick={toggleShowPassword('password')}
+                >
+                  
+                  {showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}
+                </button>
+              )}
+            </div>
+            {error && errorMessage &&
+							<div className={styles.errorMessage}>{errorMessage}</div>}
           </div>
         ))}
         

@@ -41,7 +41,6 @@ const Header: React.FC<HeaderProps> = ({ scrollToBenefits }) => {
         setIsAuthenticated(true);
       } else {
         // Если получили ошибку (401 или 403), удаляем недействительный токен
-        console.log("Токен недействителен:", response);
         removeToken();
         setIsAuthenticated(false);
       }

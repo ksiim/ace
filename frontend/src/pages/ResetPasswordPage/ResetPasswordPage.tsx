@@ -16,7 +16,6 @@ const ResetPasswordPage: React.FC = () => {
   const token = queryParams.get('token') ? decodeURIComponent(queryParams.get('token')!) : null;
   
   useEffect(() => {
-    console.log('Токен:', token); // Проверяем значение токена
     const checkToken = async () => {
       if (!token) {
         setIsValidToken(false);
@@ -28,7 +27,6 @@ const ResetPasswordPage: React.FC = () => {
         "POST", undefined, false
       );
       
-      console.log('Ответ от проверки токена:', response); // Логируем ответ
       if (!response || response.error || response === "false") {
         setIsValidToken(false);
       } else {
@@ -40,24 +38,20 @@ const ResetPasswordPage: React.FC = () => {
   }, [token]);
   
   const handleResetPassword = async () => {
-    console.log("Функция handleResetPassword вызвана"); // Проверка вызова функции
     
     // Проверка на совпадение паролей
     if (newPassword !== confirmPassword) {
       setError('Пароли не совпадают');
-      console.log("Ошибка: пароли не совпадают");
       return;
     }
     
     if (!newPassword || newPassword.length < 8) {
       setError('Пароль должен содержать минимум 8 символов');
-      console.log("Ошибка: слишком короткий пароль");
       return;
     }
     
     if (!token) {
       setError('Ошибка: отсутствует токен сброса пароля');
-      console.log("Ошибка: отсутствует токен!");
       return;
     }
     
@@ -66,13 +60,11 @@ const ResetPasswordPage: React.FC = () => {
       new_password: newPassword,
     };
     
-    console.log("Отправляемый payload:", payload); // Проверка перед отправкой запроса
     
     const response = await apiRequest("login/reset-password", "POST", payload, false);
     
     if (response.error) {
       setError('Ошибка при сбросе пароля');
-      console.log("Ошибка при сбросе пароля:", response);
     } else {
       alert('Пароль успешно изменён');
       navigate('/login');
