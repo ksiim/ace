@@ -117,9 +117,10 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   
   const fetchParticipants = async (tournamentId: number) => {
     try {
-      const data = await apiRequest(`participants/?tournament_id=${tournamentId}`, "GET", undefined, true);
+      const data = await apiRequest(`tournaments/${tournamentId}/participants`, "GET", undefined, true);
       if (data && data.data) {
         setParticipants(data.data);
+        console.log(participants)
       } else {
         onError("Ошибка загрузки участников");
       }
@@ -160,6 +161,15 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   };
   
   const disqualifyParticipant = async (participantId: number) => {
+    // Добавляем подтверждение перед дисквалификацией
+    const isConfirmed = window.confirm(
+      "Вы точно хотите дисквалифицировать этого участника? Это действие нельзя отменить."
+    );
+    
+    if (!isConfirmed) {
+      return; // Если пользователь отказался, прерываем выполнение
+    }
+    
     try {
       const response = await apiRequest(
         `participants/${participantId}`,
@@ -301,6 +311,15 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
   };
   
   const handleDeleteTournament = async (tournamentId: number) => {
+    // Создаем модальное окно подтверждения
+    const isConfirmed = window.confirm(
+      "Вы точно хотите удалить этот турнир? Это действие нельзя отменить."
+    );
+    
+    if (!isConfirmed) {
+      return; // Если пользователь отказался, прерываем выполнение
+    }
+    
     try {
       const response = await apiRequest(
         `tournaments/${tournamentId}`,

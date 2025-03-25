@@ -188,20 +188,29 @@ const NewsTab: React.FC = () => {
       alert('Необходимо авторизоваться для удаления новости');
       return;
     }
+    
+    // Простое подтверждение
+    if (!window.confirm('Вы хотите удалить новость? Это действие нельзя отменить.')) {
+      return;
+    }
+    
     try {
       const response = await apiRequest(`news/${newsId}`, 'DELETE', undefined, true);
       if (!response) {
         throw new Error('Не удалось удалить новость');
       }
-      const deletedNews = JSON.parse(localStorage.getItem('deletedNews') || '[]');
-      deletedNews.push(newsId);
-      localStorage.setItem('deletedNews', JSON.stringify(deletedNews));
       
+      // Сохраняем ID удалённой новости
+      const deletedNews = JSON.parse(localStorage.getItem('deletedNews') || '[]');
+      localStorage.setItem('deletedNews', JSON.stringify([...deletedNews, newsId]));
+      
+      // Обновляем список
       setPosts(posts.filter(post => post.id !== newsId));
       
+      alert('Новость удалена');
     } catch (err) {
-      console.error('Ошибка при удалении новости:', err);
-      alert('Не удалось удалить новость. Попробуйте снова.');
+      console.error('Ошибка удаления:', err);
+      alert('Ошибка при удалении новости');
     }
   };
   

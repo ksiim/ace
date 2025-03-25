@@ -51,6 +51,15 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   };
   
   const handleDeleteComment = async (commentId: number) => {
+    // Добавляем подтверждение перед удалением
+    const isConfirmed = window.confirm(
+      "Вы точно хотите удалить этот комментарий? Это действие нельзя отменить."
+    );
+    
+    if (!isConfirmed) {
+      return; // Если пользователь отказался, прерываем выполнение
+    }
+    
     try {
       const userResponse = await apiRequest('users/me', 'GET', undefined, true);
       if (!userResponse || !userResponse.id) {
@@ -60,6 +69,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       await apiRequest(`news/comments/${commentId}`, 'DELETE', undefined, true);
       const updatedComments = comments.filter(comment => comment.id !== commentId);
       setComments(updatedComments);
+      
+      // Можно добавить уведомление об успешном удалении
+      alert("Комментарий успешно удален");
     } catch (error) {
       console.error('Ошибка при удалении комментария', error);
       alert('Необходимо авторизоваться для удаления комментария');
