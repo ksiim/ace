@@ -2,7 +2,7 @@ import base64
 from datetime import timedelta
 import datetime
 from typing import Annotated, Any
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 
 import jwt
@@ -160,9 +160,11 @@ def decode_webhook(token: str) -> WebhookPayload:
 
 @router.post("/webhook")
 async def handle_webhook(
-    token: str,
+    request: Request,
     session: SessionDep
 ) -> JSONResponse:
+    payload = await request.body()  # Получаем байты
+    token = payload.decode("utf-8")
     """
     Обработка вебхука acquiringInternetPayment от Точки Банка.
     """
