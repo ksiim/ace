@@ -89,7 +89,7 @@ async def create_webhooks():
     """
     Create webhooks
     """
-    webhook_list = ["incomingPayment", "acquiringInternetPayment"]
+    webhook_list = ["acquiringInternetPayment"]
     payment = Payment()
     response = await payment.create_webhooks(webhook_list)
     print(response)
