@@ -1,14 +1,20 @@
+import base64
 from datetime import timedelta
 import datetime
 from typing import Annotated, Any
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
+
+import jwt
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
 
 from backend.app.api.deps import CurrentUser, SessionDep, get_current_user
-from backend.app.core import security
+from backend.app.core.config import settings
 from backend.app.crud import transaction as transaction_crud
 from backend.app.payment import Payment
 from common.db.models import Transaction, TransactionCreate, TransactionPublic
+from common.db.models.transaction import WebhookPayload
 from common.db.models.user import User
 
 
@@ -70,23 +76,34 @@ async def read_transaction(
     transaction.status = status
     
     session.add(transaction)
+    
     await session.commit()
     await session.refresh(transaction)
     
     return transaction
 
+@router.post(
+    '/create_webhooks',
+)
+async def create_webhooks():
+    """
+    Create webhooks
+    """
+    webhook_list = ["incomingPayment", "acquiringInternetPayment"]
+    payment = Payment()
+    response = await payment.create_webhooks(webhook_list)
+    print(response)
+    return
+
 
 async def get_and_validate_transaction(
     session: SessionDep,
-    current_user: CurrentUser,
     transaction_id: int
 ) -> Transaction:
     """Получить и проверить транзакцию."""
     transaction = await session.get(Transaction, transaction_id)
     if not transaction:
         raise HTTPException(status_code=404, detail="Transaction not found")
-    if transaction.user_id != current_user.id and not current_user.admin:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
     if transaction.status != "APPROVED":
         raise HTTPException(status_code=400, detail="Transaction is not approved")
     if transaction.completed:
@@ -110,15 +127,82 @@ async def update_user_subscription(
     
     session.add(user)
     return user
+    
+def get_pem_from_jwk(jwk: dict) -> str:
+    """Преобразование JWK в PEM."""
+    e = int.from_bytes(base64.urlsafe_b64decode(jwk["e"] + "=="), "big")
+    n = int.from_bytes(base64.urlsafe_b64decode(jwk["n"] + "=="), "big")
+    public_key = rsa.RSAPublicNumbers(e, n).public_key()
+    pem = public_key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+    return pem.decode("utf-8")
+    
+def decode_webhook(token: str) -> WebhookPayload:
+    """Декодируем JWT и возвращаем данные вебхука в виде WebhookPayload."""
+    try:
+        jwt_key = get_pem_from_jwk(settings.PUBLIC_KEY)
+        decoded = jwt.decode(token, jwt_key, algorithms=["RS256"])
+        if decoded.get("webhookType") != "acquiringInternetPayment":
+            raise ValueError("Invalid webhook type")
+        
+        # Преобразуем сумму в float напрямую при декодировании
+        decoded["amount"] = float(decoded["amount"])
+        
+        # Создаем экземпляр WebhookPayload из декодированных данных
+        return WebhookPayload(**decoded)
+    except jwt.InvalidTokenError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid webhook token: {str(e)}")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/webhook")
+async def handle_webhook(
+    token: str,
+    session: SessionDep
+) -> JSONResponse:
+    """
+    Обработка вебхука acquiringInternetPayment от Точки Банка.
+    """
+    payload: WebhookPayload = decode_webhook(token)
+    
+    print(token)
+    
+    transaction = await transaction_crud.get_by_operation_id(session, payload.operation_id)
+    if not transaction:
+        raise HTTPException(status_code=404, detail=f"Transaction not found for operationId: {payload.operation_id}")
+    
+    if transaction.amount != payload.amount:
+        raise HTTPException(status_code=400, detail="Amount mismatch between transaction and webhook")
+    
+    payment = Payment()
+    outer_transation_status = await payment.get_payment_status(transaction.operation_id)
+    
+    transaction.status = outer_transation_status
+    transaction.updated_at = datetime.datetime.now()
+    
+    # Исполняем транзакцию, если она еще не завершена
+    await execute_transaction(session, transaction.id)
+    
+    await session.commit()
+    await session.refresh(transaction)
+    
+    return JSONResponse(content={"status": "ok"}, status_code=200)
+
 
 async def confirm_transaction(
     session: SessionDep,
     transaction: Transaction
-) -> None:
+) -> Transaction:
     """Подтвердить транзакцию."""
     transaction.completed = True
+    transaction.status = "COMPLETED"
     transaction.updated_at = datetime.datetime.now()
+    
     session.add(transaction)
+    return transaction
 
 
 @router.post(
@@ -128,13 +212,12 @@ async def confirm_transaction(
 )
 async def execute_transaction(
     session: SessionDep,
-    current_user: CurrentUser,
     transaction_id: int,
 ) -> TransactionPublic:
     """
     Execute an approved transaction, adding months to user's subscription.
     """
-    transaction = await get_and_validate_transaction(session, current_user, transaction_id)
+    transaction = await get_and_validate_transaction(session, transaction_id)
     
     await update_user_subscription(session, transaction.user_id, transaction.months)
     
