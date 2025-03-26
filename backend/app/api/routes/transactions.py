@@ -163,7 +163,8 @@ async def handle_webhook(
     request: Request,
     session: SessionDep
 ) -> JSONResponse:
-    payload = await request.body()  # Получаем байты
+    payload = await request.body()
+    print(payload)
     token = payload.decode("utf-8")
     """
     Обработка вебхука acquiringInternetPayment от Точки Банка.
