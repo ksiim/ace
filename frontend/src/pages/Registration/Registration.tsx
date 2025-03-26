@@ -411,54 +411,87 @@ const Registration: React.FC = () => {
             error: errors.telegram_id,
             errorMessage: 'Телеграм ID должен содержать 9-10 цифр',
           },
-          { label: 'Дата рождения игрока', name: 'birth_date', type: 'date' },
-        ].map(({ label, name, type, placeholder, error, errorMessage }) => (
+          {
+            label: 'Дата рождения игрока',
+            name: 'birth_date',
+            type: 'date',
+            placeholder: 'дд.мм.гггг',
+            max: new Date().toISOString().split('T')[0]
+          },
+        ].map(({ label, name, type, placeholder, error, errorMessage, max }) => (
           <div key={name} className={styles.formGroup}>
             <div className={styles.labelWrapper}>
               <div className={styles.labelWrapper__title}>
                 <label className={styles.label}>{label}</label>
                 {name === 'telegram_id' && (
-                  <div className={styles.hint}
-                       onClick={handleTelegramHintClick}>Как получить id?</div>
+                  <div className={styles.hint} onClick={handleTelegramHintClick}>
+                    Как получить id?
+                  </div>
                 )}
               </div>
               
-              {/* Всплывающая подсказка */}
               {(name === 'telegram_id' && showTelegramHint) && (
                 <div className={styles.telegramHint}>
                   <p>
                     Отправьте боту команду <strong>/id</strong> чтобы получить
                     ваш Telegram ID.
                   </p>
-                  <button type="button" className={styles.telegramBotButton}
-                          onClick={handleTelegramBotClick}>
+                  <button
+                    type="button"
+                    className={styles.telegramBotButton}
+                    onClick={handleTelegramBotClick}
+                  >
                     Перейти к боту
                   </button>
                 </div>
               )}
             </div>
-            <div className={styles.passwordWrapper}>
-              <input
-                type={type}
-                name={name}
-                value={formData[name as keyof typeof formData] === null ? '' : formData[name as keyof typeof formData]?.toString()}
-                onChange={handleChange}
-                className={`${styles.input} ${error ? styles.error : ''}`}
-                placeholder={placeholder}
-              />
-              {(name === 'password' && showPassword) && (
-                <button
-                  type="button"
-                  className={styles.showPasswordButton}
-                  onClick={toggleShowPassword('password')}
-                >
-                  
-                  {showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}
-                </button>
-              )}
-            </div>
-            {error && errorMessage &&
-							<div className={styles.errorMessage}>{errorMessage}</div>}
+            
+            {type === 'date' ? (
+              <div className={styles.dateInputWrapper}>
+                <input
+                  type="date"
+                  name={name}
+                  value={formData[name as keyof typeof formData] || ''}
+                  onChange={handleChange}
+                  className={`${styles.input} ${styles.dateInput} ${error ? styles.error : ''}`}
+                  max={max}
+                  onFocus={(e) => (e.target.type = 'date')}
+                  onBlur={(e) => {
+                    if (!e.target.value) e.target.type = 'text';
+                  }}
+                  placeholder={placeholder}
+                />
+              </div>
+            ) : (
+              <div className={styles.passwordWrapper}>
+                <input
+                  type={type}
+                  name={name}
+                  value={formData[name as keyof typeof formData] === null ? '' : formData[name as keyof typeof formData]?.toString()}
+                  onChange={handleChange}
+                  className={`${styles.input} ${error ? styles.error : ''}`}
+                  placeholder={placeholder}
+                />
+                {(name === 'password' || name === 'confirmPassword') && (
+                  <button
+                    type="button"
+                    className={styles.showPasswordButton}
+                    onClick={toggleShowPassword(name === 'password' ? 'password' : 'confirmPassword')}
+                  >
+                    {showPassword[name === 'password' ? 'password' : 'confirmPassword'] ? (
+                      <EyeOff size={18}/>
+                    ) : (
+                      <Eye size={18}/>
+                    )}
+                  </button>
+                )}
+              </div>
+            )}
+            
+            {error && errorMessage && (
+              <div className={styles.errorMessage}>{errorMessage}</div>
+            )}
           </div>
         ))}
         
