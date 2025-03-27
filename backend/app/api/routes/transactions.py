@@ -152,7 +152,7 @@ def decode_webhook(token: str) -> WebhookPayload | None:
             return None
         decoded["amount"] = float(decoded["amount"])
         return WebhookPayload(**decoded)
-    except jwt.JWTError as e:
+    except jwt.PyJWTError as e:
         logger.error(f"JWT decoding error: {str(e)}")
         return None
     except ValueError as e:
