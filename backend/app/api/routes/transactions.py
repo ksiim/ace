@@ -169,7 +169,7 @@ async def handle_webhook(request: Request, session: SessionDep) -> JSONResponse:
     webhook_payload = decode_webhook(token)
     
     if webhook_payload:
-        logger.info(f"Webhook payload: {webhook_payload.dict()}")
+        logger.info(f"Webhook payload: {webhook_payload.mode_dump()}")
         # Здесь можно добавить обработку транзакции, если нужно
         try:
             transaction = await transaction_crud.get_by_operation_id(session, webhook_payload.operation_id)
@@ -178,16 +178,16 @@ async def handle_webhook(request: Request, session: SessionDep) -> JSONResponse:
             else:
                 logger.info(f"Transaction found: {transaction.id}, amount: {transaction.amount}")
                 # Раскомментируй и доработай логику, если нужно
-                # if transaction.amount != webhook_payload.amount:
-                #     logger.error(f"Amount mismatch: DB={transaction.amount}, Webhook={webhook_payload.amount}")
-                # else:
-                #     payment = Payment()
-                #     outer_transaction_status = await payment.get_payment_status(transaction.operation_id)
-                #     transaction.status = outer_transaction_status
-                #     transaction.updated_at = datetime.now()
-                #     await execute_transaction(session, transaction.id)
-                #     await session.commit()
-                #     await session.refresh(transaction)
+                if transaction.amount != webhook_payload.amount:
+                    logger.error(f"Amount mismatch: DB={transaction.amount}, Webhook={webhook_payload.amount}")
+                else:
+                    payment = Payment()
+                    outer_transaction_status = await payment.get_payment_status(transaction.operation_id)
+                    transaction.status = outer_transaction_status
+                    transaction.updated_at = datetime.now()
+                    await execute_transaction(session, transaction.id)
+                    await session.commit()
+                    await session.refresh(transaction)
         except Exception as e:
             logger.error(f"Error processing transaction: {str(e)}")
     
