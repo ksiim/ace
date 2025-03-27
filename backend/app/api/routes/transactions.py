@@ -184,7 +184,7 @@ async def handle_webhook(request: Request, session: SessionDep) -> JSONResponse:
                     payment = Payment()
                     outer_transaction_status = await payment.get_payment_status(transaction.operation_id)
                     transaction.status = outer_transaction_status
-                    transaction.updated_at = datetime.now()
+                    transaction.updated_at = datetime.datetime.now()
                     await execute_transaction(session, transaction.id)
                     await session.commit()
                     await session.refresh(transaction)
