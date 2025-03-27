@@ -164,33 +164,30 @@ async def handle_webhook(
     session: SessionDep
 ) -> JSONResponse:
     payload = await request.body()
-    print(payload)
     token = payload.decode("utf-8")
     """
     Обработка вебхука acquiringInternetPayment от Точки Банка.
     """
     payload: WebhookPayload = decode_webhook(token)
     
-    print(token)
-    
     transaction = await transaction_crud.get_by_operation_id(session, payload.operation_id)
-    if not transaction:
-        raise HTTPException(status_code=404, detail=f"Transaction not found for operationId: {payload.operation_id}")
+    # if not transaction:
+    #     raise HTTPException(status_code=404, detail=f"Transaction not found for operationId: {payload.operation_id}")
     
-    if transaction.amount != payload.amount:
-        raise HTTPException(status_code=400, detail="Amount mismatch between transaction and webhook")
+    # if transaction.amount != payload.amount:
+    #     raise HTTPException(status_code=400, detail="Amount mismatch between transaction and webhook")
     
-    payment = Payment()
-    outer_transation_status = await payment.get_payment_status(transaction.operation_id)
+    # payment = Payment()
+    # outer_transation_status = await payment.get_payment_status(transaction.operation_id)
     
-    transaction.status = outer_transation_status
-    transaction.updated_at = datetime.datetime.now()
+    # transaction.status = outer_transation_status
+    # transaction.updated_at = datetime.datetime.now()
     
-    # Исполняем транзакцию, если она еще не завершена
-    await execute_transaction(session, transaction.id)
+    # # Исполняем транзакцию, если она еще не завершена
+    # await execute_transaction(session, transaction.id)
     
-    await session.commit()
-    await session.refresh(transaction)
+    # await session.commit()
+    # await session.refresh(transaction)
     
     return JSONResponse(content={"status": "ok"}, status_code=200)
 
