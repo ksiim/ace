@@ -70,5 +70,4 @@ class WebhookPayload(SQLModel, table=False):
         populate_by_name = True
         from_attributes = True
         # Разрешаем передачу данных с использованием alias (camelCase)
-        alias_generator = lambda field_name: field_name
         
