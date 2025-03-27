@@ -169,12 +169,12 @@ async def handle_webhook(request: Request, session: SessionDep) -> JSONResponse:
     webhook_payload = decode_webhook(token)
     
     if webhook_payload:
-        logger.info(f"Webhook payload: {webhook_payload.mode_dump()}")
+        logger.info(f"Webhook payload: {webhook_payload.model_dump()}")
         # Здесь можно добавить обработку транзакции, если нужно
         try:
-            transaction = await transaction_crud.get_by_operation_id(session, webhook_payload.operation_id)
+            transaction = await transaction_crud.get_by_operation_id(session, webhook_payload.operationId)
             if not transaction:
-                logger.warning(f"Transaction not found for operationId: {webhook_payload.operation_id}")
+                logger.warning(f"Transaction not found for operationId: {webhook_payload.operationId}")
             else:
                 logger.info(f"Transaction found: {transaction.id}, amount: {transaction.amount}")
                 # Раскомментируй и доработай логику, если нужно
