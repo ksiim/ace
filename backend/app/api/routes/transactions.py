@@ -165,12 +165,11 @@ async def handle_webhook(
 ) -> JSONResponse:
     payload = await request.body()
     token = payload.decode("utf-8")
+    print(token)
     """
     Обработка вебхука acquiringInternetPayment от Точки Банка.
     """
     payload: WebhookPayload = decode_webhook(token)
-    
-    print(payload)
     
     # transaction = await transaction_crud.get_by_operation_id(session, payload.operation_id)
     # if not transaction:
