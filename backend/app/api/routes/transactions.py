@@ -170,7 +170,9 @@ async def handle_webhook(
     """
     payload: WebhookPayload = decode_webhook(token)
     
-    transaction = await transaction_crud.get_by_operation_id(session, payload.operation_id)
+    print(payload)
+    
+    # transaction = await transaction_crud.get_by_operation_id(session, payload.operation_id)
     # if not transaction:
     #     raise HTTPException(status_code=404, detail=f"Transaction not found for operationId: {payload.operation_id}")
     
