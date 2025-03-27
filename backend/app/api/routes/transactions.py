@@ -145,7 +145,7 @@ def get_pem_from_jwk(jwk: dict) -> str:
     
 def decode_webhook(token: str) -> WebhookPayload | None:
     try:
-        decoded = jwt.decode(token, settings.PUBLIC_KEY, algorithms=["RS256"])
+        decoded = jwt.decode(token, get_pem_from_jwk(settings.PUBLIC_KEY), algorithms=["RS256"])
         logger.info(f"Decoded JWT: {decoded}")
         if decoded.get("webhookType") != "acquiringInternetPayment":
             logger.warning(f"Invalid webhook type: {decoded.get('webhookType')}")
