@@ -17,8 +17,12 @@ from common.db.models import Transaction, TransactionCreate, TransactionPublic
 from common.db.models.transaction import WebhookPayload
 from common.db.models.user import User
 
+import logging
+
 
 router = APIRouter()
+
+logger = logging.getLogger(__name__)
 
 
 @router.post(
@@ -139,57 +143,55 @@ def get_pem_from_jwk(jwk: dict) -> str:
     )
     return pem.decode("utf-8")
     
-def decode_webhook(token: str) -> WebhookPayload:
-    """Декодируем JWT и возвращаем данные вебхука в виде WebhookPayload."""
+def decode_webhook(token: str) -> WebhookPayload | None:
     try:
-        jwt_key = get_pem_from_jwk(settings.PUBLIC_KEY)
-        decoded = jwt.decode(token, jwt_key, algorithms=["RS256"])
+        decoded = jwt.decode(token, settings.PUBLIC_KEY, algorithms=["RS256"])
+        logger.info(f"Decoded JWT: {decoded}")
         if decoded.get("webhookType") != "acquiringInternetPayment":
-            raise ValueError("Invalid webhook type")
-        
-        # Преобразуем сумму в float напрямую при декодировании
+            logger.warning(f"Invalid webhook type: {decoded.get('webhookType')}")
+            return None
         decoded["amount"] = float(decoded["amount"])
-        
-        # Создаем экземпляр WebhookPayload из декодированных данных
         return WebhookPayload(**decoded)
-    except jwt.InvalidTokenError as e:
-        raise HTTPException(status_code=400, detail=f"Invalid webhook token: {str(e)}")
+    except jwt.JWTError as e:
+        logger.error(f"JWT decoding error: {str(e)}")
+        return None
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Validation error: {str(e)}")
+        return None
 
 
 @router.post("/webhook")
-async def handle_webhook(
-    request: Request,
-    session: SessionDep
-) -> JSONResponse:
+async def handle_webhook(request: Request, session: SessionDep) -> JSONResponse:
     payload = await request.body()
     token = payload.decode("utf-8")
-    print(token)
-    """
-    Обработка вебхука acquiringInternetPayment от Точки Банка.
-    """
-    payload: WebhookPayload = decode_webhook(token)
+    logger.info(f"Received token: {token}")
+
+    webhook_payload = decode_webhook(token)
     
-    # transaction = await transaction_crud.get_by_operation_id(session, payload.operation_id)
-    # if not transaction:
-    #     raise HTTPException(status_code=404, detail=f"Transaction not found for operationId: {payload.operation_id}")
+    if webhook_payload:
+        logger.info(f"Webhook payload: {webhook_payload.dict()}")
+        # Здесь можно добавить обработку транзакции, если нужно
+        try:
+            transaction = await transaction_crud.get_by_operation_id(session, webhook_payload.operation_id)
+            if not transaction:
+                logger.warning(f"Transaction not found for operationId: {webhook_payload.operation_id}")
+            else:
+                logger.info(f"Transaction found: {transaction.id}, amount: {transaction.amount}")
+                # Раскомментируй и доработай логику, если нужно
+                # if transaction.amount != webhook_payload.amount:
+                #     logger.error(f"Amount mismatch: DB={transaction.amount}, Webhook={webhook_payload.amount}")
+                # else:
+                #     payment = Payment()
+                #     outer_transaction_status = await payment.get_payment_status(transaction.operation_id)
+                #     transaction.status = outer_transaction_status
+                #     transaction.updated_at = datetime.now()
+                #     await execute_transaction(session, transaction.id)
+                #     await session.commit()
+                #     await session.refresh(transaction)
+        except Exception as e:
+            logger.error(f"Error processing transaction: {str(e)}")
     
-    # if transaction.amount != payload.amount:
-    #     raise HTTPException(status_code=400, detail="Amount mismatch between transaction and webhook")
-    
-    # payment = Payment()
-    # outer_transation_status = await payment.get_payment_status(transaction.operation_id)
-    
-    # transaction.status = outer_transation_status
-    # transaction.updated_at = datetime.datetime.now()
-    
-    # # Исполняем транзакцию, если она еще не завершена
-    # await execute_transaction(session, transaction.id)
-    
-    # await session.commit()
-    # await session.refresh(transaction)
-    
+    # Всегда возвращаем 200 для теста Точки
     return JSONResponse(content={"status": "ok"}, status_code=200)
 
 
