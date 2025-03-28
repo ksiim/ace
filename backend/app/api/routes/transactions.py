@@ -201,7 +201,6 @@ async def confirm_transaction(
 ) -> Transaction:
     """Подтвердить транзакцию."""
     transaction.completed = True
-    transaction.status = "COMPLETED"
     transaction.updated_at = datetime.datetime.now()
     
     session.add(transaction)
