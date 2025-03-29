@@ -61,69 +61,6 @@ export const PlanCard: React.FC<PlanCardProps> = ({
     }
   };
   
-  const executeTransaction = async () => {
-    if (!transaction?.id) return;
-    
-    try {
-      setLoading(true);
-      
-      const response = await apiRequest(
-        `transactions/${transaction.id}/execute`,
-        "POST",
-        undefined,
-        true // Требуется авторизация
-      );
-      
-      if (response.error) {
-        throw new Error(`Ошибка выполнения транзакции: ${response.status}`);
-      }
-      
-      alert('Транзакция успешно выполнена!');
-      
-    } catch (err) {
-      setError('Не удалось выполнить транзакцию.');
-      console.error('Ошибка при выполнении транзакции:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  
-  // Проверка статуса транзакции
-  const checkTransactionStatus = async () => {
-    if (!transaction?.id) return;
-    
-    try {
-      setLoading(true);
-      
-      const response = await apiRequest(
-        `transactions/${transaction.id}`,
-        "GET",
-        undefined,
-        true // Требуется авторизация
-      );
-      
-      if (response.error) {
-        throw new Error(`Ошибка проверки статуса: ${response.status}`);
-      }
-      
-      setTransaction(response);
-      
-      // Если статус изменился на APPROVED
-      if (response.status === 'APPROVED') {
-        await executeTransaction();
-        alert('Подписка успешно оформлена!');
-      } else {
-        alert('Вы ещё не оплатили подписку');
-      }
-      
-    } catch (err) {
-      setError('Не удалось проверить статус транзакции.');
-      console.error('Ошибка при проверке статуса:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
   
   return (
     <div className={styles.card}>
@@ -154,14 +91,6 @@ export const PlanCard: React.FC<PlanCardProps> = ({
                       Оплатить
                     </button>
                   )}
-                  
-                  <button
-                    className={`${styles.button} ${styles.secondaryButton}`}
-                    onClick={checkTransactionStatus}
-                    disabled={loading}
-                  >
-                    {loading ? 'Проверяем...' : 'Проверить оплату'}
-                  </button>
                 </>
               )}
             </div>
