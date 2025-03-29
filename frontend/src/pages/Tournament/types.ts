@@ -58,3 +58,8 @@ export interface Fio {
   surname: string;
   patronymic: string;
 }
+
+export interface Region {
+  id: number;
+  name: string;
+}

@@ -115,6 +115,7 @@
   }
 }
 
+.tournamentRegion,
 .tournamentType,
 .tournamentAddress,
 .tournamentOrganizer,
@@ -126,6 +127,7 @@
   line-height: 1.5;
 }
 @media (max-width: 768px) {
+  .tournamentRegion,
   .tournamentType,
   .tournamentAddress,
   .tournamentOrganizer,
