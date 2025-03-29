@@ -106,7 +106,7 @@ async def read_all_tournaments(
     category_id: Optional[int] = None,
     sex_id: Optional[int] = None,
     actual: Optional[bool] = None,
-    date_sort: Optional[OrderEnum] = OrderEnum.DESC,
+    date_sort: Optional[OrderEnum] = OrderEnum.ASC,
     type: Optional[TournamentType] = None,  # Новый фильтр по типу
 ) -> Any:
     """
