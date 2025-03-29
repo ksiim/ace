@@ -4,7 +4,7 @@ import { apiRequest } from '../../utils/apiRequest.ts';
 import styles from './TournamentPage.module.scss';
 import Header from '../../components/Header/Header.tsx';
 import ParticipantsList from './components/ParticipantsList/ParticipantsList.tsx';
-import type { TournamentPage, User, Sex, Participant } from './types.ts';
+import type { TournamentPage, User, Sex, Participant, Region } from './types.ts';
 import { Category } from '../Calendar/types.ts';
 
 const TournamentPage: React.FC = () => {
@@ -19,6 +19,7 @@ const TournamentPage: React.FC = () => {
   const [partnerData, setPartnerData] = useState<User | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [sexes, setSexes] = useState<Sex[]>([]);
+  const [regions, setRegions] = useState<Region[]>([])
   const [categories, setCategories] = useState<Category[]>([]);
   const navigate = useNavigate();
   
@@ -119,6 +120,21 @@ const TournamentPage: React.FC = () => {
     };
     
     fetchUserData();
+  }, []);
+  
+  useEffect(() => {
+    const fetchRegions = async () => {
+      try {
+        const response = await apiRequest('regions/', 'GET', undefined, false);
+        if (response && response.data) {
+          setRegions(response.data);
+        }
+      } catch (error) {
+        console.error("Ошибка при загрузке регионов");
+      }
+    };
+    
+    fetchRegions();
   }, []);
   
   useEffect(() => {
@@ -299,6 +315,7 @@ const TournamentPage: React.FC = () => {
             <p className={styles.tournamentType}>
               <strong>Тип турнира:</strong> {tournament.type === 'solo' ? 'Одиночный' : 'Парный'}
             </p>
+            <p className={styles.tournamentRegion}> <strong>Регион:</strong> {regions.find(region => region.id === tournament.region_id)?.name || 'Не указан'}</p>
             <p className={styles.tournamentAddress}>
               <strong>Категория:</strong> {getCategoryNameById(tournament.category_id)}
             </p>
@@ -321,7 +338,7 @@ const TournamentPage: React.FC = () => {
             </p>
             {tournament.prize_fund && (
               <p className={styles.tournamentPrizeFund}>
-                <strong>Призовой фонд:</strong> {tournament.prize_fund} 
+                <strong>Призовой фонд:</strong> {tournament.prize_fund}
               </p>
             )}
             <p className={styles.tournamentSex}>

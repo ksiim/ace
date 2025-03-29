@@ -70,7 +70,7 @@ const Rating: React.FC = () => {
       limit: limit.toString(),
     }).toString();
     
-    const response = await apiRequest(`users/?${params}&is_admin=false&is_organizer=false`, 'GET', undefined, false);
+    const response = await apiRequest(`users/?${params}&is_admin=false&is_organizer=false&score_order=desc`, 'GET', undefined, false);
     if (!response.error && response.data) {
       const playersWithTournaments = await Promise.all(
         response.data.map(async (player: Player) => {
@@ -231,7 +231,7 @@ const Rating: React.FC = () => {
             {filteredPlayers.map((player, index) => (
               <tr key={player.id}
                   className={index % 2 === 0 ? styles.evenRow : ''}>
-                <td>{index + 1}</td>
+                <td>{index + 1 + skip}</td>
                 <td>{`${player.surname} ${player.name} ${player.patronymic}`}</td>
                 <td>{player.birth_date || '-'}</td>
                 <td>{regions.find(region => region.id === player.region_id)?.name || '-'}</td>
