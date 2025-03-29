@@ -106,6 +106,7 @@ async def read_all_tournaments(
     category_id: Optional[int] = None,
     sex_id: Optional[int] = None,
     actual: Optional[bool] = None,
+    date_sort: Optional[OrderEnum] = OrderEnum.DESC,
     type: Optional[TournamentType] = None,  # Новый фильтр по типу
 ) -> Any:
     """
@@ -123,7 +124,14 @@ async def read_all_tournaments(
 
     count = (await session.execute(count_statement)).scalar_one_or_none()
 
+
     statement = base_statement.offset(skip).limit(limit)
+    
+    if date_sort == OrderEnum.ASC:
+        statement = statement.order_by(Tournament.date)
+    elif date_sort == OrderEnum.DESC:
+        statement = statement.order_by(desc(Tournament.date))
+        
     tournaments = (await session.execute(statement)).scalars().all()
 
     return TournamentsPublic(data=tournaments, count=count)
