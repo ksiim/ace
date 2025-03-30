@@ -33,7 +33,7 @@ class UserBase(SQLModel):
     def subscriber(self) -> bool:
         if self.end_of_subscription is None:
             return False
-        return self.end_of_subscription > datetime.datetime.now()
+        return self.end_of_subscription.replace(tzinfo=datetime.timezone.utc) > datetime.datetime.now(datetime.timezone.utc)
     
     @computed_field
     @property
