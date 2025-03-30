@@ -86,6 +86,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
           is_admin: (roleFilter === "Администратор").toString(),
           is_organizer: (roleFilter === "Организатор").toString(),
         }),
+        ...(subscriptionFilter && { is_subscriber: subscriptionFilter.toString()}),
         ...(sortByPoints && { score_order: sortByPoints }), // Сортировка по очкам на сервере
         ...(fioFilter && { fio: fioFilter }),
         ...(ageOrder && { age_order: ageOrder }),
@@ -102,7 +103,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
     };
     
     fetchUsers();
-  }, [skip, limit, roleFilter, sortByPoints, fioFilter, ageOrder, sexFilter, regionFilter]);
+  }, [skip, limit, roleFilter, sortByPoints, fioFilter, ageOrder, sexFilter, regionFilter, subscriptionFilter]);
   
   const getUserRole = (user: UserToManage): UserRole => {
     if (user.admin) return "Администратор";
@@ -122,16 +123,8 @@ const UserManagement: React.FC<UserManagementProps> = ({
     }
   };
   
-  const filteredUsers = users.filter((user) => {
-    // Фильтр по подписке
-    return subscriptionFilter === null ||
-      (subscriptionFilter
-        ? user.end_of_subscription && new Date(user.end_of_subscription).getTime() !== 0
-        : !user.end_of_subscription || new Date(user.end_of_subscription).getTime() === 0);
-  });
-  
   // Сортировка по возрасту на клиенте
-  const sortedUsers = [...filteredUsers].sort((a, b) => {
+  const sortedUsers = [...users].sort((a, b) => {
     if (ageOrder === "asc") {
       const ageA = new Date(a.birth_date).getTime();
       const ageB = new Date(b.birth_date).getTime();
