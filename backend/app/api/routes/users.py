@@ -44,6 +44,7 @@ async def read_users(
     region_id: Optional[int] = None,
     is_organizer: Optional[bool] = None,
     is_admin: Optional[bool] = None,
+    is_subscriber: Optional[bool] = None,
     score_order: Optional[OrderEnum] = None,
     sex_id: Optional[int] = None,
     fio: Optional[str] = None,
@@ -81,6 +82,11 @@ async def read_users(
     if is_admin is not None:
         statement = statement.where(User.admin == is_admin)
         count_statement = count_statement.where(User.admin == is_admin)
+        
+    if is_subscriber is not None:
+        now = datetime.datetime.now()
+        statement = statement.where(User.end_of_subscription > now)
+        count_statement = count_statement.where(User.end_of_subscription > now)
 
     if sex_id is not None:
         statement = statement.where(User.sex_id == sex_id)
