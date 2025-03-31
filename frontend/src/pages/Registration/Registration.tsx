@@ -7,6 +7,10 @@ import { apiRequest } from '../../utils/apiRequest.ts';
 import { saveToken, setAuthHeader } from '../../utils/serviceToken.ts';
 import axios from 'axios';
 import {ArrowLeft, Eye, EyeOff} from 'lucide-react';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { ru } from 'date-fns/locale';
+
 
 const Registration: React.FC = () => {
   const navigate = useNavigate();
@@ -449,22 +453,46 @@ const Registration: React.FC = () => {
             
             {type === 'date' ? (
               <div className={styles.dateInputWrapper}>
-                <input
-                  type="date"
-                  name="birth_date"
-                  value={formData.birth_date}
-                  onChange={handleChange}
-                  className={`${styles.input} ${styles.dateInput}`}
-                  max={new Date().toISOString().split('T')[0]}
-                  onFocus={(e) => {
-                    e.target.type = 'date';
-                    // Don't change styling on focus for iOS
-                    if (!(/iPad|iPhone|iPod/.test(navigator.userAgent))) {
-                      e.target.style.color = '#000';
-                    }
+                <DatePicker
+                  selected={formData.birth_date ? new Date(formData.birth_date) : null}
+                  onChange={(date: Date | null) => {
+                    // Add a direct update function instead of creating a synthetic event
+                    const formattedDate = date ? date.toISOString().split('T')[0] : '';
+                    
+                    // Assuming your form state is managed with useState or similar
+                    setFormData(prev => ({
+                      ...prev,
+                      birth_date: formattedDate
+                    }));
+                    
+                    // If you still need to call handleChange for side effects (validation etc.)
+                    // but can't modify it, create this helper function in your component:
+                    const updateFormField = (name: string, value: string) => {
+                      const input = document.createElement('input');
+                      input.name = name;
+                      input.value = value;
+                      
+                      const event = Object.create(new Event('change', {bubbles: true}));
+                      Object.defineProperty(event, 'target', {value: input});
+                      
+                      handleChange(event as any);
+                    };
+                    
+                    // Then call it here
+                    updateFormField('birth_date', formattedDate);
                   }}
-                  // Use pattern for better mobile compatibility
-                  pattern="\d{4}-\d{2}-\d{2}"
+                  maxDate={new Date()}
+                  placeholderText={placeholder || 'дд.мм.гггг'}
+                  className={`${styles.input} ${error ? styles.error : ''}`}
+                  locale={ru}
+                  dateFormat="dd.MM.yyyy"
+                  showPopperArrow={false}
+                  popperPlacement="bottom-start"
+                  customInput={
+                    <input
+                      className={`${styles.input} ${error ? styles.error : ''}`}
+                    />
+                  }
                 />
               </div>
             ) : (

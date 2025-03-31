@@ -260,49 +260,21 @@
   }
 }
 
+/* Add these to your CSS module */
 .dateInputWrapper {
   position: relative;
   width: 100%;
 }
 
-.dateInput {
+/* Override react-datepicker styles to match your design */
+:global(.react-datepicker-wrapper) {
+  display: block;
   width: 100%;
-  height: 44px;
-  padding: 0 12px;
-  background-color: #fff;
-  border: 1px solid #000000;
-  border-radius: 15px;
-  color: #000;
-  font-size: 16px; /* iOS zooms if font size is smaller than 16px */
-
-  /* Reset iOS styling */
-  -webkit-appearance: none;
-  appearance: none;
 }
 
-/* Fix for Safari */
-.dateInput::-webkit-date-and-time-value {
-  margin: 0;
-  text-align: left;
-}
-
-/* Custom calendar icon position */
-.dateInput::-webkit-calendar-picker-indicator {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  opacity: 1;
-  cursor: pointer;
-}
-
-/* For iOS specifically */
-@supports (-webkit-touch-callout: none) {
-  .dateInput {
-    line-height: 44px; /* Helps with vertical alignment */
-    padding-top: 0;
-    padding-bottom: 0;
-  }
+:global(.react-datepicker__input-container) {
+  display: block;
+  width: 100%;
 }
 
 
