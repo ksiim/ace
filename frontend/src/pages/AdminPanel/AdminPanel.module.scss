@@ -772,6 +772,24 @@ select:disabled:hover {
 }
 
 .birthDateInput {
-  width: 100%; /* Поле ввода займет всю ширину столбца */
-  box-sizing: border-box; /* Учитываем padding и border в ширине */
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  background-color: transparent;
+  position: relative;
+  z-index: 2;
+
+  &::-webkit-date-and-time-value {
+    text-align: left;
+  }
+
+  &::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
 }
