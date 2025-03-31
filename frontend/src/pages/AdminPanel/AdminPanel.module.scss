@@ -767,8 +767,9 @@ select:disabled:hover {
 }
 
 .birthDateColumn {
-  min-width: 180px; /* Увеличиваем ширину столбца, чтобы вместить иконку календаря */
-  width: 180px;
+  min-width: 200px; /* Еще больше увеличиваем ширину столбца */
+  width: 200px;
+  padding: 0; /* Убираем лишние отступы */
 }
 
 .birthDateInput {
@@ -777,16 +778,28 @@ select:disabled:hover {
   -webkit-appearance: none; /* Сбрасываем стандартный стиль iOS */
   -moz-appearance: none; /* Сбрасываем стандартный стиль Firefox */
   appearance: none; /* Сбрасываем стандартный стиль */
-  padding: 4px; /* Уменьшаем внутренние отступы, чтобы избежать переполнения */
+  padding: 4px; /* Минимальные отступы */
+  border: 1px solid #ccc; /* Явно задаем границу */
+  border-radius: 4px; /* Скругляем углы */
+  font-size: 14px; /* Уменьшаем шрифт, чтобы текст помещался */
+  line-height: 1.5; /* Контролируем высоту строки */
 }
 
-/* Дополнительный стиль для iOS, чтобы убрать иконку календаря, если она мешает */
-.birthDateInput::-webkit-date-and-time-value {
-  text-align: left; /* Выравниваем текст внутри поля */
-}
-
+/* Сбрасываем дополнительные элементы iOS */
+.birthDateInput::-webkit-inner-spin-button,
 .birthDateInput::-webkit-calendar-picker-indicator {
-  background: none; /* Убираем стандартную иконку календаря */
-  padding: 0;
-  margin: 0;
+  display: none; /* Полностью убираем иконку календаря */
+  -webkit-appearance: none;
+}
+
+/* Устанавливаем выравнивание текста */
+.birthDateInput::-webkit-date-and-time-value {
+  text-align: left;
+  height: 20px; /* Контролируем высоту текста */
+}
+
+/* Убираем лишние отступы в iOS */
+.birthDateInput:focus {
+  outline: none; /* Убираем стандартный outline */
+  border: 1px solid #007bff; /* Задаем границу при фокусе */
 }
