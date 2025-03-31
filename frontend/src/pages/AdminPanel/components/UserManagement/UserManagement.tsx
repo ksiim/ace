@@ -511,12 +511,17 @@ const UserManagement: React.FC<UserManagementProps> = ({
                 </td>
                 <td className={styles.birthDateColumn}>
                   {editUserData.userId === user.id && editUserData.editingInfo ? (
-                    <input
-                      type="date"
-                      value={editUserData.birth_date || ""}
-                      onChange={(e) => setEditUserData({ ...editUserData, birth_date: e.target.value })}
-                      className={`${styles.pointsInput} ${styles.birthDateInput}`}
-                    />
+                    <div className={styles.dateInputWrapper}>
+                      <input
+                        type="date"
+                        value={editUserData.birth_date || ""}
+                        onChange={(e) => setEditUserData({ ...editUserData, birth_date: e.target.value })}
+                        className={styles.dateInput} // Заменяем birthDateInput на dateInput
+                      />
+                      {!editUserData.birth_date && (
+                        <span className={styles.datePlaceholder}>Выберите дату</span>
+                      )}
+                    </div>
                   ) : (
                     user.birth_date ? new Date(user.birth_date).toLocaleDateString() : "Не указана"
                   )}
