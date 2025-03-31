@@ -727,19 +727,34 @@ select:disabled:hover {
     font-size: 14px;
   }
 }
+.birthDateColumn {
+  min-width: 200px; /* Оставляем ширину столбца */
+  width: 200px;
+  padding: 0;
+}
 
-.birthDateInput {
+.dateInputWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.dateInput {
   appearance: none;
   -webkit-appearance: none;
   width: 100%;
   background-color: transparent;
   position: relative;
   z-index: 2;
+  padding: 4px; /* Добавляем небольшой отступ для читаемости */
+  border: 1px solid #ccc; /* Явно задаем границу */
+  border-radius: 4px; /* Скругляем углы */
+  font-size: 14px; /* Устанавливаем размер шрифта */
+  line-height: 1.5; /* Контролируем высоту строки */
 }
-.birthDateInput::-webkit-date-and-time-value {
+.dateInput::-webkit-date-and-time-value {
   text-align: left;
 }
-.birthDateInput::-webkit-calendar-picker-indicator {
+.dateInput::-webkit-calendar-picker-indicator {
   position: absolute;
   right: 0;
   top: 0;
@@ -747,6 +762,16 @@ select:disabled:hover {
   height: 100%;
   opacity: 0;
   cursor: pointer;
+}
+
+.datePlaceholder {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  pointer-events: none;
+  z-index: 1;
 }
 
 /*# sourceMappingURL=AdminPanel.module.css.map */

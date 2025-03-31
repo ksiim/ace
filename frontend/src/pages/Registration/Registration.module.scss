@@ -263,20 +263,44 @@
 .dateInputWrapper {
   position: relative;
   width: 100%;
+
+  // Добавьте это для iOS
+  &::after {
+    content: 'дд.мм.гггг';
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    pointer-events: none;
+    z-index: 1;
+    display: var(--placeholder-visible, block); // Управляем видимостью
+  }
+
+  // Скрываем плейсхолдер, когда есть значение
+  &:has(input:not(:placeholder-shown))::after {
+    display: none;
+  }
 }
 
 .dateInput {
   appearance: none;
   -webkit-appearance: none;
   width: 100%;
+  padding: 10px; // Добавьте отступы
   background-color: transparent;
   position: relative;
   z-index: 2;
+  color: inherit; // Важно для iOS
 
+  // Стили для текста даты
   &::-webkit-date-and-time-value {
     text-align: left;
+    color: inherit;
+    opacity: 1; // Важно для iOS
   }
 
+  // Стили для иконки календаря
   &::-webkit-calendar-picker-indicator {
     position: absolute;
     right: 0;
@@ -286,16 +310,11 @@
     opacity: 0;
     cursor: pointer;
   }
-}
 
-.datePlaceholder {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #999;
-  pointer-events: none;
-  z-index: 1;
+  // Для пустого поля
+  &:empty {
+    color: gray;
+  }
 }
 
 

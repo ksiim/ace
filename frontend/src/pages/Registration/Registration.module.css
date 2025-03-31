@@ -247,17 +247,35 @@
   position: relative;
   width: 100%;
 }
+.dateInputWrapper::after {
+  content: "дд.мм.гггг";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  pointer-events: none;
+  z-index: 1;
+  display: var(--placeholder-visible, block);
+}
+.dateInputWrapper:has(input:not(:placeholder-shown))::after {
+  display: none;
+}
 
 .dateInput {
   appearance: none;
   -webkit-appearance: none;
   width: 100%;
+  padding: 10px;
   background-color: transparent;
   position: relative;
   z-index: 2;
+  color: inherit;
 }
 .dateInput::-webkit-date-and-time-value {
   text-align: left;
+  color: inherit;
+  opacity: 1;
 }
 .dateInput::-webkit-calendar-picker-indicator {
   position: absolute;
@@ -268,15 +286,8 @@
   opacity: 0;
   cursor: pointer;
 }
-
-.datePlaceholder {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #999;
-  pointer-events: none;
-  z-index: 1;
+.dateInput:empty {
+  color: gray;
 }
 
 /*# sourceMappingURL=Registration.module.css.map */

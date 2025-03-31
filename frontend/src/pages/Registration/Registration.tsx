@@ -456,11 +456,17 @@ const Registration: React.FC = () => {
                   onChange={handleChange}
                   className={`${styles.input} ${styles.dateInput} ${error ? styles.error : ''}`}
                   max={max}
-                  onFocus={(e) => (e.target.type = 'date')}
-                  onBlur={(e) => {
-                    if (!e.target.value) e.target.type = 'text';
+                  onFocus={(e) => {
+                    e.target.type = 'date';
+                    e.target.style.color = '#000'; // Явно устанавливаем цвет
                   }}
-                  placeholder={placeholder}
+                  onBlur={(e) => {
+                    if (!e.target.value) {
+                      e.target.type = 'text';
+                      e.target.style.color = 'gray';
+                    }
+                  }}
+                  placeholder=" " // Важно: пробел вместо пустой строки
                 />
               </div>
             ) : (
