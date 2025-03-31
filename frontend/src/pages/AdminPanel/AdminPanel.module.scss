@@ -766,4 +766,12 @@ select:disabled:hover {
   }
 }
 
+.birthDateColumn {
+  min-width: 150px; /* Минимальная ширина столбца, чтобы вместить дату и поле ввода */
+  width: 150px; /* Фиксированная ширина для столбца */
+}
 
+.birthDateInput {
+  width: 100%; /* Поле ввода займет всю ширину столбца */
+  box-sizing: border-box; /* Учитываем padding и border в ширине */
+}
