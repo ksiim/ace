@@ -246,32 +246,45 @@
 .dateInputWrapper {
   position: relative;
   width: 100%;
-  height: 44px;
 }
 
 .dateInput {
   width: 100%;
-  height: 100%;
+  height: 44px;
   padding: 0 12px;
-  background: transparent;
+  background-color: #fff;
+  border: 1px solid #000000;
+  border-radius: 15px;
   color: #000;
-  position: relative;
-  z-index: 2;
+  font-size: 16px; /* iOS zooms if font size is smaller than 16px */
+  /* Reset iOS styling */
   -webkit-appearance: none;
   appearance: none;
 }
+
+/* Fix for Safari */
 .dateInput::-webkit-date-and-time-value {
-  opacity: 1;
-  color: #000;
+  margin: 0;
+  text-align: left;
 }
+
+/* Custom calendar icon position */
 .dateInput::-webkit-calendar-picker-indicator {
   position: absolute;
-  right: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 1;
   cursor: pointer;
+}
+
+/* For iOS specifically */
+@supports (-webkit-touch-callout: none) {
+  .dateInput {
+    line-height: 44px; /* Helps with vertical alignment */
+    padding-top: 0;
+    padding-bottom: 0;
+  }
 }
 
 /*# sourceMappingURL=Registration.module.css.map */

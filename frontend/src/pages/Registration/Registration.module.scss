@@ -263,37 +263,45 @@
 .dateInputWrapper {
   position: relative;
   width: 100%;
-  height: 44px; // Фиксированная высота для iOS
 }
 
 .dateInput {
   width: 100%;
-  height: 100%;
+  height: 44px;
   padding: 0 12px;
-  background: transparent;
-  color: #000; // Всегда черный текст
-  position: relative;
-  z-index: 2;
+  background-color: #fff;
+  border: 1px solid #000000;
+  border-radius: 15px;
+  color: #000;
+  font-size: 16px; /* iOS zooms if font size is smaller than 16px */
 
-  // Сбрасываем дефолтные стили iOS
+  /* Reset iOS styling */
   -webkit-appearance: none;
   appearance: none;
+}
 
-  // Фикс для Safari
-  &::-webkit-date-and-time-value {
-    opacity: 1;
-    color: #000;
-  }
+/* Fix for Safari */
+.dateInput::-webkit-date-and-time-value {
+  margin: 0;
+  text-align: left;
+}
 
-  // Скрываем нативную иконку календаря
-  &::-webkit-calendar-picker-indicator {
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
+/* Custom calendar icon position */
+.dateInput::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 1;
+  cursor: pointer;
+}
+
+/* For iOS specifically */
+@supports (-webkit-touch-callout: none) {
+  .dateInput {
+    line-height: 44px; /* Helps with vertical alignment */
+    padding-top: 0;
+    padding-bottom: 0;
   }
 }
 

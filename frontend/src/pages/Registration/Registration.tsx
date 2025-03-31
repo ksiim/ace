@@ -450,17 +450,21 @@ const Registration: React.FC = () => {
             {type === 'date' ? (
               <div className={styles.dateInputWrapper}>
                 <input
-                  type="date" // Начинаем с type="text"
+                  type="date"
                   name="birth_date"
                   value={formData.birth_date}
                   onChange={handleChange}
                   className={`${styles.input} ${styles.dateInput}`}
                   max={new Date().toISOString().split('T')[0]}
                   onFocus={(e) => {
-                    e.target.type = 'date'; // Меняем на date при фокусе
-                    e.target.style.color = '#000';
+                    e.target.type = 'date';
+                    // Don't change styling on focus for iOS
+                    if (!(/iPad|iPhone|iPod/.test(navigator.userAgent))) {
+                      e.target.style.color = '#000';
+                    }
                   }}
-                  placeholder=" " // Важно: пробел вместо пустой строки
+                  // Use pattern for better mobile compatibility
+                  pattern="\d{4}-\d{2}-\d{2}"
                 />
               </div>
             ) : (
