@@ -246,36 +246,23 @@
 .dateInputWrapper {
   position: relative;
   width: 100%;
-}
-.dateInputWrapper::after {
-  content: "дд.мм.гггг";
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #999;
-  pointer-events: none;
-  z-index: 1;
-  display: var(--placeholder-visible, block);
-}
-.dateInputWrapper:has(input:not(:placeholder-shown))::after {
-  display: none;
+  height: 44px;
 }
 
 .dateInput {
-  appearance: none;
-  -webkit-appearance: none;
   width: 100%;
-  padding: 10px;
-  background-color: transparent;
+  height: 100%;
+  padding: 0 12px;
+  background: transparent;
+  color: #000;
   position: relative;
   z-index: 2;
-  color: inherit;
+  -webkit-appearance: none;
+  appearance: none;
 }
 .dateInput::-webkit-date-and-time-value {
-  text-align: left;
-  color: inherit;
   opacity: 1;
+  color: #000;
 }
 .dateInput::-webkit-calendar-picker-indicator {
   position: absolute;
@@ -285,9 +272,6 @@
   height: 100%;
   opacity: 0;
   cursor: pointer;
-}
-.dateInput:empty {
-  color: gray;
 }
 
 /*# sourceMappingURL=Registration.module.css.map */

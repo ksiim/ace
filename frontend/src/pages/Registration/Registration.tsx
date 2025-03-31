@@ -418,7 +418,7 @@ const Registration: React.FC = () => {
             placeholder: 'дд.мм.гггг',
             max: new Date().toISOString().split('T')[0]
           },
-        ].map(({ label, name, type, placeholder, error, errorMessage, max }) => (
+        ].map(({ label, name, type, placeholder, error, errorMessage}) => (
           <div key={name} className={styles.formGroup}>
             <div className={styles.labelWrapper}>
               <div className={styles.labelWrapper__title}>
@@ -450,21 +450,15 @@ const Registration: React.FC = () => {
             {type === 'date' ? (
               <div className={styles.dateInputWrapper}>
                 <input
-                  type="date"
-                  name={name}
-                  value={formData[name as keyof typeof formData] || ''}
+                  type="date" // Начинаем с type="text"
+                  name="birth_date"
+                  value={formData.birth_date}
                   onChange={handleChange}
-                  className={`${styles.input} ${styles.dateInput} ${error ? styles.error : ''}`}
-                  max={max}
+                  className={`${styles.input} ${styles.dateInput}`}
+                  max={new Date().toISOString().split('T')[0]}
                   onFocus={(e) => {
-                    e.target.type = 'date';
-                    e.target.style.color = '#000'; // Явно устанавливаем цвет
-                  }}
-                  onBlur={(e) => {
-                    if (!e.target.value) {
-                      e.target.type = 'text';
-                      e.target.style.color = 'gray';
-                    }
+                    e.target.type = 'date'; // Меняем на date при фокусе
+                    e.target.style.color = '#000';
                   }}
                   placeholder=" " // Важно: пробел вместо пустой строки
                 />
