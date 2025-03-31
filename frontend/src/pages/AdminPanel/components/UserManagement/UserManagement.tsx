@@ -2,13 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { apiRequest } from '../../../../utils/apiRequest';
 import styles from '../../AdminPanel.module.scss';
 import type { UserManagementProps, UserToManage } from '../../types.ts';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { ru } from 'date-fns/locale';
+
 
 type UserRole = "Администратор" | "Организатор" | "Пользователь";
 
 const UserManagement: React.FC<UserManagementProps> = ({
-  currentUser,
-  onError,
-}) => {
+                                                         currentUser,
+                                                         onError,
+                                                       }) => {
   const [users, setUsers] = useState<UserToManage[]>([]);
   const [skip, setSkip] = useState<number>(0);
   const [limit] = useState<number>(10);
@@ -31,7 +35,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
     name: string | null;
     surname: string | null;
     patronymic: string | null;
-    birth_date: string | null;
+    birth_date: Date | null;
   }>({
     userId: null,
     points: null,
@@ -43,7 +47,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
     patronymic: null,
     birth_date: null,
   });
-
+  
   useEffect(() => {
     const fetchSexOptions = async () => {
       try {
@@ -58,7 +62,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
     
     fetchSexOptions();
   }, []);
-
+  
   useEffect(() => {
     const fetchRegions = async () => {
       try {
@@ -73,7 +77,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
     
     fetchRegions();
   }, []);
-
+  
   const resetFilters = () => {
     setSubscriptionFilter(null);
     setRoleFilter("");
@@ -83,7 +87,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
     setSexFilter(null);
     setRegionFilter(null);
   };
-
+  
   useEffect(() => {
     const fetchUsers = async () => {
       const params = new URLSearchParams({
@@ -94,7 +98,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
           is_organizer: (roleFilter === "Организатор").toString(),
         }),
         ...(subscriptionFilter && { is_subscriber: subscriptionFilter.toString()}),
-        ...(sortByPoints && { score_order: sortByPoints }), // Сортировка по очкам на сервере
+        ...(sortByPoints && { score_order: sortByPoints }),
         ...(fioFilter && { fio: fioFilter }),
         ...(ageOrder && { age_order: ageOrder }),
         ...(sexFilter !== null && { sex_id: sexFilter.toString() }),
@@ -117,7 +121,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
     if (user.organizer) return "Организатор";
     return "Пользователь";
   };
-
+  
   const getRoleValues = (role: UserRole): { admin: boolean; organizer: boolean } => {
     switch (role) {
       case "Администратор":
@@ -130,21 +134,6 @@ const UserManagement: React.FC<UserManagementProps> = ({
     }
   };
   
-  // Сортировка по возрасту на клиенте
-  const sortedUsers = [...users].sort((a, b) => {
-    if (ageOrder === "asc") {
-      const ageA = new Date(a.birth_date).getTime();
-      const ageB = new Date(b.birth_date).getTime();
-      return ageA - ageB;
-    } else if (ageOrder === "desc") {
-      const ageA = new Date(a.birth_date).getTime();
-      const ageB = new Date(b.birth_date).getTime();
-      return ageB - ageA;
-    } else {
-      return 0;
-    }
-  });
-
   const handleUpdateUserPoints = (userId: number, points: number) => {
     const user = users.find((u) => u.id === userId);
     if (!user) {
@@ -195,7 +184,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
       })
       .catch(() => onError("Ошибка обновления очков пользователя"));
   };
-
+  
   const handleUpdateUserRole = (userId: number, role: UserRole) => {
     const user = users.find((u) => u.id === userId);
     if (!user) {
@@ -232,10 +221,10 @@ const UserManagement: React.FC<UserManagementProps> = ({
             prevUsers.map((u) =>
               u.id === userId
                 ? {
-                    ...u,
-                    admin: roleValues.admin,
-                    organizer: roleValues.organizer,
-                  }
+                  ...u,
+                  admin: roleValues.admin,
+                  organizer: roleValues.organizer,
+                }
                 : u
             )
           );
@@ -256,14 +245,18 @@ const UserManagement: React.FC<UserManagementProps> = ({
       })
       .catch(() => onError("Ошибка обновления роли пользователя"));
   };
-
+  
   const handleUpdateUserInfo = (userId: number) => {
     const user = users.find((u) => u.id === userId);
     if (!user) {
       onError("Пользователь не найден");
       return;
     }
-
+    
+    const formattedBirthDate = editUserData.birth_date
+      ? editUserData.birth_date.toISOString().split('T')[0]
+      : user.birth_date;
+    
     apiRequest(
       `users/${userId}`,
       "PUT",
@@ -279,7 +272,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
         end_of_subscription: user.end_of_subscription,
         updated_at: new Date().toISOString(),
         created_at: user.created_at,
-        birth_date: editUserData.birth_date || user.birth_date,
+        birth_date: formattedBirthDate,
         sex_id: user.sex_id,
         region_id: user.region_id,
       },
@@ -291,12 +284,12 @@ const UserManagement: React.FC<UserManagementProps> = ({
             prevUsers.map((u) =>
               u.id === userId
                 ? {
-                    ...u,
-                    name: data.name,
-                    surname: data.surname,
-                    patronymic: data.patronymic,
-                    birth_date: data.birth_date,
-                  }
+                  ...u,
+                  name: data.name,
+                  surname: data.surname,
+                  patronymic: data.patronymic,
+                  birth_date: data.birth_date,
+                }
                 : u
             )
           );
@@ -317,7 +310,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
       })
       .catch(() => onError("Ошибка обновления информации пользователя"));
   };
-
+  
   const handleEditRole = (user: UserToManage) => {
     setEditUserData({
       userId: user.id,
@@ -328,10 +321,10 @@ const UserManagement: React.FC<UserManagementProps> = ({
       name: null,
       surname: null,
       patronymic: null,
-      birth_date: null,
+      birth_date: user.birth_date ? new Date(user.birth_date) : null,
     });
   };
-
+  
   const handleEditPoints = (user: UserToManage) => {
     setEditUserData({
       userId: user.id,
@@ -342,10 +335,10 @@ const UserManagement: React.FC<UserManagementProps> = ({
       name: null,
       surname: null,
       patronymic: null,
-      birth_date: null,
+      birth_date: user.birth_date ? new Date(user.birth_date) : null,
     });
   };
-
+  
   const handleEditInfo = (user: UserToManage) => {
     setEditUserData({
       userId: user.id,
@@ -356,10 +349,10 @@ const UserManagement: React.FC<UserManagementProps> = ({
       name: user.name,
       surname: user.surname,
       patronymic: user.patronymic,
-      birth_date: user.birth_date,
+      birth_date: user.birth_date ? new Date(user.birth_date) : null,
     });
   };
-
+  
   const handleCancelEdit = () => {
     setEditUserData({
       userId: null,
@@ -373,7 +366,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
       birth_date: null,
     });
   };
-
+  
   return (
     <div className={styles.tabContent}>
       <div className={styles.filters}>
@@ -461,7 +454,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
       
       <div className={styles.tableContainer}>
         <h2>Список пользователей</h2>
-        {sortedUsers.length > 0 ? (
+        {users.length > 0 ? (
           <table className={styles.dataTable}>
             <thead>
             <tr>
@@ -477,7 +470,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
             </tr>
             </thead>
             <tbody>
-            {sortedUsers.map((user) => (
+            {users.map((user) => (
               <tr key={user.id}>
                 <td>{user.id}</td>
                 <td>
@@ -511,17 +504,16 @@ const UserManagement: React.FC<UserManagementProps> = ({
                 </td>
                 <td className={styles.birthDateColumn}>
                   {editUserData.userId === user.id && editUserData.editingInfo ? (
-                    <div className={styles.dateInputWrapper}>
-                      <input
-                        type="date"
-                        value={editUserData.birth_date || ""}
-                        onChange={(e) => setEditUserData({ ...editUserData, birth_date: e.target.value })}
-                        className={styles.dateInput} // Заменяем birthDateInput на dateInput
-                      />
-                      {!editUserData.birth_date && (
-                        <span className={styles.datePlaceholder}>Выберите дату</span>
-                      )}
-                    </div>
+                    <DatePicker
+                      selected={editUserData.birth_date}
+                      onChange={(date: Date | null) => setEditUserData({ ...editUserData, birth_date: date })}
+                      dateFormat="yyyy-MM-dd"
+                      locale={ru}
+                      placeholderText="Выберите дату"
+                      className={styles.dateInput}
+                      showYearDropdown
+                      dropdownMode="select"
+                    />
                   ) : (
                     user.birth_date ? new Date(user.birth_date).toLocaleDateString() : "Не указана"
                   )}
