@@ -10,6 +10,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 .classificationContainer {
@@ -152,7 +153,11 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
   @media (max-width: 768px) {
-    margin: 0 -10px; /* Убираем отступы для мобильных устройств */
+    margin: 0 0px; /* Убираем отступы для мобильных устройств */
+    transform: scale(0.75);
+    transform-origin: top left;
+    width: 133.33%; // Компенсация уменьшения размера
+    overflow-x: hidden;
   }
 }
 
@@ -168,6 +173,7 @@
     @media (max-width: 768px) {
       padding: 8px 12px;
       font-size: 14px;
+      overflow-x: hidden; // Убираем горизонтальный скролл
     }
   }
 
@@ -182,6 +188,7 @@
 
     @media (max-width: 768px) {
       font-size: 14px;
+      overflow-x: hidden; // Убираем горизонтальный скролл
     }
 
     &:first-child {
