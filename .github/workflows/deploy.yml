@@ -1,0 +1,31 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy to server
+        run: |
+          ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            cd /root/ace
+            git fetch origin
+            git reset --hard origin/master
+            docker-compose -f docker-compose.yml build alembic bot backend frontend
+            docker-compose stop alembic bot backend frontend
+            docker-compose rm -f alembic bot backend frontend
+            docker-compose -f docker-compose.yml up --no-deps -d alembic bot backend frontend
+          EOF
