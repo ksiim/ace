@@ -199,7 +199,7 @@ async def confirm_transaction(
     session: SessionDep,
     transaction: Transaction
 ) -> Transaction:
-    """Подтвердить транзакцию"""
+    """Подтвердить транзакцию."""
     transaction.completed = True
     transaction.updated_at = datetime.datetime.now()
     
