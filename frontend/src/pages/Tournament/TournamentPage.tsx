@@ -154,10 +154,10 @@ const TournamentPage: React.FC = () => {
     // Проверяем, прошла ли дата турнира
     const isTournamentInPast = tournamentDate < today;
     
-    // Проверяем, осталось ли до турнира больше 14 дней
-    const isRegistrationClosedDueToTime = diffDays > 14;
+    // Проверяем, осталось ли до турнира больше 30 дней
+    const isRegistrationClosedDueToTime = diffDays > 30;
     
-    // Если турнир уже прошел или до него осталось больше 14 дней, закрываем регистрацию
+    // Если турнир уже прошел или до него осталось больше 30 дней, закрываем регистрацию
     if ((isTournamentInPast || isRegistrationClosedDueToTime) && tournament.can_register) {
       setTournament((prev) => {
         if (!prev) return prev; // Защита от null

@@ -26,6 +26,6 @@ jobs:
             git reset --hard origin/master
             docker-compose -f docker-compose.yml build alembic bot backend frontend
             docker-compose stop alembic bot backend frontend
-            docker-compose rm -f alembic bot backend frontend
+            docker-compose rm -f
             docker-compose -f docker-compose.yml up --no-deps -d alembic bot backend frontend
           EOF
