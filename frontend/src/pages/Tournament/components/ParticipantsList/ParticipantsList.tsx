@@ -30,7 +30,7 @@ const ParticipantsList: React.FC<ParticipantsListProps> = ({
     participants.forEach(participant => {
       // Загружаем данные о пользователе
       if (participant.user_id && !userDetails[participant.user_id]) {
-        apiRequest(`users/${participant.user_id}/`, "GET", undefined, false)
+        apiRequest(`users/${participant.user_id}`, "GET", undefined, false)
           .then(response => {
             if (!response.error) {
               setUserDetails(prevDetails => ({
@@ -49,7 +49,7 @@ const ParticipantsList: React.FC<ParticipantsListProps> = ({
 
       // Загружаем данные о партнёре, только если partner_id не null
       if (participant.partner_id !== null && !userDetails[participant.partner_id]) {
-        apiRequest(`users/${participant.partner_id}/`, "GET", undefined, false)
+        apiRequest(`users/${participant.partner_id}`, "GET", undefined, false)
           .then(response => {
             if (!response.error) {
               setUserDetails(prevDetails => ({
