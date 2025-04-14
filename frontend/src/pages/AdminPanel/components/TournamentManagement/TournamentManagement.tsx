@@ -360,7 +360,7 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       const formData = new FormData();
       formData.append('file', file);
       
-      apiRequest("photos/", "POST", formData, true)
+      apiRequest("uploads/", "POST", formData, true)
         .then((data) => {
           if (data && data.file_path) {
             const correctPath = `${(data.file_path).slice(4)}`;

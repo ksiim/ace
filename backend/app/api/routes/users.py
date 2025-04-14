@@ -190,10 +190,10 @@ async def register_user(session: SessionDep, user_in: UserRegister) -> Any:
         )
     region = await session.get(Region, user_in.region_id)
     if not region:
-        raise HTTPException(status_code=400, detail="Invalid region_id")
+        raise HTTPException(status_code=400, detail="Invalid region")
     sex = await session.get(Sex, user_in.sex_id)
     if not sex:
-        raise HTTPException(status_code=400, detail="Invalid sex_id")
+        raise HTTPException(status_code=400, detail="Invalid sex")
 
     user_create = UserCreate.model_validate(user_in)
     user = await user_crud.create_user(session=session, user_create=user_create)

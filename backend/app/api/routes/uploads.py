@@ -25,7 +25,7 @@ router = APIRouter()
     dependencies=[Depends(get_current_user)],
     response_model=FilePath
 )
-async def upload_photo(
+async def upload_file(
     session: SessionDep,
     file: UploadFile = File(...),
 ) -> FilePath:

@@ -75,7 +75,7 @@ const CreateNews: React.FC = () => {
       const formData = new FormData();
       formData.append('file', file);
       
-      return apiRequest("photos/", "POST", formData, true)
+      return apiRequest("uploads/", "POST", formData, true)
         .then((data) => {
           if (data && data.file_path) {
             // Изменяем путь

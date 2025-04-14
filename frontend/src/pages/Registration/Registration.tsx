@@ -6,16 +6,15 @@ import type { OTPInputRef } from '../../components/OTPInput/types.ts';
 import { apiRequest } from '../../utils/apiRequest.ts';
 import { saveToken, setAuthHeader } from '../../utils/serviceToken.ts';
 import axios from 'axios';
-import {ArrowLeft, Eye, EyeOff} from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { ru } from 'date-fns/locale';
 
-
 const Registration: React.FC = () => {
   const navigate = useNavigate();
   const otpRef = useRef<OTPInputRef>(null);
-  
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -28,11 +27,10 @@ const Registration: React.FC = () => {
     region_id: null as number | null,
     confirmPassword: '',
   });
-  
+
   const [sexOptions, setSexOptions] = useState<{ id: number; name: string }[]>([]);
   const [regionOptions, setRegionOptions] = useState<{ id: number; name: string }[]>([]);
   const [showTelegramHint, setShowTelegramHint] = useState(false);
-  
   const [step, setStep] = useState(1);
   const [requestId, setRequestId] = useState('');
   const [errors, setErrors] = useState({
@@ -46,17 +44,17 @@ const Registration: React.FC = () => {
     region_id: false,
     confirmPassword: false,
   });
-  
+  const [apiError, setApiError] = useState<string | null>(null); // Новое состояние для ошибок API
+
   const [showPassword, setShowPassword] = useState({
     password: false,
     confirmPassword: false,
   });
-  
+
   const toggleShowPassword = (field: 'password' | 'confirmPassword') => () => {
     setShowPassword(prev => ({ ...prev, [field]: !prev[field] }));
   };
-  
-  // Функция для сброса ошибок и формы
+
   const resetFormAndErrors = () => {
     setFormData({
       fullName: '',
@@ -68,7 +66,7 @@ const Registration: React.FC = () => {
       verificationCode: '',
       sex: '',
       region_id: null,
-      confirmPassword: ''
+      confirmPassword: '',
     });
     setErrors({
       fullName: false,
@@ -81,9 +79,10 @@ const Registration: React.FC = () => {
       region_id: false,
       confirmPassword: false,
     });
-    setStep(1); // Сбрасываем шаг на начальный
+    setApiError(null); // Сбрасываем ошибку API
+    setStep(1);
   };
-  
+
   useEffect(() => {
     setTimeout(() => {
       if (document.activeElement instanceof HTMLElement) {
@@ -91,31 +90,26 @@ const Registration: React.FC = () => {
       }
     }, 100);
   }, []);
-  
-  
-  // Сброс состояния при размонтировании компонента
+
   useEffect(() => {
     return () => {
-      resetFormAndErrors(); // Сбрасываем форму и ошибки при размонтировании
+      resetFormAndErrors();
     };
   }, []);
-  
-  // Сброс состояния при монтировании (на случай, если компонент не размонтируется)
+
   useEffect(() => {
-    resetFormAndErrors(); // Сбрасываем состояние при каждом монтировании
+    resetFormAndErrors();
   }, []);
-  
-  // Обработчик кнопки "назад"
+
   const handleBackClick = () => {
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
-    document.body.style.zoom = '1'; // Принудительно сбрасываем зум
+    document.body.style.zoom = '1';
     resetFormAndErrors();
     navigate('/');
   };
-  
-  
+
   useEffect(() => {
     const fetchSexOptions = async () => {
       try {
@@ -130,7 +124,7 @@ const Registration: React.FC = () => {
         console.error('Ошибка при загрузке данных о полах:', error);
       }
     };
-    
+
     const fetchRegions = async () => {
       try {
         const response = await apiRequest('regions/', 'GET', undefined, false);
@@ -141,37 +135,37 @@ const Registration: React.FC = () => {
         console.error('Ошибка при загрузке данных о регионах:', error);
       }
     };
-    
+
     fetchSexOptions();
     fetchRegions();
   }, []);
-  
+
   useEffect(() => {
     validateField('email', formData.email);
   }, [formData.email]);
-  
+
   useEffect(() => {
     validateField('phone', formData.phone);
   }, [formData.phone]);
-  
+
   useEffect(() => {
     validateField('password', formData.password);
   }, [formData.password]);
-  
+
   useEffect(() => {
     validateField('confirmPassword', formData.confirmPassword);
   }, [formData.confirmPassword, formData.password]);
-  
+
   useEffect(() => {
     validateField('telegram_id', formData.telegram_id);
   }, [formData.telegram_id]);
-  
+
   const validateField = (fieldName: string, value: string | number | null) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^\+?\d{10,}$/;
     const passwordRegex = /^.{8,}$/;
     const telegramIdValid = value === null || (typeof value === 'number' && (value.toString().length === 9 || value.toString().length === 10));
-    
+
     setErrors((prev) => ({
       ...prev,
       [fieldName]: fieldName === 'email'
@@ -181,23 +175,23 @@ const Registration: React.FC = () => {
           : fieldName === 'password'
             ? value !== '' && !passwordRegex.test(value as string)
             : fieldName === 'confirmPassword'
-              ? value !== '' && value !== formData.password // Проверяем совпадение паролей
+              ? value !== '' && value !== formData.password
               : fieldName === 'telegram_id'
                 ? value !== null && !telegramIdValid
                 : false,
     }));
   };
-  
+
   const validateFullName = () => {
     const words = formData.fullName.trim().split(/\s+/);
     const hasError = words.length !== 3;
     setErrors((prev) => ({ ...prev, fullName: hasError }));
     return !hasError;
   };
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    
+
     if (name === 'phone') {
       let cleanedValue = value.replace(/\D/g, '');
       if (cleanedValue.length > 0 && !cleanedValue.startsWith('7')) {
@@ -215,7 +209,7 @@ const Registration: React.FC = () => {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
-  
+
   const validateForm = () => {
     const emailValid = !errors.email && formData.email !== '';
     const phoneValid = !errors.phone && formData.phone !== '';
@@ -226,12 +220,12 @@ const Registration: React.FC = () => {
     const regionValid = formData.region_id !== null;
     return validateFullName() && emailValid && phoneValid && passwordValid && confirmPasswordValid && telegramIdValid && sexValid && regionValid;
   };
-  
+
   const sendVerificationCode = async () => {
     const phone = formData.phone.replace(/\D/g, '');
     const query = new URLSearchParams({ phone_number: phone }).toString();
     const data = await apiRequest(`users/send_phone_verification_code/?${query}`, 'GET', undefined);
-    
+
     if (data?.response?.ok && data.response.result?.request_id) {
       setRequestId(data.response.result.request_id);
       setStep(2);
@@ -239,27 +233,25 @@ const Registration: React.FC = () => {
       console.error('Ошибка: request_id не получен!');
     }
   };
-  
+
   const verifyCode = async () => {
     if (!requestId) return;
-    
+
     const query = new URLSearchParams({ request_id: requestId, code: formData.verificationCode }).toString();
     const success = await apiRequest(`users/verify_code/?${query}`, 'GET', undefined, false);
-    
-    
+
     if (success) {
       await registerUser();
     } else {
       setErrors((prev) => ({ ...prev, verificationCode: true }));
     }
   };
-  
+
   const registerUser = async () => {
     const [surname, name, patronymic] = formData.fullName.split(' ');
-    
     const selectedSex = sexOptions.find((sex) => sex.name === formData.sex);
     const sex_id = selectedSex ? selectedSex.id : null;
-    
+
     const userData = {
       email: formData.email,
       password: formData.password,
@@ -272,36 +264,35 @@ const Registration: React.FC = () => {
       sex_id,
       region_id: formData.region_id,
     };
-    
-    
-    
+
     try {
       const response = await apiRequest('users/signup', 'POST', userData, false);
       if (response) {
         await login(userData.email, userData.password);
       }
     } catch (error) {
-      console.error('Ошибка при регистрации:', error);
-      if (error) {
-        console.error('Данные ошибки:', error);
+      // Обработка ошибки с выводом detail
+      if (axios.isAxiosError(error) && error.response?.data?.detail) {
+        setApiError(error.response.data.detail); // Устанавливаем сообщение об ошибке из detail
+      } else {
+        setApiError('Произошла ошибка при регистрации. Попробуйте снова.');
       }
+      console.error('Ошибка при регистрации:', error);
     }
   };
-  
+
   const login = async (email: string, password: string) => {
     try {
       const formData = new URLSearchParams();
       formData.append('username', email);
       formData.append('password', password);
-      
+
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/login/access-token`, formData, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       });
-      
-      
-      
+
       const token = response.data.access_token;
       if (token) {
         saveToken(token);
@@ -311,32 +302,38 @@ const Registration: React.FC = () => {
         console.error('Токен не получен');
       }
     } catch (error) {
-      console.error('Ошибка авторизации:');
+      // Обработка ошибки логина с выводом detail
+      if (axios.isAxiosError(error) && error.response?.data?.detail) {
+        setApiError(error.response.data.detail);
+      } else {
+        setApiError('Ошибка авторизации. Проверьте данные и попробуйте снова.');
+      }
+      console.error('Ошибка авторизации:', error);
     }
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setApiError(null); // Сбрасываем ошибку перед новой попыткой
     if (step === 1 && validateForm()) {
       await sendVerificationCode();
     } else if (step === 2 && formData.verificationCode.length === 4) {
       await verifyCode();
     }
   };
-  
+
   const handleTelegramHintClick = () => {
-    setShowTelegramHint(!showTelegramHint); // Переключаем видимость подсказки
+    setShowTelegramHint(!showTelegramHint);
   };
-  
+
   const handleTelegramBotClick = () => {
     window.open('https://t.me/Ace_tournament_bot', '_blank');
   };
-  
+
   const navigateToLogin = () => {
     navigate('/login');
   };
-  
-  
+
   return (
     <div className={styles.formContainer}>
       <form className={styles.form} onSubmit={handleSubmit}>
@@ -347,12 +344,18 @@ const Registration: React.FC = () => {
             </button>
             <h1>Регистрация</h1>
           </div>
-          
           <button type="button" className={styles.loginButton} onClick={navigateToLogin}>
             Уже есть аккаунт? <span className={styles.tologin}>Войти</span>
           </button>
         </div>
-        
+
+        {/* Отображение ошибки API */}
+        {apiError && (
+          <div className={styles.apiErrorMessage}>
+            {apiError}
+          </div>
+        )}
+
         <div className={styles.formGroup}>
           <div className={styles.labelWrapper}>
             <label className={styles.label}>Введите Ф.И.О. игрока</label>
@@ -367,7 +370,7 @@ const Registration: React.FC = () => {
           />
           {errors.fullName && <div className={styles.errorMessage}>Ф.И.О. должно содержать три слова</div>}
         </div>
-        
+
         {[
           {
             label: 'Введите Email',
@@ -420,9 +423,9 @@ const Registration: React.FC = () => {
             name: 'birth_date',
             type: 'date',
             placeholder: 'дд.мм.гггг',
-            max: new Date().toISOString().split('T')[0]
+            max: new Date().toISOString().split('T')[0],
           },
-        ].map(({ label, name, type, placeholder, error, errorMessage}) => (
+        ].map(({ label, name, type, placeholder, error, errorMessage }) => (
           <div key={name} className={styles.formGroup}>
             <div className={styles.labelWrapper}>
               <div className={styles.labelWrapper__title}>
@@ -433,7 +436,6 @@ const Registration: React.FC = () => {
                   </div>
                 )}
               </div>
-              
               {(name === 'telegram_id' && showTelegramHint) && (
                 <div className={styles.telegramHint}>
                   <p>
@@ -450,35 +452,25 @@ const Registration: React.FC = () => {
                 </div>
               )}
             </div>
-            
+
             {type === 'date' ? (
               <div className={styles.dateInputWrapper}>
                 <DatePicker
                   selected={formData.birth_date ? new Date(formData.birth_date) : null}
                   onChange={(date: Date | null) => {
-                    // Add a direct update function instead of creating a synthetic event
                     const formattedDate = date ? date.toISOString().split('T')[0] : '';
-                    
-                    // Assuming your form state is managed with useState or similar
                     setFormData(prev => ({
                       ...prev,
-                      birth_date: formattedDate
+                      birth_date: formattedDate,
                     }));
-                    
-                    // If you still need to call handleChange for side effects (validation etc.)
-                    // but can't modify it, create this helper function in your component:
                     const updateFormField = (name: string, value: string) => {
                       const input = document.createElement('input');
                       input.name = name;
                       input.value = value;
-                      
-                      const event = Object.create(new Event('change', {bubbles: true}));
-                      Object.defineProperty(event, 'target', {value: input});
-                      
+                      const event = Object.create(new Event('change', { bubbles: true }));
+                      Object.defineProperty(event, 'target', { value: input });
                       handleChange(event as any);
                     };
-                    
-                    // Then call it here
                     updateFormField('birth_date', formattedDate);
                   }}
                   maxDate={new Date()}
@@ -512,22 +504,21 @@ const Registration: React.FC = () => {
                     onClick={toggleShowPassword(name === 'password' ? 'password' : 'confirmPassword')}
                   >
                     {showPassword[name === 'password' ? 'password' : 'confirmPassword'] ? (
-                      <EyeOff size={18}/>
+                      <EyeOff size={18} />
                     ) : (
-                      <Eye size={18}/>
+                      <Eye size={18} />
                     )}
                   </button>
                 )}
               </div>
             )}
-            
+
             {error && errorMessage && (
               <div className={styles.errorMessage}>{errorMessage}</div>
             )}
           </div>
         ))}
-        
-        {/* Добавляем поле для выбора пола */}
+
         <div className={styles.formGroup}>
           <div className={styles.labelWrapper}>
             <label className={styles.label}>Пол</label>
@@ -547,8 +538,7 @@ const Registration: React.FC = () => {
           </select>
           {errors.sex && <div className={styles.errorMessage}>Пожалуйста, выберите пол</div>}
         </div>
-        
-        {/* Добавляем поле для выбора региона */}
+
         <div className={styles.formGroup}>
           <div className={styles.labelWrapper}>
             <label className={styles.label}>Регион</label>
@@ -568,7 +558,7 @@ const Registration: React.FC = () => {
           </select>
           {errors.region_id && <div className={styles.errorMessage}>Пожалуйста, выберите регион</div>}
         </div>
-        
+
         {step === 2 && (
           <div className={styles.otp}>
             <h2>Введите код из Telegram</h2>
@@ -581,7 +571,7 @@ const Registration: React.FC = () => {
             </div>
           </div>
         )}
-        
+
         <button
           type="submit"
           className={styles.submitButton}
@@ -596,7 +586,7 @@ const Registration: React.FC = () => {
         >
           {step === 1 ? 'Получить код' : 'Завершить регистрацию'}
         </button>
-        
+
         <p className={styles.consentText}>
           Нажимая на кнопку, вы даете согласие на обработку персональных данных и соглашаетесь с
           политикой конфиденциальности.

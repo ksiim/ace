@@ -54,7 +54,7 @@ const TrainerManagement: React.FC<TrainerManagementProps> = ({ onError }) => {
       const formData = new FormData();
       formData.append('file', file);
       
-      apiRequest("photos/", "POST", formData, true)
+      apiRequest("uploads/", "POST", formData, true)
         .then((data) => {
           if (data && data.file_path) {
             // Изменяем путь
