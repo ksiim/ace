@@ -20,7 +20,7 @@ const Hero: React.FC = () => {
             className={styles.title}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.8, duration: 0.8 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
           >
             Переходи на новый уровень <br />
             вместе с ACE.Дети
@@ -29,7 +29,7 @@ const Hero: React.FC = () => {
             className={styles.description}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 2.1, duration: 0.8 }}
+            transition={{ delay: 1.2, duration: 0.8 }}
           >
             Наша платформа создана для развития и поддержки детского тенниса.
             Она помогает организовывать турниры, подавать заявки на участие и
