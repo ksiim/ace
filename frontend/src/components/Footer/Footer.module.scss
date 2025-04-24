@@ -1,3 +1,4 @@
+@charset "UTF-8";
 * {
   padding: 0;
   margin: 0;
@@ -9,7 +10,17 @@
   padding: 24px 40px;
   background-color: #FFF5F3;
   border-top: 1px solid rgba(0, 0, 0, 0.1);
-  font-family: 'Mulish', sans-serif;
+  font-family: "Mulish", sans-serif;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px; // Limits width on large screens
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px; // Space between sections
 }
 
 .content {
@@ -46,13 +57,57 @@
   }
 }
 
+.legal_info {
+  font-size: 12px;
+  color: #666; // Slightly lighter than #333 for hierarchy
+  text-align: center;
+  line-height: 1.6;
+
+  p {
+    margin: 4px 0;
+  }
+
+  a {
+    color: #f95e1b; // Matches hover color for consistency
+    text-decoration: none;
+    transition: text-decoration 0.2s ease;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.documents {
+  display: flex;
+  justify-content: center;
+  gap: 24px; // Space between links
+  flex-wrap: wrap;
+
+  a {
+    font-size: 12px;
+    color: #f95e1b; // Matches theme
+    text-decoration: none;
+    transition: text-decoration 0.2s ease;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
 /* Мобильные стили */
 @media (max-width: 768px) {
   .wrapper {
     padding: 16px;
   }
 
+  .container {
+    gap: 16px;
+  }
+
   .content {
+    flex-direction: column; // Stack logo and button vertically
     gap: 12px;
     text-align: center;
     padding-bottom: 10px;
@@ -71,11 +126,24 @@
     width: 14px;
     height: 14px;
   }
+
+  .legal_info {
+    font-size: 11px;
+  }
+
+  .documents {
+    flex-direction: column; // Stack links vertically
+    gap: 12px;
+  }
 }
 
 @media (max-width: 480px) {
   .wrapper {
     padding: 12px 12px 50px 12px;
+  }
+
+  .container {
+    gap: 12px;
   }
 
   .content {
@@ -93,5 +161,17 @@
   .scroll_top .icon {
     width: 12px;
     height: 12px;
+  }
+
+  .legal_info {
+    font-size: 10px;
+  }
+
+  .documents {
+    gap: 10px;
+
+    a {
+      font-size: 10px;
+    }
   }
 }
