@@ -15,12 +15,12 @@
 
 .container {
   width: 100%;
-  max-width: 1200px; // Limits width on large screens
+  max-width: 1200px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px; // Space between sections
+  gap: 24px;
 }
 
 .content {
@@ -59,7 +59,7 @@
 
 .legal_info {
   font-size: 12px;
-  color: #666; // Slightly lighter than #333 for hierarchy
+  color: #666;
   text-align: center;
   line-height: 1.6;
 
@@ -68,7 +68,7 @@
   }
 
   a {
-    color: #f95e1b; // Matches hover color for consistency
+    color: #f95e1b;
     text-decoration: none;
     transition: text-decoration 0.2s ease;
 
@@ -80,13 +80,13 @@
 
 .documents {
   display: flex;
-  justify-content: center;
-  gap: 24px; // Space between links
-  flex-wrap: wrap;
+  flex-direction: column; /* Ссылки всегда в столбик */
+  align-items: center;
+  gap: 12px; /* Меньший отступ для компактности */
 
   a {
     font-size: 12px;
-    color: #f95e1b; // Matches theme
+    color: #f95e1b;
     text-decoration: none;
     transition: text-decoration 0.2s ease;
 
@@ -107,7 +107,7 @@
   }
 
   .content {
-    flex-direction: column; // Stack logo and button vertically
+    flex-direction: column;
     gap: 12px;
     text-align: center;
     padding-bottom: 10px;
@@ -132,8 +132,11 @@
   }
 
   .documents {
-    flex-direction: column; // Stack links vertically
-    gap: 12px;
+    gap: 10px;
+
+    a {
+      font-size: 11px;
+    }
   }
 }
 
@@ -168,7 +171,7 @@
   }
 
   .documents {
-    gap: 10px;
+    gap: 8px;
 
     a {
       font-size: 10px;

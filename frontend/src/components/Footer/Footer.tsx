@@ -13,20 +13,6 @@ const Footer: React.FC = () => {
   return (
     <footer className={styles.wrapper}>
       <div className={styles.container}>
-        <div className={styles.content}>
-          <div className={styles.logo}>
-            ACE — платформа для развития<br/>
-            детского тенниса.
-          </div>
-          
-          <button
-            onClick={scrollToTop}
-            className={styles.scroll_top}
-          >
-            Вернуться наверх <ChevronUp className={styles.icon} />
-          </button>
-        </div>
-        
         <div className={styles.legal_info}>
           <p>ИП Донченко Р.В.</p>
           <p>ИНН 616116698853</p>
@@ -35,6 +21,12 @@ const Footer: React.FC = () => {
           <p>Электронная почта: <a href="mailto:ace.tour@mail.ru">ace.tour@mail.ru</a></p>
         </div>
         
+        <div className={styles.content}>
+          <div className={styles.logo}>
+            ACE — платформа для развития<br/>
+            детского тенниса.
+          </div>
+
         <div className={styles.documents}>
           <a href="https://ace-deti.ru/uploads/c0e4f7f2-0c74-4f70-83dc-1fc3ae87a8ac.pdf" target="_blank" rel="noopener noreferrer">
             Политика конфиденциальности
@@ -45,6 +37,14 @@ const Footer: React.FC = () => {
           <a href="https://ace-deti.ru/uploads/122e6599-0fab-4d13-bf09-9e53c43f887a.pdf" target="_blank" rel="noopener noreferrer">
             Положение о платформе Эйс
           </a>
+        </div>
+          
+          <button
+            onClick={scrollToTop}
+            className={styles.scroll_top}
+          >
+            Вернуться наверх <ChevronUp className={styles.icon} />
+          </button>
         </div>
       </div>
     </footer>
