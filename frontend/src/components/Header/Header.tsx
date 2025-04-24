@@ -112,7 +112,7 @@ const Header: React.FC<HeaderProps> = ({ scrollToBenefits }) => {
             isAuthenticated ? (
               <button onClick={() => navigate("/profile")}>Профиль</button>
             ) : (
-              <button onClick={() => navigate("/registration")}>Регистрация</button>
+              <button onClick={() => navigate("/login")}>Вход</button>
             )
           )}
         </div>
@@ -147,7 +147,7 @@ const Header: React.FC<HeaderProps> = ({ scrollToBenefits }) => {
             isAuthenticated ? (
               <button onClick={() => navigate("/profile")}>Профиль</button>
             ) : (
-              <button onClick={() => navigate("/registration")}>Регистрация</button>
+              <button onClick={() => navigate("/login")}>Вход</button>
             )
           )}
         </div>

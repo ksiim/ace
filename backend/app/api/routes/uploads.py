@@ -30,7 +30,7 @@ async def upload_file(
     file: UploadFile = File(...),
 ) -> FilePath:
     """
-    Upload photo
+    Upload file
     """
     file_extension = file.filename.split(".")[-1]
     filename = f"{uuid.uuid4()}.{file_extension}"
