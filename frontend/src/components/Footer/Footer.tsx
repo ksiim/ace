@@ -1,14 +1,7 @@
 import React from 'react';
 import styles from './Footer.module.scss';
-import { ChevronUp } from 'lucide-react';
 
 const Footer: React.FC = () => {
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  };
   
   return (
     <footer className={styles.wrapper}>
