@@ -39,13 +39,6 @@ const Footer: React.FC = () => {
             Положение о платформе Эйс
           </a>
         </div>
-          
-          <button
-            onClick={scrollToTop}
-            className={styles.scroll_top}
-          >
-            Вернуться наверх <ChevronUp className={styles.icon} />
-          </button>
         </div>
       </div>
     </footer>
