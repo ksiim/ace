@@ -54,7 +54,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({
       }
       
     } catch (err) {
-      setError('Не удалось создать транзакцию. Попробуйте позже.');
+      setError('Для начала того, чтобы оформить подписку, необходимо войти в аккаунт.');
       console.error('Ошибка при создании транзакции:', err);
     } finally {
       setLoading(false);
