@@ -59,7 +59,7 @@ const Post: React.FC<PostProps> = ({ post, commentText, onCommentTextChange, onA
       </header>
       
       <div className={styles.content}>
-        <p>{post.content}</p>
+        <p style={{ whiteSpace: 'pre-wrap' }}>{post.content}</p>
         {photos.length > 0 && (
           <div className={styles.slider}>
             <button
