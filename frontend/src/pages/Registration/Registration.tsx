@@ -164,7 +164,7 @@ const Registration: React.FC = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^\+?\d{10,}$/;
     const passwordRegex = /^.{8,}$/;
-    const telegramIdValid = value === null || (typeof value === 'number' && (value.toString().length === 9 || value.toString().length === 10));
+    const telegramIdValid = value === null || (typeof value === 'number' && (value.toString().length === 9 || value.toString().length === 10 || value.toString().length === 8));
 
     setErrors((prev) => ({
       ...prev,
@@ -416,7 +416,7 @@ const Registration: React.FC = () => {
             type: 'number',
             placeholder: '111111111',
             error: errors.telegram_id,
-            errorMessage: 'Телеграм ID должен содержать 9-10 цифр',
+            errorMessage: 'Телеграм ID должен содержать 8-10 цифр',
           },
           {
             label: 'Дата рождения игрока',
