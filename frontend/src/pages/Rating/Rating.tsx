@@ -220,8 +220,8 @@ const Rating: React.FC = () => {
             <thead>
               <tr>
                 <th className={styles.place}>Место</th>
-                <th>ФИО</th>
-                <th>Дата рождения</th>
+                <th className={styles.fullname}>ФИО</th>
+                <th className={styles.birthdate}>Дата рождения</th>
                 <th>Регион</th>
                 <th className={styles.score}>Очки</th>
                 <th className={styles.tournaments52}>Кол-во турниров за 52 недели</th>
@@ -232,8 +232,8 @@ const Rating: React.FC = () => {
                 <tr key={player.id}
                     className={index % 2 === 0 ? styles.evenRow : ''}>
                   <td className={styles.place}>{index + 1 + skip}</td>
-                  <td>{`${player.surname} ${player.name} ${player.patronymic}`}</td>
-                  <td>{player.birth_date || '-'}</td>
+                  <td className={styles.fullname}>{`${player.surname} ${player.name} ${player.patronymic}`}</td>
+                  <td className={styles.birthdate}>{player.birth_date || '-'}</td>
                   <td>{regions.find(region => region.id === player.region_id)?.name || '-'}</td>
                   <td className={styles.score}>{player.score}</td>
                   <td className={styles.tournaments52}>{player.tournaments}</td>

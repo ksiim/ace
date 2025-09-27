@@ -351,6 +351,20 @@
   text-align: center!important;
 }
 
+// Минимальная ширина для даты рождения
+.birthdate {
+  min-width: 70px;
+  width: 1%;
+  text-align: center !important;
+}
+
+// Больше ширины для ФИО
+.fullname {
+  min-width: 160px;
+  width: 20%;
+  text-align: left;
+}
+
 // Центрирование значений в ячейках турниров (кроме заголовка)
 .tournaments52 {
   text-align: center !important;
