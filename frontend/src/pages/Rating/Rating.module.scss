@@ -342,17 +342,17 @@
 .place {
   min-width: 40px;
   width: 1%;
-  text-align: center;
+  text-align: center !important;
 }
 
 .score {
   min-width: 40px;
   width: 1%;
-  text-align: center;
+  text-align: center!important;
 }
 
 // Центрирование значений в ячейках турниров (кроме заголовка)
 .tournaments52 {
-  text-align: center;
+  text-align: center !important;
   vertical-align: middle;
 }
