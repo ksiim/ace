@@ -224,7 +224,7 @@ const Rating: React.FC = () => {
                 <th>Дата рождения</th>
                 <th>Регион</th>
                 <th className={styles.score}>Очки</th>
-                <th className={styles.tournaments}>Кол-во турниров за 52 недели</th>
+                <th className={styles.tournaments52}>Кол-во турниров за 52 недели</th>
               </tr>
             </thead>
             <tbody>
