@@ -236,7 +236,7 @@ const Rating: React.FC = () => {
                   <td>{player.birth_date || '-'}</td>
                   <td>{regions.find(region => region.id === player.region_id)?.name || '-'}</td>
                   <td className={styles.score}>{player.score}</td>
-                  <td className={styles.tournaments}>{player.tournaments}</td>
+                  <td className={styles.tournaments52}>{player.tournaments}</td>
                 </tr>
             ))}
             </tbody>
