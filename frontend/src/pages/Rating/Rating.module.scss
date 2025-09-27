@@ -157,7 +157,7 @@
     transform: scale(0.75);
     transform-origin: top left;
     width: 133.33%; // Компенсация уменьшения размера
-    overflow-x: hidden;
+    overflow-x: auto;
   }
 }
 
