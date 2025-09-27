@@ -356,12 +356,13 @@
   min-width: 70px;
   width: 1%;
   text-align: center !important;
+  white-space: nowrap;
 }
 
 // Больше ширины для ФИО
 .fullname {
-  min-width: 160px;
-  width: 20%;
+  min-width: 220px;
+  width: 40%;
   text-align: left;
 }
 
