@@ -218,26 +218,26 @@ const Rating: React.FC = () => {
         <div className={styles.tableContainer}>
           <table className={styles.classificationTable}>
             <thead>
-            <tr>
-              <th>Место</th>
-              <th>ФИО</th>
-              <th>Дата рождения</th>
-              <th>Регион</th>
-              <th>Очки</th>
-              <th>Кол-во турниров за 52 недели</th>
-            </tr>
+              <tr>
+                <th className={styles.place}>Место</th>
+                <th>ФИО</th>
+                <th>Дата рождения</th>
+                <th>Регион</th>
+                <th className={styles.score}>Очки</th>
+                <th className={styles.tournaments}>Кол-во турниров за 52 недели</th>
+              </tr>
             </thead>
             <tbody>
-            {filteredPlayers.map((player, index) => (
-              <tr key={player.id}
-                  className={index % 2 === 0 ? styles.evenRow : ''}>
-                <td>{index + 1 + skip}</td>
-                <td>{`${player.surname} ${player.name} ${player.patronymic}`}</td>
-                <td>{player.birth_date || '-'}</td>
-                <td>{regions.find(region => region.id === player.region_id)?.name || '-'}</td>
-                <td>{player.score}</td>
-                <td>{player.tournaments}</td>
-              </tr>
+              {filteredPlayers.map((player, index) => (
+                <tr key={player.id}
+                    className={index % 2 === 0 ? styles.evenRow : ''}>
+                  <td className={styles.place}>{index + 1 + skip}</td>
+                  <td>{`${player.surname} ${player.name} ${player.patronymic}`}</td>
+                  <td>{player.birth_date || '-'}</td>
+                  <td>{regions.find(region => region.id === player.region_id)?.name || '-'}</td>
+                  <td className={styles.score}>{player.score}</td>
+                  <td className={styles.tournaments}>{player.tournaments}</td>
+                </tr>
             ))}
             </tbody>
           </table>
