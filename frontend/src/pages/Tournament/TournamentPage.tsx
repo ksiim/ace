@@ -17,6 +17,8 @@ const TournamentPage: React.FC = () => {
   const [tournament, setTournament] = useState<TournamentPage | null>(null);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false); // Новый стейт для модального окна отмены
   const [isRegistering, setIsRegistering] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
   const [userData, setUserData] = useState<User | null>(null);
@@ -174,6 +176,10 @@ const TournamentPage: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  const handleCancelRegistrationClick = () => {
+    setIsCancelModalOpen(true); // Открываем модальное окно отмены
+  };
+
   // Функция для получения имени категории по ID
   const getCategoryNameById = (categoryId: number): string => {
     const category = categories.find((cat) => cat.id === categoryId);
@@ -229,7 +235,7 @@ const TournamentPage: React.FC = () => {
             alert('Ваше участие в турнире обновлено!');
             await loadParticipants(); // Перезагружаем список участников
           } else {
-            alert('Ошибка при обновлении участия!');
+            setIsSubscriptionModalOpen(true); // Показываем модальное окно подписки
           }
         } else {
           // Если участия нет, создаем новое
@@ -246,7 +252,7 @@ const TournamentPage: React.FC = () => {
             alert('Вы успешно зарегистрировались на турнир!');
             await loadParticipants(); // Перезагружаем список участников
           } else {
-            navigate('/subscription');
+            setIsSubscriptionModalOpen(true); // Показываем модальное окно подписки
           }
         }
 
@@ -257,8 +263,8 @@ const TournamentPage: React.FC = () => {
 
       // Проверяем статус ошибки
       if (error.response && error.response.status === 403) {
-        // Перенаправляем на страницу /subscription
-        window.location.href = '/subscription';
+        // Показываем модальное окно подписки
+        setIsSubscriptionModalOpen(true);
       } else {
         alert('Произошла ошибка при регистрации. Пожалуйста, попробуйте ещё раз.');
       }
@@ -267,8 +273,41 @@ const TournamentPage: React.FC = () => {
     }
   };
 
+  const handleConfirmCancelRegistration = async () => {
+    if (!userData || !tournament) return;
+
+    try {
+      // Находим ID участника для текущего пользователя
+      const participantsResponse = await apiRequest(`tournaments/${tournament.id}/participants`, 'GET', undefined, false);
+      const existingParticipant = participantsResponse.data.find(
+        (participant: ExtendedParticipant) => participant.user_id === userData.id
+      );
+
+      if (existingParticipant) {
+        const participantId = existingParticipant.id;
+        const response = await apiRequest(`participants/${participantId}`, 'DELETE', undefined, true);
+        if (!response.error) {
+          alert('Ваше участие в турнире успешно отменено!');
+          await loadParticipants(); // Перезагружаем список участников
+          setIsRegistered(false); // Обновляем статус регистрации
+        } else {
+          alert('Ошибка при отмене участия. Пожалуйста, попробуйте ещё раз.');
+        }
+      }
+    } catch (error) {
+      console.error('Ошибка при отмене регистрации:', error);
+      alert('Произошла ошибка при отмене регистрации. Пожалуйста, попробуйте ещё раз.');
+    } finally {
+      setIsCancelModalOpen(false); // Закрываем модальное окно
+    }
+  };
+
   const handleCancelRegistration = () => {
     setIsModalOpen(false);
+  };
+
+  const handleCancelCancelModal = () => {
+    setIsCancelModalOpen(false); // Закрываем модальное окно отмены
   };
 
   const handlePartnerIdChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -291,6 +330,15 @@ const TournamentPage: React.FC = () => {
     } else {
       setPartnerData(null); // Сбрасываем данные, если поле пустое
     }
+  };
+
+  const handleRenewSubscription = () => {
+    navigate('/subscription'); // Перенаправление на страницу подписки
+    setIsSubscriptionModalOpen(false); // Закрываем модальное окно
+  };
+
+  const handleCloseSubscriptionModal = () => {
+    setIsSubscriptionModalOpen(false); // Закрываем модальное окно без навигации
   };
 
   const renderContent = () => {
@@ -360,6 +408,11 @@ const TournamentPage: React.FC = () => {
                       {isRegistered ? 'Обновить участие' : 'Зарегистрироваться'}
                     </button>
                   )}
+                  {isRegistered && (
+                    <button className={styles.cancelRegistrationButton} onClick={handleCancelRegistrationClick}>
+                      Отменить регистрацию
+                    </button>
+                  )}
                 </>
               )}
               {!tournament.can_register && (
@@ -420,6 +473,39 @@ const TournamentPage: React.FC = () => {
                   {isRegistering ? 'Регистрируем...' : 'Да'}
                 </button>
                 <button onClick={handleCancelRegistration} className={styles.cancelButton}>
+                  Нет
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isSubscriptionModalOpen && (
+          <div className={styles.modal}>
+            <div className={styles.modalContent}>
+              <h2>Срок подписки истёк</h2>
+              <p>Ваша подписка истекла. Пожалуйста, продлите подписку, чтобы продолжить регистрацию.</p>
+              <div className={styles.modalButtons}>
+                <button onClick={handleRenewSubscription} className={styles.confirmButton}>
+                  Продлить подписку
+                </button>
+                <button onClick={handleCloseSubscriptionModal} className={styles.cancelButton}>
+                  Закрыть
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isCancelModalOpen && (
+          <div className={styles.modal}>
+            <div className={styles.modalContent}>
+              <h2>Вы уверены, что хотите отменить регистрацию?</h2>
+              <div className={styles.modalButtons}>
+                <button onClick={handleConfirmCancelRegistration} className={styles.confirmButton}>
+                  Да
+                </button>
+                <button onClick={handleCancelCancelModal} className={styles.cancelButton}>
                   Нет
                 </button>
               </div>
