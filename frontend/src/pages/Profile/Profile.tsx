@@ -47,7 +47,7 @@ const Profile: React.FC = () => {
         <h1 className={styles.title}>Личный профиль</h1>
         <div className={styles.infoBlock}>
           <p className={styles.name}>
-            {user.name} {user.surname} {user.patronymic} <span>#{user.id}</span>
+            {user.surname} {user.name} {user.patronymic} <span>#{user.id}</span>
           </p>
           <p>Email: {user.email}</p>
           <p>Телефон: {user.phone_number}</p>
