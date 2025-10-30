@@ -32,7 +32,7 @@ from backend.app.api.deps import (
 router = APIRouter()
 
 # ---------------------
-# GroupStage endpoints
+# GroupStage endscore
 # ---------------------
 
 
@@ -151,7 +151,7 @@ async def delete_group_participant(
 
 
 # ---------------------
-# GroupMatch endpoints
+# GroupMatch endscore
 # ---------------------
 
 @router.get(
@@ -212,14 +212,14 @@ def generate_groups_with_unassigned(
 ) -> dict[str, Any]:
     """
     Автоматическое формирование групп по фиксированному размеру group_size.
-    - Сортировка по points (user + partner)
+    - Сортировка по score (user + partner)
     - Деление по group_size
     - Остаток -> unassigned (вручную)
     """
     def participant_score(p: TournamentParticipant) -> int:
-        user_points = getattr(p.user, "points", 0)
-        partner_points = getattr(p.partner, "points", 0) if p.partner else 0
-        return user_points + partner_points
+        user_score = getattr(p.user, "score", 0)
+        partner_score = getattr(p.partner, "score", 0) if p.partner else 0
+        return user_score + partner_score
 
     participants_sorted = sorted(
         participants, key=participant_score, reverse=True)
