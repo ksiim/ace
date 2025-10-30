@@ -211,41 +211,65 @@ def generate_groups_with_unassigned(
     tournament_id: int,
 ) -> dict[str, Any]:
     """
-    Автоматическое формирование групп по фиксированному размеру group_size.
-    - Сортировка по score (user + partner)
-    - Деление по group_size
-    - Остаток -> unassigned (вручную)
+    Формирование групп по принципу "змеиного" распределения:
+    - Сортировка по убыванию очков
+    - Деление на 4 равные подгруппы (по силе)
+    - Каждая итоговая группа — по одному игроку из каждой подгруппы
+    - Остаток → unassigned
     """
     def participant_score(p: TournamentParticipant) -> int:
         user_score = getattr(p.user, "score", 0)
         partner_score = getattr(p.partner, "score", 0) if p.partner else 0
         return user_score + partner_score
 
-    participants_sorted = sorted(
-        participants, key=participant_score, reverse=True)
-
-    groups: List[GroupStageCreate] = []
-    unassigned: List[int] = []
-
+    # 1. Сортируем по убыванию очков
+    participants_sorted = sorted(participants, key=participant_score, reverse=True)
     total = len(participants_sorted)
-    full_group_count = total // group_size
+
+    if total == 0:
+        return {"groups": [], "unassigned": []}
+
+    # 2. Определяем размер подгруппы (чанки по group_size)
+    # group_size = 4 → 4 подгруппы по 4 игрока
+    subgroup_size = total // group_size
     remainder = total % group_size
 
-    index = 0
-    for g_number in range(1, full_group_count + 1):
-        group_participants = participants_sorted[index:index + group_size]
-        index += group_size
+    # Если не хватает на полные подгруппы — всё в unassigned
+    if subgroup_size == 0:
+        return {
+            "groups": [],
+            "unassigned": [p.id for p in participants_sorted]
+        }
 
+    # 3. Делим на подгруппы (по силе)
+    subgroups = []
+    index = 0
+    for _ in range(group_size):
+        subgroup = participants_sorted[index:index + subgroup_size]
+        subgroups.append(subgroup)
+        index += subgroup_size
+
+    # 4. Формируем итоговые группы: по одному из каждой подгруппы
+    groups: List[GroupStageCreate] = []
+    for i in range(subgroup_size):
+        group_participants = []
+        for subgroup in subgroups:
+            if i < len(subgroup):
+                group_participants.append(subgroup[i])
+        
         groups.append(
             GroupStageCreate(
-                name=f"Group {g_number}",
-                number=g_number,
+                name=f"Group {i + 1}",
+                number=i + 1,
                 tournament_id=tournament_id,
                 participants_ids=[p.id for p in group_participants]
             )
         )
 
+    # 5. Остаток (последние remainder игроков) → unassigned
+    unassigned = []
     if remainder > 0:
+        # Берём остаток из конца отсортированного списка
         unassigned = [p.id for p in participants_sorted[-remainder:]]
 
     return {

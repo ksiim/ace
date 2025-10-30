@@ -40,13 +40,15 @@ interface Match {
 // === ВНУТРЕННИЕ СТРУКТУРЫ ===
 interface Player {
   id: number;
+  /** Фамилия(и) + очки игрока(ов) */
   displayName: string;
+  /** Суммарные очки (для возможной сортировки) – сейчас не используется в таблице */
   totalScore: number;
 }
 
 interface PlayerWithStats extends Player {
   position: number;
-  points: number;
+  points: number;          // очки, набранные в матчах группы
   scores: Map<number, string>;
   matchIdMap: Map<number, number>;
 }
@@ -124,14 +126,18 @@ const GroupStage: React.FC = () => {
         const mainUser = usersMap.get(p.user_id);
         if (!mainUser) return;
 
-        let displayName = mainUser.name;
-        let totalScore = mainUser.score ?? 0;
+        // ----- ОДИНОЧНЫЙ ИГРОК -----
+        const mainScore = Number(mainUser.score) || 0;
+        let displayName = `${mainUser.surname || mainUser.name} (${mainScore})`;
+        let totalScore = mainScore;
 
+        // ----- ПАРА -----
         if (p.partner_id) {
           const partnerUser = usersMap.get(p.partner_id);
           if (partnerUser) {
-            displayName = `${mainUser.name}/${partnerUser.name}`;
-            totalScore += partnerUser.score ?? 0;
+            const partnerScore = Number(partnerUser.score) || 0;
+            displayName = `${mainUser.surname}/${partnerUser.surname} (${mainScore}/${partnerScore})`;
+            totalScore += partnerScore;
           }
         }
 
