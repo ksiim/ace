@@ -1,6 +1,7 @@
 from typing import List
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import func
 
 from common.db.models.participant import (
     TournamentParticipant,
@@ -31,3 +32,16 @@ async def update_tournament_participant(
     await session.commit()
     await session.refresh(db_tournament_participant)
     return db_tournament_participant
+
+
+async def get_all_tournament_participants(
+    session: AsyncSession,
+    skip: int = 0,
+    limit: int = 100,
+):
+    count_statement = select(func.count()).select_from(TournamentParticipant)
+    count = (await session.execute(count_statement)).scalar_one_or_none()
+
+    statement = select(TournamentParticipant).offset(skip).limit(limit)
+    participants = (await session.execute(statement)).scalars().all()
+    return count,participants

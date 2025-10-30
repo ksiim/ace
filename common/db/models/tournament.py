@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from .sex import Sex
     from .category import Category
     from .participant import TournamentParticipant
+    from .group import GroupStage
 
 class TournamentBase(SQLModel):
     name: str
@@ -45,6 +46,7 @@ class Tournament(TournamentBase, table=True):
             cascade="all, delete, delete-orphan",
         )
     )
+    groups: List["GroupStage"] = Relationship(back_populates="tournament")
 
 class TournamentUpdate(TournamentBase):
     owner_id: Optional[int]

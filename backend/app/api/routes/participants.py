@@ -34,11 +34,7 @@ async def read_tournament_participants(
     """
     Retrieve tournament participants.
     """
-    count_statement = select(func.count()).select_from(TournamentParticipant)
-    count = (await session.execute(count_statement)).scalar_one_or_none()
-
-    statement = select(TournamentParticipant).offset(skip).limit(limit)
-    participants = (await session.execute(statement)).scalars().all()
+    count, participants = await participant_crud.get_all_tournament_participants(session, skip, limit)
 
     return TournamentParticipantsPublic(data=participants, count=count)
 
@@ -55,14 +51,18 @@ async def read_tournament_participant(
     """
     Retrieve tournament participant by id.
     """
-    statement = select(TournamentParticipant).where(
-        TournamentParticipant.id == participant_id)
-    participant = (await session.execute(statement)).scalar_one_or_none()
+    participant = await get_tournament_participant_by_id(session, participant_id)
 
     if not participant:
         raise HTTPException(
             status_code=404, detail="Tournament participant not found")
 
+    return participant
+
+async def get_tournament_participant_by_id(session, participant_id):
+    statement = select(TournamentParticipant).where(
+        TournamentParticipant.id == participant_id)
+    participant = (await session.execute(statement)).scalar_one_or_none()
     return participant
 
 
@@ -90,9 +90,9 @@ async def create_tournament_participant(
     participants_ids_raw = (await session.execute(participants_ids_statement)).all()
     participants_ids = [item for sublist in participants_ids_raw for item in sublist if item]
 
-    if current_user.id in participants_ids:
-        raise HTTPException(
-            status_code=400, detail="User is already a participant of this tournament")
+    # if current_user.id in participants_ids:
+    #     raise HTTPException(
+    #         status_code=400, detail="User is already a participant of this tournament")
     
     user = await session.get(User, participant_in.user_id)
     if not user:

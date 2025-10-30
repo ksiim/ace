@@ -242,13 +242,7 @@ async def get_participants_by_tournament_id(
     """
     Retrieve tournament participants by tournament id.
     """
-    count_statement = select(func.count()).where(
-        TournamentParticipant.tournament_id == tournament_id)
-    count = (await session.execute(count_statement)).scalar_one_or_none()
-
-    statement = select(TournamentParticipant).where(
-        TournamentParticipant.tournament_id == tournament_id).offset(skip).limit(limit)
-    participants = (await session.execute(statement)).scalars().all()
+    count, participants = await tournament_crud.get_participants_by_tournament_id(session, tournament_id, skip, limit)
 
     return TournamentParticipantsPublic(data=participants, count=count)
 

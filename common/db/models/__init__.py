@@ -20,6 +20,11 @@ from .comment import Comment, CommentBase, CommentCreate, CommentUpdate, Comment
 from .news_photo import NewsPhoto, NewsPhotoBase, NewsPhotoCreate, NewsPhotoPublic, NewsPhotosPublic
 from .transaction import Transaction, TransactionBase, TransactionCreate, TransactionPublic
 from .base import Message, Token, TokenPayload, NewPassword
+from .group import (
+    GroupStage, GroupStageBase, GroupStageCreate, GroupStageUpdate, GroupStagePublic, GroupStagesPublic,
+    GroupParticipant, GroupParticipantBase, GroupParticipantCreate, GroupParticipantUpdate,
+    GroupParticipantPublic, GroupParticipantsPublic
+)
 
 __all__ = [
     "User", "UserBase", "UserCreate", "UserRegister", "UserUpdate", "UserUpdateMe",
@@ -36,5 +41,8 @@ __all__ = [
     "Comment", "CommentBase", "CommentCreate", "CommentUpdate", "CommentPublic", "CommentsPublic",
     "Transaction", "TransactionBase", "TransactionCreate", "TransactionPublic",
     "Message", "Token", "TokenPayload", "NewPassword",
-    "NewsPhoto", "NewsPhotoBase", "NewsPhotoCreate", "NewsPhotoPublic", "NewsPhotosPublic"
+    "NewsPhoto", "NewsPhotoBase", "NewsPhotoCreate", "NewsPhotoPublic", "NewsPhotosPublic",
+    "GroupStage", "GroupStageBase", "GroupStageCreate", "GroupStageUpdate", "GroupStagePublic", "GroupStagesPublic",
+    "GroupParticipant", "GroupParticipantBase", "GroupParticipantCreate", "GroupParticipantUpdate",
+    "GroupParticipantPublic", "GroupParticipantsPublic",
 ]

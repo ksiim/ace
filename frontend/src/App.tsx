@@ -14,6 +14,8 @@ import CreateNews from './pages/CreateNews/CreateNews.tsx';
 import Trainers from './pages/Trainers/Trainers.tsx';
 import ResetPasswordPage from './pages/ResetPasswordPage/ResetPasswordPage.tsx';
 import Cookies from './components/Cookies/Cookies.tsx';
+import AutogenerageGroupStage from './pages/Tournament/components/GroupStage/components/AutogenerateGroupStage/AutogenerateGroupStage.tsx';
+import GroupStage from './pages/Tournament/components/GroupStage/GroupStage.tsx';
 
 function App() {
     return (
@@ -32,6 +34,8 @@ function App() {
                     <Route path={'/schedule'} element={<Calendar />} />
                     <Route path={'/trainers'} element={<Trainers />} />
                     <Route path={'/tournaments/:tournamentId'} element={<TournamentPage />} />
+                    <Route path={'/tournaments/:tournamentId/groupstage'} element={<GroupStage />} />
+                    <Route path={'/tournaments/:tournamentId/groupstage/setup'} element={<AutogenerageGroupStage />} />
                     <Route path={'/rating'} element={<Rating />} />
                     <Route path={'*'} element={<div>404 Not Found</div>} />
                 </Routes>

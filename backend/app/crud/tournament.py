@@ -1,8 +1,13 @@
 import datetime
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import func
 
-from common.db.models.tournament import Tournament, TournamentCreate, TournamentUpdate
+from common.db.models.tournament import (
+    Tournament, TournamentCreate, TournamentUpdate
+)
+from common.db.models.participant import TournamentParticipant
 import logging
 
 from common.db.models.user import User
@@ -37,3 +42,23 @@ async def update_tournament(session: AsyncSession, tournament_id: int, tournamen
     await session.commit()
     await session.refresh(tournament)
     return tournament
+
+
+async def get_participants_by_tournament_id(
+    session: AsyncSession,
+    tournament_id: int,
+    skip: int = 0,
+    limit: int = 100,
+):
+    count_statement = select(func.count()).where(
+        TournamentParticipant.tournament_id == tournament_id)
+    count = (await session.execute(count_statement)).scalar_one_or_none()
+
+    statement = select(TournamentParticipant).where(
+        TournamentParticipant.tournament_id == tournament_id
+    ).options(
+        selectinload(TournamentParticipant.user),
+        selectinload(TournamentParticipant.partner)
+    ).offset(skip).limit(limit)
+    participants = (await session.execute(statement)).scalars().all()
+    return count, participants

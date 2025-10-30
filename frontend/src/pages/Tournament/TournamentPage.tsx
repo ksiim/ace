@@ -273,6 +273,13 @@ const TournamentPage: React.FC = () => {
     }
   };
 
+  // ----- Автораспределение групп -----
+  const handleGroups = async () => {
+    if (!tournament) return;
+    navigate(`/tournaments/${tournament.id}/groupstage`);
+  };
+
+
   const handleConfirmCancelRegistration = async () => {
     if (!userData || !tournament) return;
 
@@ -417,6 +424,14 @@ const TournamentPage: React.FC = () => {
               )}
               {!tournament.can_register && (
                 <p className={styles.registrationClosed}>Регистрация закрыта</p>
+              )}
+              {(
+                <button
+                  className={styles.groupsButton}
+                  onClick={handleGroups}
+                >
+                  Группы
+                </button>
               )}
             </div>
           </div>
