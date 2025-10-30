@@ -13,13 +13,6 @@ interface Participant {
   confirmed?: boolean;
 }
 
-interface User {
-  id: number;
-  name: string;
-  surname: string;
-  score: number;
-}
-
 interface Group {
   id: number;
   number: number;
