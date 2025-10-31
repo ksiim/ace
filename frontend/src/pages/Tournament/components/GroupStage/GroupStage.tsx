@@ -128,7 +128,7 @@ const GroupStage: React.FC = () => {
 
         // ----- ОДИНОЧНЫЙ ИГРОК -----
         const mainScore = Number(mainUser.score) || 0;
-        let displayName = `${mainUser.surname || mainUser.name} (${mainScore})`;
+        let displayName = `${mainUser.surname || mainUser.name}`;
         let totalScore = mainScore;
 
         // ----- ПАРА -----
@@ -136,7 +136,7 @@ const GroupStage: React.FC = () => {
           const partnerUser = usersMap.get(p.partner_id);
           if (partnerUser) {
             const partnerScore = Number(partnerUser.score) || 0;
-            displayName = `${mainUser.surname}/${partnerUser.surname} (${mainScore}/${partnerScore})`;
+            displayName = `${mainUser.surname}/${partnerUser.surname}`;
             totalScore += partnerScore;
           }
         }
