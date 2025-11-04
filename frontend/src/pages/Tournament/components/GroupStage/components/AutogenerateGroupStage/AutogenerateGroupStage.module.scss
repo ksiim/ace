@@ -198,3 +198,23 @@
   margin: 8px 0 0;
   font-size: 0.9rem;
 }
+
+.dragging-clone {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid #007bff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  opacity: 0.9;
+  font-size: 14px;
+  user-select: none;
+  transform: translate(-50%, -50%);
+  touch-action: none;
+  border-radius: 6px;
+  cursor: grab;
+  user-select: none;
+  transition: all 0.2s;
+}

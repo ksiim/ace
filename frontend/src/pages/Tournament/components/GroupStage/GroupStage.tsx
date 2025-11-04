@@ -47,8 +47,12 @@ interface Player {
 }
 
 interface PlayerWithStats extends Player {
-  position: number;
-  points: number;          // очки, набранные в матчах группы
+  position: number | null;  // null = не определено (не все матчи сыграны)
+  points: number;
+  scored: number;
+  conceded: number;
+  scoreDiff: number;
+  allMatchesPlayed: boolean;
   scores: Map<number, string>;
   matchIdMap: Map<number, number>;
 }
@@ -126,12 +130,10 @@ const GroupStage: React.FC = () => {
         const mainUser = usersMap.get(p.user_id);
         if (!mainUser) return;
 
-        // ----- ОДИНОЧНЫЙ ИГРОК -----
         const mainScore = Number(mainUser.score) || 0;
         let displayName = `${mainUser.surname || mainUser.name}`;
         let totalScore = mainScore;
 
-        // ----- ПАРА -----
         if (p.partner_id) {
           const partnerUser = usersMap.get(p.partner_id);
           if (partnerUser) {
@@ -175,16 +177,22 @@ const GroupStage: React.FC = () => {
       const stats = new Map<number, {
         player: Player;
         points: number;
+        scored: number;
+        conceded: number;
         scores: Map<number, string>;
         matchIdMap: Map<number, number>;
+        playedMatches: number;
       }>();
 
       groupPlayers.forEach(p => {
         stats.set(p.id, {
           player: p,
           points: 0,
+          scored: 0,
+          conceded: 0,
           scores: new Map(),
           matchIdMap: new Map(),
+          playedMatches: 0,
         });
       });
 
@@ -198,62 +206,69 @@ const GroupStage: React.FC = () => {
         const stat2 = stats.get(p2);
         if (!stat1 || !stat2) return;
 
-        stat1.scores.set(p2, s1 != null && s2 != null ? `${s1}/${s2}` : '');
+        const scoreStr = s1 != null && s2 != null ? `${s1}/${s2}` : '';
+        stat1.scores.set(p2, scoreStr);
         stat1.matchIdMap.set(p2, m.id);
 
         stat2.scores.set(p1, s1 != null && s2 != null ? `${s2}/${s1}` : '');
         stat2.matchIdMap.set(p1, m.id);
 
         if (s1 != null && s2 != null) {
+          stat1.playedMatches += 1;
+          stat2.playedMatches += 1;
+
+          stat1.scored += s1;
+          stat1.conceded += s2;
+          stat2.scored += s2;
+          stat2.conceded += s1;
+
           if (s1 > s2) stat1.points += 1;
           else if (s1 < s2) stat2.points += 1;
         }
       });
 
-      // === ДОРАБОТАННЫЙ ПОДСЧЁТ МЕСТ ===
+      const totalMatchesPerPlayer = groupPlayers.length - 1;
+
       const extendedStats = groupPlayers.map(p => {
         const s = stats.get(p.id)!;
-
-        let scored = 0;
-        let conceded = 0;
-
-        s.scores.forEach(scoreStr => {
-          if (!scoreStr) return;
-          const [sf, sa] = scoreStr.split('/').map(Number);
-          if (!isNaN(sf) && !isNaN(sa)) {
-            scored += sf;
-            conceded += sa;
-          }
-        });
-
-        const scoreDiff = scored - conceded;
+        const allMatchesPlayed = s.playedMatches === totalMatchesPerPlayer;
+        const scoreDiff = s.scored - s.conceded;
 
         return {
           ...p,
           points: s.points,
+          scored: s.scored,
+          conceded: s.conceded,
+          scoreDiff,
+          allMatchesPlayed,
           scores: s.scores,
           matchIdMap: s.matchIdMap,
-          scored,
-          conceded,
-          scoreDiff,
         };
       });
 
-      // сортировка: очки → разница → забитые → id
-      const sortedForPos = [...extendedStats].sort((a, b) =>
+      // Сортировка: очки → разница → забитые → id
+      const sorted = [...extendedStats].sort((a, b) =>
         b.points - a.points ||
         b.scoreDiff - a.scoreDiff ||
         b.scored - a.scored ||
         a.id - b.id
       );
 
-      // уникальные места (1, 2, 3, ...)
-      const posMap = new Map<number, number>();
-      sortedForPos.forEach((p, i) => posMap.set(p.id, i + 1));
+      // Определяем места только для тех, кто сыграл все матчи
+      const positionMap = new Map<number, number>();
+      let currentPos = 1;
+
+      for (const player of sorted) {
+        if (player.allMatchesPlayed) {
+          positionMap.set(player.id, currentPos++);
+        } else {
+          positionMap.set(player.id, null);
+        }
+      }
 
       const finalPlayers: PlayerWithStats[] = extendedStats.map(p => ({
         ...p,
-        position: posMap.get(p.id)!,
+        position: positionMap.get(p.id) ?? null,
       }));
 
       return { ...group, players: finalPlayers };
@@ -424,6 +439,7 @@ const GroupStage: React.FC = () => {
                         <th colSpan={2}>Гр. {group.number}</th>
                         {group.players.map((_, i) => <th key={i}>{i + 1}</th>)}
                         <th>Очки</th>
+                        <th>Разница</th>
                         <th>Место</th>
                       </tr>
                     </thead>
@@ -465,7 +481,8 @@ const GroupStage: React.FC = () => {
                             );
                           })}
                           <td>{player.points}</td>
-                          <td>{player.position}</td>
+                          <td>{player.scoreDiff >= 0 ? `+${player.scoreDiff}` : player.scoreDiff}</td>
+                          <td>{player.position !== null ? player.position : '—'}</td>
                         </tr>
                       ))}
                     </tbody>

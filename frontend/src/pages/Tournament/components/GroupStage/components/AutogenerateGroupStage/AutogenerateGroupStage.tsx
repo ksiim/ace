@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiRequest } from '../../../../../../utils/apiRequest.ts';
 import Header from '../../../../../../components/Header/Header.tsx';
 import styles from './AutogenerateGroupStage.module.scss';
 import tournamentStyles from '../../../../TournamentPage.module.scss';
 
-// === ИНТЕРФЕЙСЫ ===
+// ──────────────────────────────────────────────────────────────────────────────
+//  ИНТЕРФЕЙСЫ
+// ──────────────────────────────────────────────────────────────────────────────
 interface Participant {
   id: number;
   name: string;
@@ -43,43 +45,42 @@ interface GroupStageCreate {
   participants_ids: number[];
 }
 
-// === КОМПОНЕНТ ПАРЫ ===
+// ──────────────────────────────────────────────────────────────────────────────
+//  КОМПОНЕНТ ПАРЫ — БЕЗ touchAction: none
+// ──────────────────────────────────────────────────────────────────────────────
 const ParticipantPair: React.FC<{
   participant: Participant;
   isDraggable?: boolean;
   onDragStart?: (e: React.DragEvent) => void;
-}> = ({ participant, isDraggable = false, onDragStart }) => {
-  return (
-    <li
-      className={`${styles.participantItem} ${styles.participantPair}`}
-      draggable={isDraggable}
-      onDragStart={onDragStart}
-    >
-      <div className={styles.participantNames}>
-        <span className={styles.participantName}>
-          {participant.surname}
+  onTouchStart?: (e: React.TouchEvent) => void;
+}> = ({ participant, isDraggable = false, onDragStart, onTouchStart }) => (
+  <li
+    className={`${styles.participantItem} ${styles.participantPair}`}
+    draggable={isDraggable}
+    onDragStart={onDragStart}
+    onTouchStart={onTouchStart}
+    // УДАЛЕНО: style={{ touchAction: 'none' }}
+  >
+    <div className={styles.participantNames}>
+      <span className={styles.participantName}>{participant.surname}</span>
+      {participant.partner && (
+        <span className={`${styles.participantName} ${styles.partnerName}`}>
+          /{participant.partner.surname}
         </span>
-        {participant.partner && (
-          <span className={`${styles.participantName} ${styles.partnerName}`}>
-            /{participant.partner.surname}
-          </span>
-        )}
-      </div>
-      <div className={styles.participantScores}>
-        <span className={styles.participantScore}>
-          {participant.score ?? 0}
-        </span>
-        {participant.partner && (
-          <span className={styles.participantScore}>
-            /{participant.partner.score ?? 0}
-          </span>
-        )}
-      </div>
-    </li>
-  );
-};
+      )}
+    </div>
+    <div className={styles.participantScores}>
+      <span className={styles.participantScore}>{participant.score ?? 0}</span>
+      {participant.partner && (
+        <span className={styles.participantScore}>/{participant.partner.score ?? 0}</span>
+      )}
+    </div>
+  </li>
+);
 
-// === ОСНОВНОЙ КОМПОНЕНТ ===
+// ──────────────────────────────────────────────────────────────────────────────
+//  ОСНОВНОЙ КОМПОНЕНТ
+// ──────────────────────────────────────────────────────────────────────────────
 const GroupStage: React.FC = () => {
   const { tournamentId } = useParams<{ tournamentId: string }>();
   const navigate = useNavigate();
@@ -90,18 +91,20 @@ const GroupStage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [draggedParticipant, setDraggedParticipant] = useState<DraggedParticipant | null>(null);
 
-  /* ----- УЧАСТНИКИ С ПАРТНЁРАМИ ----- */
+  const [draggedParticipant, setDraggedParticipant] = useState<DraggedParticipant | null>(null);
+  const [draggingClone, setDraggingClone] = useState<HTMLElement | null>(null);
+  const [isTouchDragging, setIsTouchDragging] = useState(false);
+
+  const autoScrollRef = useRef<number | null>(null);
+
+  // ──────────────────────────────────────────────────────────────────────────
+  //  ЗАГРУЗКА ДАННЫХ (без изменений)
+  // ──────────────────────────────────────────────────────────────────────────
   const fetchParticipantDetails = async (userId: number): Promise<Participant | null> => {
     try {
       const resp = await apiRequest(`users/${userId}`, 'GET', undefined, true);
-      return {
-        id: resp.id,
-        name: resp.name,
-        surname: resp.surname,
-        score: resp.score ?? 0,
-      };
+      return { id: resp.id, name: resp.name, surname: resp.surname, score: resp.score ?? 0 };
     } catch (e) {
       console.error(`Ошибка загрузки пользователя ${userId}`, e);
       return null;
@@ -121,43 +124,34 @@ const GroupStage: React.FC = () => {
       });
 
       const usersDetails = await Promise.all(
-        Array.from(allUserIds).map(async (userId) => {
-          const user = await fetchParticipantDetails(userId);
-          return [userId, user] as const;
+        Array.from(allUserIds).map(async uid => {
+          const user = await fetchParticipantDetails(uid);
+          return [uid, user] as const;
         })
       );
 
-      const usersMap = new Map(usersDetails.filter(([, user]) => user !== null));
+      const usersMap = new Map(usersDetails.filter(([, u]) => u !== null));
 
-      const participants: Participant[] = [];
-      const processedIds = new Set<number>();
+      const result: Participant[] = [];
+      const processed = new Set<number>();
 
-      data.forEach((p) => {
-        if (processedIds.has(p.id)) return;
-
-        const mainUser = usersMap.get(p.user_id);
-        if (!mainUser) return;
+      data.forEach(p => {
+        if (processed.has(p.id)) return;
+        const main = usersMap.get(p.user_id);
+        if (!main) return;
 
         let partner: Participant | undefined;
-
         if (p.partner_id) {
           const partnerUser = usersMap.get(p.partner_id);
-          if (partnerUser) {
-            partner = { ...partnerUser, isPartner: true };
-          }
+          if (partnerUser) partner = { ...partnerUser, isPartner: true };
         }
 
-        participants.push({
-          ...mainUser,
-          id: p.id,
-          partner,
-        });
-
-        processedIds.add(p.id);
+        result.push({ ...main, id: p.id, partner });
+        processed.add(p.id);
       });
 
-      setParticipants(participants);
-      return participants;
+      setParticipants(result);
+      return result;
     } catch (e) {
       console.error('Ошибка загрузки участников', e);
       setParticipants([]);
@@ -165,7 +159,6 @@ const GroupStage: React.FC = () => {
     }
   };
 
-  /* ----- СУЩЕСТВУЮЩИЕ ГРУППЫ ----- */
   const fetchExistingGroups = async (): Promise<Group[]> => {
     if (!tournamentId) return [];
     try {
@@ -177,7 +170,6 @@ const GroupStage: React.FC = () => {
           const linksResp = await apiRequest(`groups/${g.id}/participants`, 'GET', undefined, true);
           const links = Array.isArray(linksResp) ? linksResp : linksResp?.data ?? [];
           const participants_ids = links.map((l: any) => l.participant_id);
-
           return {
             id: g.id,
             number: g.number,
@@ -188,7 +180,6 @@ const GroupStage: React.FC = () => {
           };
         })
       );
-
       return groupsWithIds;
     } catch (e) {
       console.error('Ошибка загрузки групп', e);
@@ -196,7 +187,6 @@ const GroupStage: React.FC = () => {
     }
   };
 
-  /* ----- ПРЕВЬЮ ГРУПП ----- */
   const fetchGroupsPreview = async (allParticipants: Participant[]) => {
     if (!tournamentId) return;
     try {
@@ -220,7 +210,7 @@ const GroupStage: React.FC = () => {
 
       const unassignedParticipants = unassignedIds
         .map((id: number) => allParticipants.find(p => p.id === id))
-        .filter((p: Participant | undefined): p is Participant => p !== undefined);
+        .filter((p): p is Participant => p !== undefined);
 
       setGroups(mapped);
       setUnassigned(unassignedParticipants);
@@ -231,28 +221,25 @@ const GroupStage: React.FC = () => {
     }
   };
 
-  /* ----- ИНИЦИАЛИЗАЦИЯ ----- */
   const loadData = async () => {
     if (!tournamentId) return;
     setLoading(true);
-
     const allParticipants = await fetchParticipants();
     const existing = await fetchExistingGroups();
 
     if (existing.length > 0) {
       setGroups(existing);
-
       const assigned = new Set(existing.flatMap(g => g.participants_ids));
-      const unassignedParticipants = allParticipants.filter(p => !assigned.has(p.id));
-      setUnassigned(unassignedParticipants);
+      setUnassigned(allParticipants.filter(p => !assigned.has(p.id)));
     } else {
       await fetchGroupsPreview(allParticipants);
     }
-
     setLoading(false);
   };
 
-  /* ----- ВСПОМОГАТЕЛЬНЫЕ ----- */
+  // ──────────────────────────────────────────────────────────────────────────
+  //  ВСПОМОГАТЕЛЬНЫЕ
+  // ──────────────────────────────────────────────────────────────────────────
   const getParticipantById = (id: number) => participants.find(p => p.id === id);
 
   const addNewGroup = () => {
@@ -279,19 +266,18 @@ const GroupStage: React.FC = () => {
       ...prev.filter(p => !moved.some(m => m.id === p.id)),
       ...moved,
     ]);
-
     setGroups(prev => prev.filter(g => g.number !== groupNumber));
   };
 
-  /* ----- СОХРАНЕНИЕ ----- */
+  // ──────────────────────────────────────────────────────────────────────────
+  //  СОХРАНЕНИЕ
+  // ──────────────────────────────────────────────────────────────────────────
   const saveGroups = async () => {
     if (!tournamentId || groups.length === 0) return;
-
     setSaving(true);
     setSaveStatus('idle');
 
     try {
-
       const payload: GroupStageCreate[] = groups.map(g => ({
         name: g.name,
         number: g.number,
@@ -316,7 +302,9 @@ const GroupStage: React.FC = () => {
     }
   };
 
-  /* ----- DRAG & DROP ----- */
+  // ──────────────────────────────────────────────────────────────────────────
+  //  DRAG & DROP (MOUSE)
+  // ──────────────────────────────────────────────────────────────────────────
   const handleDragStart = (
     e: React.DragEvent,
     participant: Participant,
@@ -339,21 +327,15 @@ const GroupStage: React.FC = () => {
     const { participant, source, groupNumber } = draggedParticipant;
     const pid = participant.id;
 
-    // Удаляем из источника
-    if (source === 'unassigned') {
-      setUnassigned(prev => prev.filter(p => p.id !== pid));
-    }
+    if (source === 'unassigned') setUnassigned(prev => prev.filter(p => p.id !== pid));
     if (source === 'group' && groupNumber !== undefined) {
       setGroups(prev =>
         prev.map(g =>
-          g.number === groupNumber
-            ? { ...g, participants_ids: g.participants_ids.filter(id => id !== pid) }
-            : g
+          g.number === groupNumber ? { ...g, participants_ids: g.participants_ids.filter(id => id !== pid) } : g
         )
       );
     }
 
-    // Добавляем в цель
     if (targetGroupNumber !== null) {
       setGroups(prev =>
         prev.map(g =>
@@ -369,12 +351,189 @@ const GroupStage: React.FC = () => {
     setDraggedParticipant(null);
   };
 
-  /* ----- LIFECYCLE ----- */
+  // ──────────────────────────────────────────────────────────────────────────
+  //  TOUCH DRAG & DROP — БЕЗ БЛОКИРОВКИ СКРОЛЛА
+  // ──────────────────────────────────────────────────────────────────────────
+  const updateClonePosition = (x: number, y: number) => {
+    if (!draggingClone) return;
+    draggingClone.style.left = `${x}px`;
+    draggingClone.style.top = `${y}px`;
+  };
+
+  const startAutoScroll = (clientY: number) => {
+    if (autoScrollRef.current) return;
+
+    const scrollStep = () => {
+      const edge = 100;
+      const speed = 15;
+      const currentY = window.scrollY;
+
+      if (clientY < edge) {
+        window.scrollBy(0, -speed);
+      } else if (clientY > window.innerHeight - edge) {
+        window.scrollBy(0, speed);
+      } else {
+        autoScrollRef.current = null;
+        return;
+      }
+
+      autoScrollRef.current = requestAnimationFrame(scrollStep);
+    };
+
+    autoScrollRef.current = requestAnimationFrame(scrollStep);
+  };
+
+  const stopAutoScroll = () => {
+    if (autoScrollRef.current) {
+      cancelAnimationFrame(autoScrollRef.current);
+      autoScrollRef.current = null;
+    }
+  };
+
+  const highlightDropZone = (x: number, y: number) => {
+    document.querySelectorAll(`.${styles['drag-over']}`).forEach(el => el.classList.remove(styles['drag-over']));
+
+    const groupCards = document.querySelectorAll(`.${styles.groupCard}`);
+    const unassigned = document.querySelector(`.${styles.unassignedSection}`);
+
+    for (const card of groupCards) {
+      const r = card.getBoundingClientRect();
+      if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+        card.classList.add(styles['drag-over']);
+        return;
+      }
+    }
+
+    if (unassigned) {
+      const r = unassigned.getBoundingClientRect();
+      if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+        unassigned.classList.add(styles['drag-over']);
+      }
+    }
+  };
+
+  const handleTouchStart = (
+    e: React.TouchEvent,
+    participant: Participant,
+    source: 'group' | 'unassigned',
+    groupNumber?: number
+  ) => {
+    const touch = e.touches[0];
+    const li = e.currentTarget as HTMLElement;
+
+    const timeout = setTimeout(() => {
+      setDraggedParticipant({ participant, source, groupNumber });
+      setIsTouchDragging(true);
+
+      const clone = li.cloneNode(true) as HTMLElement;
+      clone.className = li.className + ' ' + styles['dragging-clone'];
+      clone.style.width = `${li.offsetWidth}px`;
+      clone.style.touchAction = 'none'; // ТОЛЬКО НА КЛОНЕ
+      document.body.appendChild(clone);
+      setDraggingClone(clone);
+
+      updateClonePosition(touch.clientX, touch.clientY);
+      startAutoScroll(touch.clientY);
+    }, 150);
+
+    const cancel = () => clearTimeout(timeout);
+    document.addEventListener('touchend', cancel, { once: true });
+  };
+
+  const handleTouchMove = (e: TouchEvent) => {
+    if (!isTouchDragging || !draggingClone) return;
+    const touch = e.touches[0];
+    updateClonePosition(touch.clientX, touch.clientY);
+    highlightDropZone(touch.clientX, touch.clientY);
+
+    stopAutoScroll();
+    startAutoScroll(touch.clientY);
+  };
+
+  const cleanupDrag = () => {
+    setDraggedParticipant(null);
+    setIsTouchDragging(false);
+    stopAutoScroll();
+    if (draggingClone?.parentNode) draggingClone.parentNode.removeChild(draggingClone);
+    setDraggingClone(null);
+    document.querySelectorAll(`.${styles['drag-over']}`).forEach(el => el.classList.remove(styles['drag-over']));
+  };
+
+  const handleTouchEnd = (e: TouchEvent) => {
+    if (!isTouchDragging || !draggedParticipant) return;
+
+    stopAutoScroll();
+    const touch = e.changedTouches[0];
+    let targetGroupNumber: number | null = null;
+
+    const groupCards = document.querySelectorAll(`.${styles.groupCard}`);
+    for (const card of groupCards) {
+      const r = card.getBoundingClientRect();
+      if (touch.clientX >= r.left && touch.clientX <= r.right && touch.clientY >= r.top && touch.clientY <= r.bottom) {
+        const num = (card as HTMLElement).dataset.groupNumber;
+        if (num) {
+          targetGroupNumber = Number(num);
+          break;
+        }
+      }
+    }
+
+    const { participant, source, groupNumber } = draggedParticipant;
+    const pid = participant.id;
+
+    if (source === 'unassigned') setUnassigned(prev => prev.filter(p => p.id !== pid));
+    if (source === 'group' && groupNumber !== undefined) {
+      setGroups(prev =>
+        prev.map(g =>
+          g.number === groupNumber ? { ...g, participants_ids: g.participants_ids.filter(id => id !== pid) } : g
+        )
+      );
+    }
+
+    if (targetGroupNumber !== null) {
+      setGroups(prev =>
+        prev.map(g =>
+          g.number === targetGroupNumber
+            ? { ...g, participants_ids: [...g.participants_ids.filter(id => id !== pid), pid] }
+            : g
+        )
+      );
+    } else {
+      setUnassigned(prev => (prev.some(p => p.id === pid) ? prev : [...prev, participant]));
+    }
+
+    cleanupDrag();
+  };
+
+  // ──────────────────────────────────────────────────────────────────────────
+  //  ПОДПИСКА НА TOUCH — БЕЗ preventDefault, БЕЗ touchAction
+  // ──────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isTouchDragging) return;
+
+    const onTouchMove = (e: TouchEvent) => handleTouchMove(e);
+    const onTouchEnd = (e: TouchEvent) => handleTouchEnd(e);
+
+    document.addEventListener('touchmove', onTouchMove, { passive: true });
+    document.addEventListener('touchend', onTouchEnd);
+
+    return () => {
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend', onTouchEnd);
+      stopAutoScroll();
+    };
+  }, [isTouchDragging, draggingClone]);
+
+  // ──────────────────────────────────────────────────────────────────────────
+  //  LIFECYCLE
+  // ──────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     loadData();
   }, [tournamentId]);
 
-  /* ----- LOADER ----- */
+  // ──────────────────────────────────────────────────────────────────────────
+  //  LOADER
+  // ──────────────────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className={tournamentStyles.loaderContainer}>
@@ -384,7 +543,9 @@ const GroupStage: React.FC = () => {
     );
   }
 
-  /* ----- RENDER ----- */
+  // ──────────────────────────────────────────────────────────────────────────
+  //  RENDER
+  // ──────────────────────────────────────────────────────────────────────────
   const isEditMode = groups.some(g => g.id !== undefined);
   const showAddButton = participants.length > 0;
 
@@ -394,14 +555,12 @@ const GroupStage: React.FC = () => {
       <main className={tournamentStyles.mainContent}>
         <div className={tournamentStyles.tournamentContainer} style={{ alignItems: 'flex-start' }}>
 
-          {/* Заголовок */}
           <div className={tournamentStyles.contentWrapper}>
             <h1 className={tournamentStyles.tournamentName}>
               {isEditMode ? 'Редактирование групп' : 'Настройка групп турнира'}
             </h1>
           </div>
 
-          {/* Кнопка сохранения */}
           <div className={tournamentStyles.contentWrapper}>
             <div className={styles.headerWithSave}>
               <div></div>
@@ -422,12 +581,12 @@ const GroupStage: React.FC = () => {
             )}
           </div>
 
-          {/* ГРУППЫ */}
           <div className={styles.groupsContainer}>
             {groups.sort((a, b) => a.number - b.number).map(group => (
               <div
                 key={group.number}
                 className={styles.groupCard}
+                data-group-number={group.number}
                 onDragOver={e => {
                   handleDragOver(e);
                   e.currentTarget.classList.add(styles['drag-over']);
@@ -454,13 +613,13 @@ const GroupStage: React.FC = () => {
                     group.participants_ids.map(pid => {
                       const p = getParticipantById(pid);
                       if (!p) return null;
-
                       return (
                         <ParticipantPair
                           key={pid}
                           participant={p}
-                          isDraggable={true}
+                          isDraggable
                           onDragStart={e => handleDragStart(e, p, 'group', group.number)}
+                          onTouchStart={e => handleTouchStart(e, p, 'group', group.number)}
                         />
                       );
                     })
@@ -471,7 +630,6 @@ const GroupStage: React.FC = () => {
               </div>
             ))}
 
-            {/* Кнопка + */}
             {showAddButton && (
               <button onClick={addNewGroup} className={styles.addGroupButton}>
                 +
@@ -479,7 +637,6 @@ const GroupStage: React.FC = () => {
             )}
           </div>
 
-          {/* НЕРАСПРЕДЕЛЁННЫЕ */}
           <div className={tournamentStyles.contentWrapper}>
             <div
               className={styles.unassignedSection}
@@ -500,8 +657,9 @@ const GroupStage: React.FC = () => {
                     <ParticipantPair
                       key={p.id}
                       participant={p}
-                      isDraggable={true}
+                      isDraggable
                       onDragStart={e => handleDragStart(e, p, 'unassigned')}
+                      onTouchStart={e => handleTouchStart(e, p, 'unassigned')}
                     />
                   ))
                 ) : (
@@ -511,7 +669,6 @@ const GroupStage: React.FC = () => {
             </div>
           </div>
 
-          {/* ПУСТОЕ СОСТОЯНИЕ */}
           {groups.length === 0 && unassigned.length === 0 && (
             <div className={tournamentStyles.contentWrapper}>
               <p className={tournamentStyles.error}>Группы пока не сформированы</p>
