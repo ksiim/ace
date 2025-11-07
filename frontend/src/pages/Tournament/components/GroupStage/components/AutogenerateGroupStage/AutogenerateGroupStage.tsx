@@ -210,7 +210,7 @@ const GroupStage: React.FC = () => {
 
       const unassignedParticipants = unassignedIds
         .map((id: number) => allParticipants.find(p => p.id === id))
-        .filter((p): p is Participant => p !== undefined);
+        .filter((p: Participant | undefined): p is Participant => p !== undefined);
 
       setGroups(mapped);
       setUnassigned(unassignedParticipants);
@@ -366,7 +366,7 @@ const GroupStage: React.FC = () => {
     const scrollStep = () => {
       const edge = 100;
       const speed = 15;
-      const currentY = window.scrollY;
+      // const currentY = window.scrollY;
 
       if (clientY < edge) {
         window.scrollBy(0, -speed);

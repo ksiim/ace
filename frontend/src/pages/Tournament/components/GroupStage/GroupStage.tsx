@@ -262,7 +262,7 @@ const GroupStage: React.FC = () => {
         if (player.allMatchesPlayed) {
           positionMap.set(player.id, currentPos++);
         } else {
-          positionMap.set(player.id, null);
+          positionMap.set(player.id, 0);
         }
       }
 
