@@ -352,7 +352,7 @@ const GroupStage: React.FC = () => {
   };
 
   // ──────────────────────────────────────────────────────────────────────────
-  //  TOUCH DRAG & DROP — С БЛОКИРОВКОЙ СКРОЛЛА
+  //  TOUCH DRAG & DROP — ИСПРАВЛЕННЫЙ АВТОСКРОЛЛ
   // ──────────────────────────────────────────────────────────────────────────
   const updateClonePosition = (x: number, y: number) => {
     if (!draggingClone) return;
@@ -361,30 +361,38 @@ const GroupStage: React.FC = () => {
   };
 
   // ──────────────────────────────────────────────────────────────────────────
-  //  TOUCH АВТОСКРОЛЛ
+  //  ИСПРАВЛЕННЫЙ TOUCH АВТОСКРОЛЛ (ТОЛЬКО СКРОЛЛ СТРАНИЦЫ)
   // ──────────────────────────────────────────────────────────────────────────
   const currentTouchY = useRef<number>(0);
 
   const startAutoScroll = () => {
     if (autoScrollRef.current) return;
 
-    const edge = 100; // расстояние от края экрана, где начинается автоскролл
-    const maxSpeed = 20; // пикселей в кадр
+    const edgeThreshold = 100; // расстояние от края для начала скролла
+    const maxScrollSpeed = 25; // максимальная скорость скролла
 
     const scrollStep = () => {
+      if (!isTouchDragging) {
+        stopAutoScroll();
+        return;
+      }
+
       const clientY = currentTouchY.current;
       const distanceToTop = clientY;
       const distanceToBottom = window.innerHeight - clientY;
-      let speed = 0;
 
-      if (distanceToTop < edge) {
-        speed = -((edge - distanceToTop) / edge) * maxSpeed;
-      } else if (distanceToBottom < edge) {
-        speed = ((edge - distanceToBottom) / edge) * maxSpeed;
+      let scrollSpeed = 0;
+
+      // Рассчитываем скорость скролла
+      if (distanceToTop < edgeThreshold) {
+        scrollSpeed = -((edgeThreshold - distanceToTop) / edgeThreshold) * maxScrollSpeed;
+      } else if (distanceToBottom < edgeThreshold) {
+        scrollSpeed = ((edgeThreshold - distanceToBottom) / edgeThreshold) * maxScrollSpeed;
       }
 
-      if (Math.abs(speed) > 0.5) {
-        window.scrollBy(0, speed);
+      // Выполняем скролл если есть скорость
+      if (Math.abs(scrollSpeed) > 1) {
+        window.scrollBy(0, scrollSpeed);
       }
 
       autoScrollRef.current = requestAnimationFrame(scrollStep);
@@ -399,7 +407,6 @@ const GroupStage: React.FC = () => {
       autoScrollRef.current = null;
     }
   };
-
 
   const highlightDropZone = (x: number, y: number) => {
     document.querySelectorAll(`.${styles['drag-over']}`).forEach(el => el.classList.remove(styles['drag-over']));
@@ -452,6 +459,7 @@ const GroupStage: React.FC = () => {
       document.body.appendChild(clone);
       setDraggingClone(clone);
 
+      currentTouchY.current = touch.clientY;
       updateClonePosition(touch.clientX, touch.clientY);
       startAutoScroll();
     }, 180);
@@ -461,17 +469,16 @@ const GroupStage: React.FC = () => {
     if (!isTouchDragging || !draggingClone) return;
 
     const touch = e.touches[0];
-    currentTouchY.current = touch.clientY; // обновляем текущую позицию пальца
+    currentTouchY.current = touch.clientY;
 
     updateClonePosition(touch.clientX, touch.clientY);
     highlightDropZone(touch.clientX, touch.clientY);
 
-    // Перезапускаем автоскролл, если нужно
+    // Перезапускаем автоскролл, если он остановился
     if (!autoScrollRef.current) {
       startAutoScroll();
     }
   };
-
 
   const cleanupDrag = () => {
     setDraggedParticipant(null);
@@ -489,7 +496,6 @@ const GroupStage: React.FC = () => {
   };
 
   const handleTouchEnd = (e: TouchEvent) => {
-    stopAutoScroll();
     if (!isTouchDragging || !draggedParticipant) {
       if (longPressTimeoutRef.current) {
         clearTimeout(longPressTimeoutRef.current);
@@ -498,7 +504,6 @@ const GroupStage: React.FC = () => {
       return;
     }
 
-    stopAutoScroll();
     const touch = e.changedTouches[0];
     let targetGroupNumber: number | null = null;
 
@@ -575,7 +580,7 @@ const GroupStage: React.FC = () => {
       document.removeEventListener('touchcancel', onTouchEnd);
       stopAutoScroll();
     };
-  }, [isTouchDragging, draggingClone]);
+  }, [isTouchDragging, draggingClone, draggedParticipant]);
 
   // ──────────────────────────────────────────────────────────────────────────
   //  LIFECYCLE
