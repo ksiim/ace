@@ -360,13 +360,19 @@ const GroupStage: React.FC = () => {
     draggingClone.style.top = `${y - draggingClone.offsetHeight / 2}px`;
   };
 
-  const startAutoScroll = (clientY: number) => {
+  // ──────────────────────────────────────────────────────────────────────────
+  //  TOUCH АВТОСКРОЛЛ
+  // ──────────────────────────────────────────────────────────────────────────
+  const currentTouchY = useRef<number>(0);
+
+  const startAutoScroll = () => {
     if (autoScrollRef.current) return;
 
-    const edge = 120;
-    const maxSpeed = 25;
+    const edge = 100; // расстояние от края экрана, где начинается автоскролл
+    const maxSpeed = 20; // пикселей в кадр
 
     const scrollStep = () => {
+      const clientY = currentTouchY.current;
       const distanceToTop = clientY;
       const distanceToBottom = window.innerHeight - clientY;
       let speed = 0;
@@ -379,10 +385,9 @@ const GroupStage: React.FC = () => {
 
       if (Math.abs(speed) > 0.5) {
         window.scrollBy(0, speed);
-        autoScrollRef.current = requestAnimationFrame(scrollStep);
-      } else {
-        autoScrollRef.current = null;
       }
+
+      autoScrollRef.current = requestAnimationFrame(scrollStep);
     };
 
     autoScrollRef.current = requestAnimationFrame(scrollStep);
@@ -394,6 +399,7 @@ const GroupStage: React.FC = () => {
       autoScrollRef.current = null;
     }
   };
+
 
   const highlightDropZone = (x: number, y: number) => {
     document.querySelectorAll(`.${styles['drag-over']}`).forEach(el => el.classList.remove(styles['drag-over']));
@@ -447,7 +453,7 @@ const GroupStage: React.FC = () => {
       setDraggingClone(clone);
 
       updateClonePosition(touch.clientX, touch.clientY);
-      startAutoScroll(touch.clientY);
+      startAutoScroll();
     }, 180);
   };
 
@@ -455,11 +461,17 @@ const GroupStage: React.FC = () => {
     if (!isTouchDragging || !draggingClone) return;
 
     const touch = e.touches[0];
+    currentTouchY.current = touch.clientY; // обновляем текущую позицию пальца
+
     updateClonePosition(touch.clientX, touch.clientY);
     highlightDropZone(touch.clientX, touch.clientY);
-    stopAutoScroll();
-    startAutoScroll(touch.clientY);
+
+    // Перезапускаем автоскролл, если нужно
+    if (!autoScrollRef.current) {
+      startAutoScroll();
+    }
   };
+
 
   const cleanupDrag = () => {
     setDraggedParticipant(null);
@@ -477,6 +489,7 @@ const GroupStage: React.FC = () => {
   };
 
   const handleTouchEnd = (e: TouchEvent) => {
+    stopAutoScroll();
     if (!isTouchDragging || !draggedParticipant) {
       if (longPressTimeoutRef.current) {
         clearTimeout(longPressTimeoutRef.current);
