@@ -104,6 +104,7 @@ const GroupStage: React.FC = () => {
 
   const autoScrollRef = useRef<number | null>(null);
   const longPressTimeoutRef = useRef<number | null>(null);
+  const touchStartPos = useRef<{ x: number; y: number } | null>(null);
 
   // ──────────────────────────────────────────────────────────────────────────
   //  ЗАГРУЗКА ДАННЫХ
@@ -337,14 +338,14 @@ const GroupStage: React.FC = () => {
     e.dataTransfer.dropEffect = 'move';
   };
 
-  const handleDrop = (e: React.DragEvent, targetGroupNumber: number | null) => {
+  const handleDrop = (e: React.DragEvent | null, targetGroupNumber: number | null) => {
     if (!draggedParticipant) return;
-    e.preventDefault();
+    if (e) e.preventDefault();
 
     const { participant, source, groupNumber } = draggedParticipant;
     const pid = participant.id;
 
-    // Удаление из источника с сортировкой
+    // Удаление из источника
     if (source === 'unassigned') {
       setUnassigned(prev => sortByScoreDesc(prev.filter(p => p.id !== pid)));
     }
@@ -366,7 +367,7 @@ const GroupStage: React.FC = () => {
       );
     }
 
-    // Добавление в цель с сортировкой
+    // Добавление в цель
     if (targetGroupNumber !== null) {
       setGroups(prev =>
         prev.map(g =>
@@ -389,7 +390,15 @@ const GroupStage: React.FC = () => {
       ));
     }
 
+    // Сброс состояния
     setDraggedParticipant(null);
+    setIsTouchDragging(false);
+    if (draggingClone?.parentNode) {
+      draggingClone.parentNode.removeChild(draggingClone);
+    }
+    setDraggingClone(null);
+    document.querySelectorAll(`.${styles['drag-over']}`).forEach(el => el.classList.remove(styles['drag-over']));
+    stopAutoScroll();
   };
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -475,6 +484,8 @@ const GroupStage: React.FC = () => {
     const touch = e.touches[0];
     const li = e.currentTarget as HTMLElement;
 
+    touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+
     if (longPressTimeoutRef.current) {
       clearTimeout(longPressTimeoutRef.current);
     }
@@ -502,16 +513,56 @@ const GroupStage: React.FC = () => {
 
   const handleTouchMove = (e: TouchEvent) => {
     if (!isTouchDragging || !draggingClone) return;
+    e.preventDefault();
 
     const touch = e.touches[0];
     currentTouchY.current = touch.clientY;
 
     updateClonePosition(touch.clientX, touch.clientY);
     highlightDropZone(touch.clientX, touch.clientY);
+  };
 
-    if (!autoScrollRef.current) {
-      startAutoScroll();
+  const handleTouchEnd = (e: TouchEvent) => {
+    if (!isTouchDragging || !draggedParticipant) {
+      setIsTouchDragging(false);
+      return;
     }
+
+    const touch = e.changedTouches[0];
+    let targetGroupNumber: number | null = null;
+
+    // Определяем зону сброса
+    const groupCards = document.querySelectorAll(`.${styles.groupCard}`);
+    const unassigned = document.querySelector(`.${styles.unassignedSection}`);
+
+    for (const card of groupCards) {
+      const r = card.getBoundingClientRect();
+      if (
+        touch.clientX >= r.left &&
+        touch.clientX <= r.right &&
+        touch.clientY >= r.top &&
+        touch.clientY <= r.bottom
+      ) {
+        const groupNum = card.getAttribute('data-group-number');
+        targetGroupNumber = groupNum ? Number(groupNum) : null;
+        break;
+      }
+    }
+
+    if (!targetGroupNumber && unassigned) {
+      const r = unassigned.getBoundingClientRect();
+      if (
+        touch.clientX >= r.left &&
+        touch.clientX <= r.right &&
+        touch.clientY >= r.top &&
+        touch.clientY <= r.bottom
+      ) {
+        targetGroupNumber = null;
+      }
+    }
+
+    // Выполняем сброс
+    handleDrop(null, targetGroupNumber);
   };
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -520,40 +571,19 @@ const GroupStage: React.FC = () => {
   useEffect(() => {
     if (!isTouchDragging) return;
 
-    const onTouchMove = (e: TouchEvent) => {
-      const touch = e.touches[0];
-      const y = touch.clientY;
-      const threshold = 100;
-      const distanceToTop = y;
-      const distanceToBottom = window.innerHeight - y;
-
-      const nearEdge = distanceToTop < threshold || distanceToBottom < threshold;
-
-      if (!nearEdge) {
-        e.preventDefault();
-      }
-
-      handleTouchMove(e);
-    };
-
-    const onTouchEnd = () => {
-      stopAutoScroll();
-      currentTouchY.current = 0;
-      setIsTouchDragging(false);
-      setDraggingClone(null);
-      if (longPressTimeoutRef.current) {
-        clearTimeout(longPressTimeoutRef.current);
-      }
-    };
+    const onTouchMove = (e: TouchEvent) => handleTouchMove(e);
+    const onTouchEnd = (e: TouchEvent) => handleTouchEnd(e);
 
     window.addEventListener("touchmove", onTouchMove, { passive: false });
     window.addEventListener("touchend", onTouchEnd);
+    window.addEventListener("touchcancel", onTouchEnd);
 
     return () => {
       window.removeEventListener("touchmove", onTouchMove);
       window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("touchcancel", onTouchEnd);
     };
-  }, [isTouchDragging]);
+  }, [isTouchDragging, draggedParticipant]);
 
   // ──────────────────────────────────────────────────────────────────────────
   //  LIFECYCLE
