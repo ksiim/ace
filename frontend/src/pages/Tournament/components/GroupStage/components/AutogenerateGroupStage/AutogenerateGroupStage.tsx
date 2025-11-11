@@ -562,25 +562,35 @@ const GroupStage: React.FC = () => {
     if (!isTouchDragging) return;
 
     const onTouchMove = (e: TouchEvent) => {
-      e.preventDefault(); // БЛОКИРУЕМ СКРОЛЛ
+      const touch = e.touches[0];
+      const y = touch.clientY;
+      const threshold = 100;
+      const distanceToTop = y;
+      const distanceToBottom = window.innerHeight - y;
+
+      // Разрешаем нативное поведение, если палец у края экрана
+      const nearEdge = distanceToTop < threshold || distanceToBottom < threshold;
+
+      if (!nearEdge) {
+        e.preventDefault(); // блокируем обычный скролл только в центре
+      }
+
       handleTouchMove(e);
     };
 
-    const onTouchEnd = (e: TouchEvent) => {
-      handleTouchEnd(e);
+    const onTouchEnd = () => {
+      stopAutoScroll();
+      currentTouchY.current = 0;
     };
 
-    document.addEventListener('touchmove', onTouchMove, { passive: false });
-    document.addEventListener('touchend', onTouchEnd);
-    document.addEventListener('touchcancel', onTouchEnd);
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("touchend", onTouchEnd);
 
     return () => {
-      document.removeEventListener('touchmove', onTouchMove);
-      document.removeEventListener('touchend', onTouchEnd);
-      document.removeEventListener('touchcancel', onTouchEnd);
-      stopAutoScroll();
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
     };
-  }, [isTouchDragging, draggingClone, draggedParticipant]);
+  }, [isTouchDragging, handleTouchMove]);
 
   // ──────────────────────────────────────────────────────────────────────────
   //  LIFECYCLE
