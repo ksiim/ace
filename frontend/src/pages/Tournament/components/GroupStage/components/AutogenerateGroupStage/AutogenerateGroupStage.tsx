@@ -46,6 +46,13 @@ interface GroupStageCreate {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
+//  ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ СОРТИРОВКИ
+// ──────────────────────────────────────────────────────────────────────────────
+const sortByScoreDesc = (participants: Participant[]): Participant[] => {
+  return [...participants].sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+};
+
+// ──────────────────────────────────────────────────────────────────────────────
 //  КОМПОНЕНТ ПАРЫ
 // ──────────────────────────────────────────────────────────────────────────────
 const ParticipantPair: React.FC<{
@@ -213,7 +220,7 @@ const GroupStage: React.FC = () => {
         .filter((p: Participant | undefined): p is Participant => p !== undefined);
 
       setGroups(mapped);
-      setUnassigned(unassignedParticipants);
+      setUnassigned(sortByScoreDesc(unassignedParticipants));
     } catch (e) {
       console.error('Ошибка preview', e);
       setGroups([]);
@@ -228,9 +235,19 @@ const GroupStage: React.FC = () => {
     const existing = await fetchExistingGroups();
 
     if (existing.length > 0) {
-      setGroups(existing);
+      const sortedGroups = existing.map(g => ({
+        ...g,
+        participants_ids: sortByScoreDesc(
+          g.participants_ids
+            .map(id => allParticipants.find(p => p.id === id))
+            .filter((p): p is Participant => !!p)
+        ).map(p => p.id),
+      }));
+      setGroups(sortedGroups);
+
       const assigned = new Set(existing.flatMap(g => g.participants_ids));
-      setUnassigned(allParticipants.filter(p => !assigned.has(p.id)));
+      const unsortedUnassigned = allParticipants.filter(p => !assigned.has(p.id));
+      setUnassigned(sortByScoreDesc(unsortedUnassigned));
     } else {
       await fetchGroupsPreview(allParticipants);
     }
@@ -262,10 +279,10 @@ const GroupStage: React.FC = () => {
       .map(id => getParticipantById(id))
       .filter((p): p is Participant => p !== undefined);
 
-    setUnassigned(prev => [
+    setUnassigned(prev => sortByScoreDesc([
       ...prev.filter(p => !moved.some(m => m.id === p.id)),
       ...moved,
-    ]);
+    ]));
     setGroups(prev => prev.filter(g => g.number !== groupNumber));
   };
 
@@ -327,32 +344,56 @@ const GroupStage: React.FC = () => {
     const { participant, source, groupNumber } = draggedParticipant;
     const pid = participant.id;
 
-    if (source === 'unassigned') setUnassigned(prev => prev.filter(p => p.id !== pid));
+    // Удаление из источника с сортировкой
+    if (source === 'unassigned') {
+      setUnassigned(prev => sortByScoreDesc(prev.filter(p => p.id !== pid)));
+    }
     if (source === 'group' && groupNumber !== undefined) {
       setGroups(prev =>
         prev.map(g =>
-          g.number === groupNumber ? { ...g, participants_ids: g.participants_ids.filter(id => id !== pid) } : g
+          g.number === groupNumber
+            ? {
+                ...g,
+                participants_ids: sortByScoreDesc(
+                  g.participants_ids
+                    .filter(id => id !== pid)
+                    .map(id => getParticipantById(id))
+                    .filter((p): p is Participant => !!p)
+                ).map(p => p.id),
+              }
+            : g
         )
       );
     }
 
+    // Добавление в цель с сортировкой
     if (targetGroupNumber !== null) {
       setGroups(prev =>
         prev.map(g =>
           g.number === targetGroupNumber
-            ? { ...g, participants_ids: [...g.participants_ids.filter(id => id !== pid), pid] }
+            ? {
+                ...g,
+                participants_ids: sortByScoreDesc([
+                  ...g.participants_ids
+                    .filter(id => id !== pid)
+                    .map(id => getParticipantById(id)),
+                  participant,
+                ].filter((p): p is Participant => !!p)).map(p => p.id),
+              }
             : g
         )
       );
     } else {
-      setUnassigned(prev => (prev.some(p => p.id === pid) ? prev : [...prev, participant]));
+      setUnassigned(prev => sortByScoreDesc(
+        prev.some(p => p.id === pid) ? prev : [...prev, participant]
+      ));
     }
 
     setDraggedParticipant(null);
   };
 
   // ──────────────────────────────────────────────────────────────────────────
-  //  TOUCH DRAG & DROP — ИСПРАВЛЕННЫЙ АВТОСКРОЛЛ
+  //  TOUCH DRAG & DROP
   // ──────────────────────────────────────────────────────────────────────────
   const updateClonePosition = (x: number, y: number) => {
     if (!draggingClone) return;
@@ -360,16 +401,13 @@ const GroupStage: React.FC = () => {
     draggingClone.style.top = `${y - draggingClone.offsetHeight / 2}px`;
   };
 
-  // ──────────────────────────────────────────────────────────────────────────
-  //  ИСПРАВЛЕННЫЙ TOUCH АВТОСКРОЛЛ (ТОЛЬКО СКРОЛЛ СТРАНИЦЫ)
-  // ──────────────────────────────────────────────────────────────────────────
   const currentTouchY = useRef<number>(0);
 
   const startAutoScroll = () => {
     if (autoScrollRef.current) return;
 
-    const edgeThreshold = 100; // расстояние от края для начала скролла
-    const maxScrollSpeed = 25; // максимальная скорость скролла
+    const edgeThreshold = 100;
+    const maxScrollSpeed = 25;
 
     const scrollStep = () => {
       if (!isTouchDragging) {
@@ -383,14 +421,12 @@ const GroupStage: React.FC = () => {
 
       let scrollSpeed = 0;
 
-      // Рассчитываем скорость скролла
       if (distanceToTop < edgeThreshold) {
         scrollSpeed = -((edgeThreshold - distanceToTop) / edgeThreshold) * maxScrollSpeed;
       } else if (distanceToBottom < edgeThreshold) {
         scrollSpeed = ((edgeThreshold - distanceToBottom) / edgeThreshold) * maxScrollSpeed;
       }
 
-      // Выполняем скролл если есть скорость
       if (Math.abs(scrollSpeed) > 1) {
         window.scrollBy(0, scrollSpeed);
       }
@@ -439,7 +475,6 @@ const GroupStage: React.FC = () => {
     const touch = e.touches[0];
     const li = e.currentTarget as HTMLElement;
 
-    // Отменяем предыдущий таймаут
     if (longPressTimeoutRef.current) {
       clearTimeout(longPressTimeoutRef.current);
     }
@@ -474,89 +509,13 @@ const GroupStage: React.FC = () => {
     updateClonePosition(touch.clientX, touch.clientY);
     highlightDropZone(touch.clientX, touch.clientY);
 
-    // Перезапускаем автоскролл, если он остановился
     if (!autoScrollRef.current) {
       startAutoScroll();
     }
   };
 
-  const cleanupDrag = () => {
-    setDraggedParticipant(null);
-    setIsTouchDragging(false);
-    stopAutoScroll();
-    if (longPressTimeoutRef.current) {
-      clearTimeout(longPressTimeoutRef.current);
-      longPressTimeoutRef.current = null;
-    }
-    if (draggingClone?.parentNode) {
-      document.body.removeChild(draggingClone);
-    }
-    setDraggingClone(null);
-    document.querySelectorAll(`.${styles['drag-over']}`).forEach(el => el.classList.remove(styles['drag-over']));
-  };
-
-  const handleTouchEnd = (e: TouchEvent) => {
-    if (!isTouchDragging || !draggedParticipant) {
-      if (longPressTimeoutRef.current) {
-        clearTimeout(longPressTimeoutRef.current);
-        longPressTimeoutRef.current = null;
-      }
-      return;
-    }
-
-    const touch = e.changedTouches[0];
-    let targetGroupNumber: number | null = null;
-
-    const groupCards = document.querySelectorAll(`.${styles.groupCard}`);
-    for (const card of groupCards) {
-      const r = card.getBoundingClientRect();
-      if (
-        touch.clientX >= r.left &&
-        touch.clientX <= r.right &&
-        touch.clientY >= r.top &&
-        touch.clientY <= r.bottom
-      ) {
-        const num = (card as HTMLElement).dataset.groupNumber;
-        if (num) {
-          targetGroupNumber = Number(num);
-          break;
-        }
-      }
-    }
-
-    const { participant, source, groupNumber } = draggedParticipant;
-    const pid = participant.id;
-
-    if (source === 'unassigned') {
-      setUnassigned(prev => prev.filter(p => p.id !== pid));
-    }
-    if (source === 'group' && groupNumber !== undefined) {
-      setGroups(prev =>
-        prev.map(g =>
-          g.number === groupNumber
-            ? { ...g, participants_ids: g.participants_ids.filter(id => id !== pid) }
-            : g
-        )
-      );
-    }
-
-    if (targetGroupNumber !== null) {
-      setGroups(prev =>
-        prev.map(g =>
-          g.number === targetGroupNumber
-            ? { ...g, participants_ids: [...g.participants_ids.filter(id => id !== pid), pid] }
-            : g
-        )
-      );
-    } else {
-      setUnassigned(prev => (prev.some(p => p.id === pid) ? prev : [...prev, participant]));
-    }
-
-    cleanupDrag();
-  };
-
   // ──────────────────────────────────────────────────────────────────────────
-  //  ПОДПИСКА НА TOUCH — С БЛОКИРОВКОЙ СКРОЛЛА
+  //  ПОДПИСКА НА TOUCH
   // ──────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isTouchDragging) return;
@@ -568,11 +527,10 @@ const GroupStage: React.FC = () => {
       const distanceToTop = y;
       const distanceToBottom = window.innerHeight - y;
 
-      // Разрешаем нативное поведение, если палец у края экрана
       const nearEdge = distanceToTop < threshold || distanceToBottom < threshold;
 
       if (!nearEdge) {
-        e.preventDefault(); // блокируем обычный скролл только в центре
+        e.preventDefault();
       }
 
       handleTouchMove(e);
@@ -581,6 +539,11 @@ const GroupStage: React.FC = () => {
     const onTouchEnd = () => {
       stopAutoScroll();
       currentTouchY.current = 0;
+      setIsTouchDragging(false);
+      setDraggingClone(null);
+      if (longPressTimeoutRef.current) {
+        clearTimeout(longPressTimeoutRef.current);
+      }
     };
 
     window.addEventListener("touchmove", onTouchMove, { passive: false });
@@ -590,7 +553,7 @@ const GroupStage: React.FC = () => {
       window.removeEventListener("touchmove", onTouchMove);
       window.removeEventListener("touchend", onTouchEnd);
     };
-  }, [isTouchDragging, handleTouchMove]);
+  }, [isTouchDragging]);
 
   // ──────────────────────────────────────────────────────────────────────────
   //  LIFECYCLE
