@@ -46,7 +46,7 @@ interface GroupStageCreate {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-//  КОМПОНЕНТ ПАРЫ — БЕЗ touchAction: none
+//  КОМПОНЕНТ ПАРЫ
 // ──────────────────────────────────────────────────────────────────────────────
 const ParticipantPair: React.FC<{
   participant: Participant;
@@ -59,7 +59,6 @@ const ParticipantPair: React.FC<{
     draggable={isDraggable}
     onDragStart={onDragStart}
     onTouchStart={onTouchStart}
-    // УДАЛЕНО: style={{ touchAction: 'none' }}
   >
     <div className={styles.participantNames}>
       <span className={styles.participantName}>{participant.surname}</span>
@@ -97,9 +96,10 @@ const GroupStage: React.FC = () => {
   const [isTouchDragging, setIsTouchDragging] = useState(false);
 
   const autoScrollRef = useRef<number | null>(null);
+  const longPressTimeoutRef = useRef<number | null>(null);
 
   // ──────────────────────────────────────────────────────────────────────────
-  //  ЗАГРУЗКА ДАННЫХ (без изменений)
+  //  ЗАГРУЗКА ДАННЫХ
   // ──────────────────────────────────────────────────────────────────────────
   const fetchParticipantDetails = async (userId: number): Promise<Participant | null> => {
     try {
@@ -352,32 +352,37 @@ const GroupStage: React.FC = () => {
   };
 
   // ──────────────────────────────────────────────────────────────────────────
-  //  TOUCH DRAG & DROP — БЕЗ БЛОКИРОВКИ СКРОЛЛА
+  //  TOUCH DRAG & DROP — С БЛОКИРОВКОЙ СКРОЛЛА
   // ──────────────────────────────────────────────────────────────────────────
   const updateClonePosition = (x: number, y: number) => {
     if (!draggingClone) return;
-    draggingClone.style.left = `${x}px`;
-    draggingClone.style.top = `${y}px`;
+    draggingClone.style.left = `${x - draggingClone.offsetWidth / 2}px`;
+    draggingClone.style.top = `${y - draggingClone.offsetHeight / 2}px`;
   };
 
   const startAutoScroll = (clientY: number) => {
     if (autoScrollRef.current) return;
 
-    const scrollStep = () => {
-      const edge = 100;
-      const speed = 15;
-      // const currentY = window.scrollY;
+    const edge = 120;
+    const maxSpeed = 25;
 
-      if (clientY < edge) {
-        window.scrollBy(0, -speed);
-      } else if (clientY > window.innerHeight - edge) {
-        window.scrollBy(0, speed);
-      } else {
-        autoScrollRef.current = null;
-        return;
+    const scrollStep = () => {
+      const distanceToTop = clientY;
+      const distanceToBottom = window.innerHeight - clientY;
+      let speed = 0;
+
+      if (distanceToTop < edge) {
+        speed = -((edge - distanceToTop) / edge) * maxSpeed;
+      } else if (distanceToBottom < edge) {
+        speed = ((edge - distanceToBottom) / edge) * maxSpeed;
       }
 
-      autoScrollRef.current = requestAnimationFrame(scrollStep);
+      if (Math.abs(speed) > 0.5) {
+        window.scrollBy(0, speed);
+        autoScrollRef.current = requestAnimationFrame(scrollStep);
+      } else {
+        autoScrollRef.current = null;
+      }
     };
 
     autoScrollRef.current = requestAnimationFrame(scrollStep);
@@ -421,31 +426,37 @@ const GroupStage: React.FC = () => {
     const touch = e.touches[0];
     const li = e.currentTarget as HTMLElement;
 
-    const timeout = setTimeout(() => {
+    // Отменяем предыдущий таймаут
+    if (longPressTimeoutRef.current) {
+      clearTimeout(longPressTimeoutRef.current);
+    }
+
+    longPressTimeoutRef.current = window.setTimeout(() => {
       setDraggedParticipant({ participant, source, groupNumber });
       setIsTouchDragging(true);
 
       const clone = li.cloneNode(true) as HTMLElement;
-      clone.className = li.className + ' ' + styles['dragging-clone'];
+      clone.className = `${li.className} ${styles['dragging-clone']}`;
       clone.style.width = `${li.offsetWidth}px`;
-      clone.style.touchAction = 'none'; // ТОЛЬКО НА КЛОНЕ
+      clone.style.position = 'fixed';
+      clone.style.pointerEvents = 'none';
+      clone.style.zIndex = '10000';
+      clone.style.opacity = '0.9';
+      clone.style.transform = 'scale(1.05)';
       document.body.appendChild(clone);
       setDraggingClone(clone);
 
       updateClonePosition(touch.clientX, touch.clientY);
       startAutoScroll(touch.clientY);
-    }, 150);
-
-    const cancel = () => clearTimeout(timeout);
-    document.addEventListener('touchend', cancel, { once: true });
+    }, 180);
   };
 
   const handleTouchMove = (e: TouchEvent) => {
     if (!isTouchDragging || !draggingClone) return;
+
     const touch = e.touches[0];
     updateClonePosition(touch.clientX, touch.clientY);
     highlightDropZone(touch.clientX, touch.clientY);
-
     stopAutoScroll();
     startAutoScroll(touch.clientY);
   };
@@ -454,13 +465,25 @@ const GroupStage: React.FC = () => {
     setDraggedParticipant(null);
     setIsTouchDragging(false);
     stopAutoScroll();
-    if (draggingClone?.parentNode) draggingClone.parentNode.removeChild(draggingClone);
+    if (longPressTimeoutRef.current) {
+      clearTimeout(longPressTimeoutRef.current);
+      longPressTimeoutRef.current = null;
+    }
+    if (draggingClone?.parentNode) {
+      document.body.removeChild(draggingClone);
+    }
     setDraggingClone(null);
     document.querySelectorAll(`.${styles['drag-over']}`).forEach(el => el.classList.remove(styles['drag-over']));
   };
 
   const handleTouchEnd = (e: TouchEvent) => {
-    if (!isTouchDragging || !draggedParticipant) return;
+    if (!isTouchDragging || !draggedParticipant) {
+      if (longPressTimeoutRef.current) {
+        clearTimeout(longPressTimeoutRef.current);
+        longPressTimeoutRef.current = null;
+      }
+      return;
+    }
 
     stopAutoScroll();
     const touch = e.changedTouches[0];
@@ -469,7 +492,12 @@ const GroupStage: React.FC = () => {
     const groupCards = document.querySelectorAll(`.${styles.groupCard}`);
     for (const card of groupCards) {
       const r = card.getBoundingClientRect();
-      if (touch.clientX >= r.left && touch.clientX <= r.right && touch.clientY >= r.top && touch.clientY <= r.bottom) {
+      if (
+        touch.clientX >= r.left &&
+        touch.clientX <= r.right &&
+        touch.clientY >= r.top &&
+        touch.clientY <= r.bottom
+      ) {
         const num = (card as HTMLElement).dataset.groupNumber;
         if (num) {
           targetGroupNumber = Number(num);
@@ -481,11 +509,15 @@ const GroupStage: React.FC = () => {
     const { participant, source, groupNumber } = draggedParticipant;
     const pid = participant.id;
 
-    if (source === 'unassigned') setUnassigned(prev => prev.filter(p => p.id !== pid));
+    if (source === 'unassigned') {
+      setUnassigned(prev => prev.filter(p => p.id !== pid));
+    }
     if (source === 'group' && groupNumber !== undefined) {
       setGroups(prev =>
         prev.map(g =>
-          g.number === groupNumber ? { ...g, participants_ids: g.participants_ids.filter(id => id !== pid) } : g
+          g.number === groupNumber
+            ? { ...g, participants_ids: g.participants_ids.filter(id => id !== pid) }
+            : g
         )
       );
     }
@@ -506,20 +538,28 @@ const GroupStage: React.FC = () => {
   };
 
   // ──────────────────────────────────────────────────────────────────────────
-  //  ПОДПИСКА НА TOUCH — БЕЗ preventDefault, БЕЗ touchAction
+  //  ПОДПИСКА НА TOUCH — С БЛОКИРОВКОЙ СКРОЛЛА
   // ──────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isTouchDragging) return;
 
-    const onTouchMove = (e: TouchEvent) => handleTouchMove(e);
-    const onTouchEnd = (e: TouchEvent) => handleTouchEnd(e);
+    const onTouchMove = (e: TouchEvent) => {
+      e.preventDefault(); // БЛОКИРУЕМ СКРОЛЛ
+      handleTouchMove(e);
+    };
 
-    document.addEventListener('touchmove', onTouchMove, { passive: true });
+    const onTouchEnd = (e: TouchEvent) => {
+      handleTouchEnd(e);
+    };
+
+    document.addEventListener('touchmove', onTouchMove, { passive: false });
     document.addEventListener('touchend', onTouchEnd);
+    document.addEventListener('touchcancel', onTouchEnd);
 
     return () => {
       document.removeEventListener('touchmove', onTouchMove);
       document.removeEventListener('touchend', onTouchEnd);
+      document.removeEventListener('touchcancel', onTouchEnd);
       stopAutoScroll();
     };
   }, [isTouchDragging, draggingClone]);
