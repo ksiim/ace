@@ -13,7 +13,9 @@
   transition: transform 0.2s ease;
   font-family: 'Mulish', sans-serif;
   flex-shrink: 0; /* Запрещаем сжатие карточки */
-
+  position: relative;
+  overflow: hidden; /* для эффекта блеска */
+  
   @media (max-width: 768px) {
     padding: 16px;
     width: 250px; /* Уменьшаем ширину для мобильных устройств */
@@ -259,7 +261,7 @@
     width: 100%;
     overflow: hidden;
     white-space: nowrap;
-    position: relative;
+    // position: relative;
 }
 
 .marquee span {
