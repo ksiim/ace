@@ -44,11 +44,9 @@
 .period {
   font-size: 24px;
   font-weight: 600;
-  margin-bottom: 24px;
 
   @media (max-width: 768px) {
     font-size: 20px;
-    margin-bottom: 16px;
   }
 }
 
@@ -82,12 +80,12 @@
 .price {
   font-size: 28px;
   font-weight: 600;
-  margin-bottom: 24px;
+  // margin-bottom: 24px;
   color: #333;
 
   @media (max-width: 768px) {
     font-size: 24px;
-    margin-bottom: 16px;
+    // margin-bottom: 16px;
   }
 }
 
@@ -97,6 +95,7 @@
   border: none;
   border-radius: 32px;
   padding: 12px 32px;
+  margin-top: 12px;
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
@@ -144,4 +143,134 @@
   &:hover {
     background-color: rgba(128, 128, 128, 0.75);
   }
+}
+
+.priceBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.priceRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rawPrice {
+  font-size: 14px;
+  color: #999;
+}
+
+.discountBadge {
+  background: #f95e1b;
+  color: white;
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 13px;
+  border-radius: 16px;
+  width: fit-content;
+}
+
+.monthlyPrice {
+  font-size: 14px;
+  color: #555;
+}
+
+/* общий контейнер, поверх которого будет блик */
+.shimmer {
+  position: relative;
+  overflow: hidden; /* чтобы градиент не выходил за края */
+  --shimmer-duration: 6s; /* полный цикл (включая паузу) */
+  --shimmer-active-part: 12%; /* доля времени, когда блик виден */
+}
+
+/* псевдоэлемент — сам блик */
+.shimmer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 150%; /* достаточно широкий для диагонального движения */
+  height: 100%;
+  transform: skewX(-20deg); /* слегка наклонить блик — красиво */
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.9) 50%,
+    rgba(255,255,255,0) 100%
+  );
+  pointer-events: none;
+  /* анимация: движение только в начале цикла, потом пауза */
+  animation: shimmerMove var(--shimmer-duration) linear infinite;
+  will-change: transform, left;
+}
+
+/* keyframes: блик проходит от -150% до +150% в начальной части цикла,
+   потом остаётся вне видимости до следующего цикла */
+@keyframes shimmerMove {
+  0% {
+    left: -150%;
+    opacity: 0;
+  }
+  2% {
+    opacity: 1;
+  }
+  12% {
+    left: 150%;
+    opacity: 0.95;
+  }
+  13% {
+    opacity: 0;
+  }
+  100% {
+    left: 150%;
+    opacity: 0;
+  }
+}
+
+/* уважение к reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .shimmer::before {
+    animation: none;
+    display: none;
+  }
+}
+
+.isRecommended {
+  position: absolute;
+  top: 12px;
+  right: -82px; /* вынос ленты за границы */
+  background-color: #f95e1b;
+  color: #fff;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 16px;
+  padding: 6px 60px;
+  transform: rotate(45deg);
+  z-index: 10;
+
+  /* Сглаживание */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  pointer-events: none; /* чтобы клики не перехватывала */
+}
+
+.marquee {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+}
+
+.marquee span {
+    display: inline-block;
+    padding-left: 100%;
+    animation: marquee 6s linear infinite;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+@keyframes marquee {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-105%); }
 }

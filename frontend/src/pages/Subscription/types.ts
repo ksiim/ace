@@ -7,7 +7,11 @@ export interface SubscriptionPlan {
   period: string;
   features: PlanFeature[];
   price: number | null;
-  isPopular?: boolean;
+  discount: number;
+  monthlyPrice: number;
+  isFirst?: boolean;
+  rawPrice?: number;
+  isRecommended?: boolean;
 }
 
 export interface Transaction {
@@ -27,6 +31,11 @@ export interface PlanCardProps {
   period: string;
   features: PlanFeature[];
   price: number | null;
+  discount: number;
+  monthlyPrice: number;
+  isFirst?: boolean;
+  rawPrice?: number;
+  isRecommended?: boolean;
 }
 
 export interface SubscriptionBannerProps {
