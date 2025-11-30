@@ -28,7 +28,7 @@ const Footer: React.FC = () => {
           <a href="https://ace-deti.ru/uploads/ed19f5ac-6b6c-4fea-b3d8-ed5ad5deacb5.pdf" target="_blank" rel="noopener noreferrer">
             Пользовательское соглашение
           </a>
-          <a href="https://ace-deti.ru/uploads/122e6599-0fab-4d13-bf09-9e53c43f887a.pdf" target="_blank" rel="noopener noreferrer">
+          <a href="https://ace-deti.ru/uploads/6d3125bf-7085-4b7a-a510-248dead28dec.pdf" target="_blank" rel="noopener noreferrer">
             Положение о платформе Эйс
           </a>
         </div>
