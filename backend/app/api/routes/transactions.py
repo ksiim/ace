@@ -123,11 +123,14 @@ async def update_user_subscription(
     user = await session.get(User, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+    now = datetime.datetime.now()
     if user.end_of_subscription:
-        user.end_of_subscription += timedelta(days=30 * months)
+        if user.end_of_subscription < now:
+            user.end_of_subscription = now + timedelta(days=30 * months)
+        else:
+            user.end_of_subscription += timedelta(days=30 * months)
     else:
-        user.end_of_subscription = datetime.datetime.now() + timedelta(days=30 * months)
+        user.end_of_subscription = now + timedelta(days=30 * months)
     
     session.add(user)
     return user
