@@ -45,7 +45,7 @@ const Rating: React.FC = () => {
   const [regions, setRegions] = useState<Region[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [skip, setSkip] = useState<number>(0);
-  const [limit] = useState<number>(10);
+  const [limit] = useState<number>(20);
   
   const fetchTournamentCount = async (userId: number) => {
     const response = await apiRequest(
