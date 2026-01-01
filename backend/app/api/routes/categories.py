@@ -1,14 +1,12 @@
-from typing import Any, Optional
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import or_, update
-from sqlmodel import col, delete, func, select
+from fastapi import APIRouter, Depends, HTTPException
+from sqlmodel import func, select
 
 from backend.app.api.deps import (
     CurrentUser,
     SessionDep,
     get_current_admin,
-    get_current_user,
 )
 from common.db.models.base import Message
 from common.db.models.category import CategoriesPublic, Category, CategoryCreate, CategoryPublic, CategoryUpdate

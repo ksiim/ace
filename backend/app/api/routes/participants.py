@@ -1,18 +1,22 @@
-from typing import Any, Optional
+from typing import Any
 
-from common.db.models.participant import TournamentParticipant, TournamentParticipantCreate, TournamentParticipantPublic, TournamentParticipantUpdate, TournamentParticipantsPublic
+from common.db.models.category import Category
+from common.db.models.participant import (
+    TournamentParticipant,
+    TournamentParticipantCreate,
+    TournamentParticipantPublic,
+    TournamentParticipantUpdate,
+    TournamentParticipantsPublic
+)
 from common.db.models.tournament import Tournament
 from common.db.models.user import User
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import or_, update, select
-from sqlalchemy.orm import aliased
-from sqlmodel import col, delete, func
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
 
 from backend.app.crud import participant as participant_crud
 from backend.app.api.deps import (
     CurrentUser,
     SessionDep,
-    get_current_admin,
     get_current_subscriber,
     get_current_user,
 )
@@ -79,16 +83,16 @@ async def create_tournament_participant(
     """
     Create a new tournament participant.
     """
+    tournament = await session.get(Tournament, participant_in.tournament_id)
+    await validate_users_age_in_category(participant_in, session, tournament)
+    # participants_ids_statement = (
+    #     select(TournamentParticipant.user_id, TournamentParticipant.partner_id)
+    #     .select_from(TournamentParticipant)
+    #     .where(TournamentParticipant.tournament_id == participant_in.tournament_id)
+    # )
     
-    
-    participants_ids_statement = (
-        select(TournamentParticipant.user_id, TournamentParticipant.partner_id)
-        .select_from(TournamentParticipant)
-        .where(TournamentParticipant.tournament_id == participant_in.tournament_id)
-    )
-    
-    participants_ids_raw = (await session.execute(participants_ids_statement)).all()
-    participants_ids = [item for sublist in participants_ids_raw for item in sublist if item]
+    # participants_ids_raw = (await session.execute(participants_ids_statement)).all()
+    # participants_ids = [item for sublist in participants_ids_raw for item in sublist if item]
 
     # if current_user.id in participants_ids:
     #     raise HTTPException(
@@ -103,6 +107,18 @@ async def create_tournament_participant(
             raise HTTPException(status_code=404, detail="Partner not found")
     participant = await participant_crud.create_tournament_participant(session, participant_in)
     return participant
+
+async def validate_users_age_in_category(participant_in, session, tournament):
+    category = await session.get(Category, tournament.category_id)
+    user = await session.get(User, participant_in.user_id)
+    partner = await session.get(User, participant_in.partner_id) if participant_in.partner_id else None
+    is_user_age_in_category = category.from_age <= user.age <= category.to_age
+    is_partner_age_in_category = category.from_age <= partner.age <= category.to_age if partner else True
+    if not is_user_age_in_category or not is_partner_age_in_category:
+        raise HTTPException(
+            status_code=400,
+            detail="Users do not meet the age requirements for this category",
+        )
 
 
 @router.put(

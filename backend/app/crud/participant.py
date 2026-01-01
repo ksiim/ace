@@ -1,4 +1,3 @@
-from typing import List
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import func
@@ -8,7 +7,6 @@ from common.db.models.participant import (
     TournamentParticipantCreate,
     TournamentParticipantPublic
 )
-from common.db.models.user import User
 
 
 async def create_tournament_participant(session: AsyncSession, tournament_participant_in: TournamentParticipantCreate) -> TournamentParticipantPublic:
