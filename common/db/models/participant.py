@@ -25,7 +25,6 @@ class TournamentParticipant(TournamentParticipantBase, table=True):
         sa_relationship=sa_relationship(
             "User",
             foreign_keys="[TournamentParticipant.user_id]",
-            ondelete="CASCADE",
         )
     )
     partner: Optional["User"] = Relationship(
