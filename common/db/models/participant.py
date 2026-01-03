@@ -18,16 +18,18 @@ class TournamentParticipant(TournamentParticipantBase, table=True):
     __tablename__ = "tournament_participants"
     id: Optional[int] = Field(primary_key=True, default=None)
     tournament_id: int = Field(foreign_key="tournaments.id")
-    user_id: int = Field(foreign_key="users.id")
-    partner_id: Optional[int] = Field(default=None, foreign_key="users.id")
+    user_id: int = Field(foreign_key="users.id", ondelete="CASCADE")
+    partner_id: Optional[int] = Field(default=None, foreign_key="users.id", ondelete="CASCADE")
 
     user: "User" = Relationship(
         sa_relationship=sa_relationship(
-            "User", foreign_keys="[TournamentParticipant.user_id]")
+            "User",
+            foreign_keys="[TournamentParticipant.user_id]",
+            ondelete="CASCADE",
+        )
     )
     partner: Optional["User"] = Relationship(
-        sa_relationship=sa_relationship(
-            "User", foreign_keys="[TournamentParticipant.partner_id]"),
+        sa_relationship=sa_relationship("User", foreign_keys="[TournamentParticipant.partner_id]"),
     )
     tournament: "Tournament" = Relationship(back_populates="participants")
     group_links: List["GroupParticipant"] = Relationship(
@@ -36,7 +38,7 @@ class TournamentParticipant(TournamentParticipantBase, table=True):
             "GroupParticipant",
             back_populates="participant",
             cascade="all, delete, delete-orphan",
-        )
+        ),
     )
     matches_as_p1: List["GroupMatch"] = Relationship(
         back_populates="participant1",
@@ -45,7 +47,7 @@ class TournamentParticipant(TournamentParticipantBase, table=True):
             back_populates="participant1",
             foreign_keys="[GroupMatch.participant1_id]",
             cascade="all, delete, delete-orphan",
-        )
+        ),
     )
     matches_as_p2: List["GroupMatch"] = Relationship(
         back_populates="participant2",
@@ -54,7 +56,7 @@ class TournamentParticipant(TournamentParticipantBase, table=True):
             back_populates="participant2",
             foreign_keys="[GroupMatch.participant2_id]",
             cascade="all, delete, delete-orphan",
-        )
+        ),
     )
 
 

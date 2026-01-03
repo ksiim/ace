@@ -26,4 +26,5 @@ dependencies = [
     "setuptools>=76.0.0",
     "redis>=5.2.1",
     "cryptography>=44.0.2",
+    "bracketool>=0.1",
 ]

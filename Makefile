@@ -8,7 +8,7 @@ dev-up: ## Запустить сервер в режиме разработки 
 .PHONY: migration
 migration:
 	@if [ -z "$(MSG)" ]; then echo "ERROR: MSG is empty. Usage: make migration \"Your migrate message\" or make migration \"Your message\""; exit 1; fi
-	$(COMPOSE) run --rm --build migrations alembic revision --autogenerate -m "$(MSG)"
+	$(COMPOSE) run --rm --build alembic alembic revision --autogenerate -m "$(MSG)"
 
 %:
 	@:

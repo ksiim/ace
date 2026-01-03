@@ -5,7 +5,7 @@ from backend.app.api.routes import (
     sex, categories, regions,
     trainers, news, participants,
     transactions, uploads, healthcheck,
-    groups
+    groups, playoff,
 )
 
 api_router = APIRouter()
@@ -47,4 +47,7 @@ api_router.include_router(
 )
 api_router.include_router(
     groups.router, tags=["groups"], prefix="/groups"
+)
+api_router.include_router(
+    playoff.router, tags=["playoffs"], prefix="/playoffs"
 )
