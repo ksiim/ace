@@ -4,6 +4,7 @@ import { apiRequest } from '../../../../utils/apiRequest.ts';
 import Header from '../../../../components/Header/Header.tsx';
 import styles from './GroupStage.module.scss';
 import tournamentStyles from '../../TournamentPage.module.scss';
+import PlayoffStage from '../PlayoffStage/PlayoffStage';
 
 // === API СТРУКТУРЫ ===
 interface Participant {
@@ -83,6 +84,59 @@ const GroupStage: React.FC = () => {
   const [isOrganizer, setIsOrganizer] = useState(false);
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // === ОЛИМПИЙСКАЯ СЕТКА ===
+  const [showPlayoffModal, setShowPlayoffModal] = useState(false);
+  const [mainCount, setMainCount] = useState(2);
+  const [additionalCount, setAdditionalCount] = useState(0);
+  const [playoffLoading, setPlayoffLoading] = useState(false);
+  const [playoffError, setPlayoffError] = useState<string | null>(null);
+
+  const handleOpenPlayoffModal = () => {
+    setMainCount(2);
+    setAdditionalCount(0);
+    setPlayoffError(null);
+    setShowPlayoffModal(true);
+  };
+
+  const handleClosePlayoffModal = () => {
+    setShowPlayoffModal(false);
+    setPlayoffError(null);
+  };
+
+  const handleCreatePlayoff = async () => {
+    if (!tournamentId) return;
+    setPlayoffLoading(true);
+    setPlayoffError(null);
+    try {
+      // Build query string for parameters
+      const params = new URLSearchParams({
+        tournament_id: String(tournamentId),
+        main_count: String(mainCount),
+        additional_count: String(additionalCount),
+      });
+      await apiRequest(
+        `playoffs/create?${params.toString()}`,
+        'POST',
+        undefined,
+        true
+      );
+      setShowPlayoffModal(false);
+      setShowPlayoff(true);
+      // Можно добавить редирект или обновление состояния
+    } catch (e: any) {
+      setPlayoffError(e?.detail || 'Ошибка создания олимпийской сетки');
+      setShowPlayoff(false); // Не показываем PlayoffStage при ошибке
+      // Не закрываем модалку, чтобы показать ошибку
+    } finally {
+      setPlayoffLoading(false);
+    }
+  };
+
+  // === СОСТОЯНИЕ ДЛЯ PLAYOFF ===
+  const [participantMap, setParticipantMap] = useState<{ [id: number]: { displayName: string; points?: number } }>({});
+  const [showPlayoff, setShowPlayoff] = useState(false);
+  const [playoffStageKey, setPlayoffStageKey] = useState(0);
 
   // === ПРОВЕРКА РОЛИ ===
   const checkUserRole = async () => {
@@ -299,6 +353,7 @@ const GroupStage: React.FC = () => {
     }
   };
 
+
   // === РЕДАКТИРОВАНИЕ ===
   const handleCellClick = async (
     groupId: number,
@@ -310,7 +365,6 @@ const GroupStage: React.FC = () => {
     if (!isOrganizer) return;
     const matchId = player1.matchIdMap.get(player2.id);
     if (!matchId) return;
-
     try {
       const match = await apiRequest(`groups/matches/${matchId}`, 'GET', undefined, false);
       setEditingCell({
@@ -328,22 +382,19 @@ const GroupStage: React.FC = () => {
     }
   };
 
-  // === СОХРАНЕНИЕ СЧЁТА ===
+  // === ОБРАБОТКА ВВОДА СЧЁТА ===
   const handleScoreSubmit = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== 'Enter' || !editingCell || !inputRef.current) return;
-
-    const val = inputRef.current.value.trim();
-    if (!val.includes('/')) return;
-
-    const [s1s, s2s] = val.split('/');
-    const s1 = parseInt(s1s, 10);
-    const s2 = parseInt(s2s, 10);
+    if (e.key !== 'Enter') return;
+    if (!editingCell) return;
+    const value = (e.target as HTMLInputElement).value.trim();
+    const [s1str, s2str] = value.split(/[/:\\-]/).map(s => s.trim());
+    const s1 = parseInt(s1str, 10);
+    const s2 = parseInt(s2str, 10);
     if (isNaN(s1) || isNaN(s2)) return;
 
     try {
       let score1: number;
       let score2: number;
-
       if (editingCell.rowIndex > editingCell.colIndex) {
         score1 = s2;
         score2 = s1;
@@ -351,14 +402,12 @@ const GroupStage: React.FC = () => {
         score1 = s1;
         score2 = s2;
       }
-
       await apiRequest(
         `groups/matches/${editingCell.matchId}`,
         'PUT',
         { score1, score2, played: true },
         true
       );
-
       await fetchGroups();
       setEditingCell(null);
     } catch (err) {
@@ -376,6 +425,30 @@ const GroupStage: React.FC = () => {
   useEffect(() => {
     checkUserRole();
     fetchGroups();
+  }, [tournamentId]);
+
+  useEffect(() => {
+    fetchParticipantsAndUsers().then(map => {
+      // преобразуем Map в объект для быстрого доступа
+      const obj: { [id: number]: { displayName: string; points?: number } } = {};
+      map.forEach((v, k) => {
+        obj[k] = { displayName: v.displayName };
+      });
+      setParticipantMap(obj);
+    });
+  }, [tournamentId]);
+
+  // === ПОКАЗЫВАТЬ PLAYOFF ЕСЛИ СУЩЕСТВУЕТ НА СЕРВЕРЕ ===
+  useEffect(() => {
+    if (!tournamentId) return;
+    (async () => {
+      try {
+        const data = await apiRequest(`playoffs/tournament/${tournamentId}`, 'GET');
+        if (data && data.stage_id) setShowPlayoff(true);
+      } catch {
+        setShowPlayoff(false);
+      }
+    })();
   }, [tournamentId]);
 
   if (loading) {
@@ -492,6 +565,73 @@ const GroupStage: React.FC = () => {
               </div>
             ))}
           </div>
+
+
+          {isOrganizer && (!showPlayoff || playoffError) && (
+            <div style={{ marginTop: 32, textAlign: 'center' }}>
+              <button
+                className={styles.createPlayoffBtn}
+                onClick={handleOpenPlayoffModal}
+                disabled={showPlayoffModal}
+              >
+                Сформировать олимпийскую сетку
+              </button>
+            </div>
+          )}
+
+          {showPlayoffModal && (
+            <div className={styles.modalOverlay}>
+              <div className={styles.modalContent}>
+                <h2>Сформировать олимпийскую сетку</h2>
+                <div style={{ marginBottom: 16 }}>
+                  <label>
+                    Основная сетка:
+                    <input
+                      type="number"
+                      min={0}
+                      value={mainCount}
+                      onChange={e => setMainCount(Number(e.target.value))}
+                      style={{ marginLeft: 8, width: 60 }}
+                    />
+                  </label>
+                </div>
+                <div style={{ marginBottom: 16 }}>
+                  <label>
+                    Доп. сетка:
+                    <input
+                      type="number"
+                      min={0}
+                      value={additionalCount}
+                      onChange={e => setAdditionalCount(Number(e.target.value))}
+                      style={{ marginLeft: 8, width: 60 }}
+                    />
+                  </label>
+                </div>
+                {playoffError && (
+                  <div style={{ color: 'red', marginBottom: 8, whiteSpace: 'pre-line', fontWeight: 500 }}>
+                    {playoffError}
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+                  <button onClick={handleCreatePlayoff} disabled={playoffLoading}>
+                    {playoffLoading ? 'Создание...' : 'Создать'}
+                  </button>
+                  <button onClick={handleClosePlayoffModal} disabled={playoffLoading}>
+                    Отмена
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showPlayoff && (
+            <PlayoffStage
+              key={playoffStageKey}
+              tournamentId={tournamentId!}
+              participantMap={participantMap}
+              isOrganizer={isOrganizer}
+            />
+          )}
         </div>
       </main>
     </div>

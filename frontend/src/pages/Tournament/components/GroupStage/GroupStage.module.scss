@@ -1,3 +1,117 @@
+// --- Модальное окно по центру ---
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.25);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalContent {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 1.5px 8px rgba(249,94,27,0.08);
+  padding: 36px 32px 28px 32px;
+  min-width: 340px;
+  max-width: 95vw;
+  position: relative;
+  animation: slideDown 0.25s cubic-bezier(.4,0,.2,1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.modalContent h2 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin-bottom: 18px;
+  color: #222;
+  text-align: center;
+}
+
+.modalContent label {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+}
+
+.modalContent input[type="number"] {
+  margin-left: 8px;
+  width: 60px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid #e1e5e9;
+  font-size: 1rem;
+  background: #fafbfc;
+  transition: border 0.2s;
+}
+.modalContent input[type="number"]:focus {
+  border: 1.5px solid #f95e1b;
+  outline: none;
+}
+
+.modalContent button {
+  padding: 10px 22px;
+  border-radius: 32px;
+  border: none;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+.modalContent button:first-of-type {
+  background: #f95e1b;
+  color: #fff;
+  margin-right: 8px;
+}
+.modalContent button:first-of-type:disabled {
+  opacity: 0.7;
+}
+.modalContent button:last-of-type {
+  background: #e1e5e9;
+  color: #333;
+}
+.modalContent button:last-of-type:hover {
+  background: #d1d5db;
+}
+.modalContent .error {
+  color: #e53935;
+  margin-bottom: 10px;
+  font-size: 0.98rem;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.createPlayoffBtn {
+  padding: 10px 20px;
+  background: #f95e1b;
+  color: white;
+  border: none;
+  border-radius: 32px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #f95e1b;
+    opacity: 0.9;
+  }
+}
 
 .tournamentContainer {
   flex-direction: column;

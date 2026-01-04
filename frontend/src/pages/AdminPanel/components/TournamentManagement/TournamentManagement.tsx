@@ -30,6 +30,7 @@ const getInitialTournamentState = (ownerId: number): Partial<Tournament> => ({
   name: "",
   type: "",
   is_child: false,
+  is_grand: false,
   photo_path: "",
   organizer_name_and_contacts: "",
   organizer_requisites: "",
@@ -294,14 +295,21 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
       parsedValue = value; // Уже в формате гггг-мм-дд от input
     }
     
-    if (type === 'checkbox' && name === 'is_child' && 'checked' in e.target) {
+    if (type === 'checkbox' && (name === 'is_child' || name === 'is_grand') && 'checked' in e.target) {
       const checked = (e.target as HTMLInputElement).checked;
-      const mixedSexId = getMixedSexId();
-      setNewTournament(prev => ({
-        ...prev,
-        [name]: checked,
-        sex_id: checked ? mixedSexId || prev.sex_id || 0 : prev.sex_id || 0,
-      }));
+      if (name === 'is_child') {
+        const mixedSexId = getMixedSexId();
+        setNewTournament(prev => ({
+          ...prev,
+          [name]: checked,
+          sex_id: checked ? mixedSexId || prev.sex_id || 0 : prev.sex_id || 0,
+        }));
+      } else {
+        setNewTournament(prev => ({
+          ...prev,
+          [name]: checked,
+        }));
+      }
     } else {
       setNewTournament(prev => ({
         ...prev,
@@ -571,6 +579,16 @@ const TournamentManagement: React.FC<TournamentManagementProps> = ({
               onChange={handleTournamentInputChange}
             />
             <label htmlFor="is_child">Детский турнир</label>
+          </div>
+          <div className={styles.checkboxContainer}>
+            <input
+              type="checkbox"
+              id="is_grand"
+              name="is_grand"
+              checked={!!newTournament.is_grand}
+              onChange={handleTournamentInputChange}
+            />
+            <label htmlFor="is_grand">Гранд турнир</label>
           </div>
           
           <div className={styles.formGroup}>

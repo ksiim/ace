@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from .participant import TournamentParticipant
     from .group import GroupStage
 
+
 class TournamentBase(SQLModel):
     name: str
     type: str
@@ -25,6 +26,8 @@ class TournamentBase(SQLModel):
     address: Optional[str] = None
     prize_fund: Optional[str] = None
     comment: Optional[str] = None
+    is_grand: bool = Field(default=False, description="Гранд турнир")
+
 
 class Tournament(TournamentBase, table=True):
     __tablename__ = "tournaments"
@@ -44,32 +47,40 @@ class Tournament(TournamentBase, table=True):
             "TournamentParticipant",
             back_populates="tournament",
             cascade="all, delete, delete-orphan",
-        )
+        ),
     )
     groups: List["GroupStage"] = Relationship(back_populates="tournament")
+
 
 class TournamentUpdate(TournamentBase):
     owner_id: Optional[int]
     sex_id: Optional[int]
     category_id: Optional[int]
     region_id: Optional[int]
+    is_grand: Optional[bool] = None
+
 
 class TournamentCreate(TournamentBase):
     owner_id: int
     sex_id: Optional[int] = None
     category_id: int
     region_id: int
+    is_grand: Optional[bool] = None
+
 
 class TournamentPublic(TournamentBase):
+    is_grand: bool = False
     id: int
     owner_id: int
     sex_id: Optional[int]
     category_id: int
     region_id: int
 
+
 class TournamentsPublic(SQLModel):
     data: List[TournamentPublic]
     count: int
+
 
 class TournamentCountResponse(SQLModel):
     count_of_tournament_last_52_weeks: int

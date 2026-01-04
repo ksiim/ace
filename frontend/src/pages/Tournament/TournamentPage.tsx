@@ -221,38 +221,57 @@ const TournamentPage: React.FC = () => {
         if (existingParticipant) {
           // Если участие уже существует, обновляем его, но сохраняем текущее значение confirmed
           const participantId = existingParticipant.id;
-          const updateResponse = await apiRequest(
-            `participants/${participantId}`,
-            'PUT',
-            {
-              ...registrationData, // Новые данные
-              confirmed: existingParticipant.confirmed, // Сохраняем текущее значение confirmed
-            },
-            true
-          );
-
-          if (!updateResponse.error) {
-            alert('Ваше участие в турнире обновлено!');
-            await loadParticipants(); // Перезагружаем список участников
-          } else {
-            setIsSubscriptionModalOpen(true); // Показываем модальное окно подписки
+          try {
+            const updateResponse = await apiRequest(
+              `participants/${participantId}`,
+              'PUT',
+              {
+                ...registrationData, // Новые данные
+                confirmed: existingParticipant.confirmed, // Сохраняем текущее значение confirmed
+              },
+              true
+            );
+            if (!updateResponse.error) {
+              alert('Ваше участие в турнире обновлено!');
+              await loadParticipants(); // Перезагружаем список участников
+            } else if (updateResponse.status === 418) {
+              alert(updateResponse.detail || 'Выбранная категория не соответствует возрасту участника или партнера');
+            } else {
+              setIsSubscriptionModalOpen(true); // Показываем модальное окно подписки
+            }
+          } catch (err: any) {
+            if (err?.response?.status === 418) {
+              alert(err.response.data?.detail || 'Выбранная категория не соответствует возрасту участника или партнера');
+            } else {
+              setIsSubscriptionModalOpen(true);
+            }
           }
         } else {
           // Если участия нет, создаем новое
-          const response = await apiRequest(
-            'participants/',
-            'POST',
-            {
-              ...registrationData,
-              confirmed: false, // По умолчанию участие не подтверждено
-            },
-            true
-          );
-          if (!response.error) {
-            alert('Вы успешно зарегистрировались на турнир!');
-            await loadParticipants(); // Перезагружаем список участников
-          } else {
-            setIsSubscriptionModalOpen(true); // Показываем модальное окно подписки
+          try {
+            const response = await apiRequest(
+              'participants/',
+              'POST',
+              {
+                ...registrationData,
+                confirmed: false, // По умолчанию участие не подтверждено
+              },
+              true
+            );
+            if (!response.error) {
+              alert('Вы успешно зарегистрировались на турнир!');
+              await loadParticipants(); // Перезагружаем список участников
+            } else if (response.status === 418) {
+              alert(response.detail || 'Выбранная категория не соответствует возрасту участника или партнера');
+            } else {
+              setIsSubscriptionModalOpen(true); // Показываем модальное окно подписки
+            }
+          } catch (err: any) {
+            if (err?.response?.status === 418) {
+              alert(err.response.data?.detail || 'Выбранная категория не соответствует возрасту участника или партнера');
+            } else {
+              setIsSubscriptionModalOpen(true);
+            }
           }
         }
 

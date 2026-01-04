@@ -108,16 +108,19 @@ async def create_tournament_participant(
     participant = await participant_crud.create_tournament_participant(session, participant_in)
     return participant
 
-async def validate_users_age_in_category(participant_in, session, tournament):
+async def validate_users_age_in_category(participant_in: TournamentParticipant, session, tournament: Tournament):
     category = await session.get(Category, tournament.category_id)
     user = await session.get(User, participant_in.user_id)
     partner = await session.get(User, participant_in.partner_id) if participant_in.partner_id else None
-    is_user_age_in_category = category.from_age <= user.age <= category.to_age
-    is_partner_age_in_category = category.from_age <= partner.age <= category.to_age if partner else True
+    user_age = (tournament.date - user.birth_date).days // 365
+    partner_age = (tournament.date - partner.birth_date).days // 365 if partner else None
+    
+    is_user_age_in_category = category.from_age <= user_age <= category.to_age
+    is_partner_age_in_category = category.from_age <= partner_age <= category.to_age if partner else True
     if not is_user_age_in_category or not is_partner_age_in_category:
         raise HTTPException(
-            status_code=400,
-            detail="Users do not meet the age requirements for this category",
+            status_code=418,
+            detail=f"Выбранная категория не соответствует возрасту участника или партнера {user_age}, {partner_age} - категория с {category.from_age} до {category.to_age} лет",
         )
 
 

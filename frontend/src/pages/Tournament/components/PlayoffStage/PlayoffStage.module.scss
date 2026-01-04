@@ -1,0 +1,205 @@
+.playoffStageWrapper {
+  margin: 32px 0 0 0;
+  padding: 24px 0;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  min-height: 400px;
+}
+
+.bracketBlock {
+  margin-bottom: 32px;
+  align-items: center;
+}
+
+.bracketTitle {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 18px;
+  color: #f95e1b;
+  text-align: center;
+}
+
+
+.bracketGrid {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  align-items: center !important;
+  height: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
+  width: max-content;
+}
+
+.roundColumn {
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  position: relative;
+  justify-content: center;
+  height: 100%;
+  align-self: center;
+}
+
+.roundColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 160px;
+  position: relative;
+}
+
+.roundName {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 12px;
+  color: #222;
+  text-align: center;
+}
+
+.matchCell {
+  background: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(249,94,27,0.07);
+  margin-bottom: 18px;
+  padding: 12px 12px;
+  min-width: 140px;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.matchLine {
+  pointer-events: none;
+  z-index: 1;
+}
+
+.roundColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 160px;
+  position: relative;
+  justify-content: center;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.roundColumn > .matchCell {
+  margin-top: auto;
+}
+
+.roundColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 140px;
+}
+
+.roundName {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 12px;
+  color: #222;
+}
+
+.matchCell {
+  background: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(249,94,27,0.07);
+  margin-bottom: 18px;
+//   padding: 12px 10px;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.playerCell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1rem;
+  color: #333;
+  font-weight: 500;
+  border-bottom: 1px solid #e1e5e9;
+  padding: 0px 12px 12px 12px;
+  // Скругление для победителя задается inline-стилем через border-radius:
+  // верхний игрок: 12px 12px 0 0
+  // нижний игрок: 0 0 12px 12px
+}
+
+.playerCellBar {
+  display: inline-block;
+  width: 100%;
+  max-width: 18px;
+  min-width: 12px;
+  height: 18px;
+  border-left: 1.5px solid #e1e5e9;
+  margin: 0 8px 0 8px;
+  vertical-align: middle;
+  box-sizing: border-box;
+}
+
+.playerCell:last-child {
+  border-bottom: none;
+}
+
+.playerName {
+  flex: 2 1 120px;
+  min-width: 120px;
+  max-width: 220px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.playerCell input[type="number"] {
+  flex: 0 0 44px;
+  min-width: 44px;
+  max-width: 44px;
+  height: 28px;
+  font-size: 1rem;
+  text-align: center;
+  box-sizing: border-box;
+}
+.playerScore {
+  display: inline-block;
+  min-width: 44px;
+  text-align: center;
+  height: 28px;
+  line-height: 28px;
+  font-size: 1rem;
+  margin-left: 8px;
+  color: #f95e1b;
+  font-weight: 600;
+}
+
+.playerScore {
+  margin-left: 8px;
+  color: #f95e1b;
+  font-weight: 600;
+}
+
+.emptyCell {
+  color: #bbb;
+  font-style: italic;
+  text-align: center;
+  padding: 4px 0;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}

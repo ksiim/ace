@@ -62,3 +62,67 @@ class Settings(BaseSettings):
         return f"amqp://{self.RABBITMQ_USER}:{self.RABBITMQ_PASSWORD}@{self.RABBITMQ_HOST}:{self.RABBITMQ_PORT}/"
 
 settings = Settings()
+
+tournament_categories_map = {
+    "Зеленый мяч": {
+        range(1, 2): 75,
+        range(2, 3): 60,
+        range(3, 5): 45,
+        range(5, 9): 30,
+        range(9, 17): 15,
+        range(17, 33): 10,
+        range(33, 65): 10,
+        "additional": 10,
+    },
+    "Оранжевый мяч": {
+        range(1, 2): 10,
+        range(2, 3): 10,
+        range(3, 5): 10,
+        range(5, 9): 10,
+        range(9, 17): 10,
+        range(17, 33): 10,
+        range(33, 65): 10,
+        "additional": 10,
+    },
+    "Красный мяч": {
+        range(1, 2): 10,
+        range(2, 3): 10,
+        range(3, 5): 10,
+        range(5, 9): 10,
+        range(9, 17): 10,
+        range(17, 33): 10,
+        range(33, 65): 10,
+        "additional": 10,
+    },
+    "До 17 лет": {
+        range(1, 2): 500,
+        range(2, 3): 384,
+        range(3, 5): 256,
+        range(5, 9): 128,
+        range(9, 17): 64,
+        range(17, 33): 32,
+        range(33, 65): 16,
+        "additional": 8,
+    },
+    "До 15 лет": {
+        range(1, 2): 378,
+        range(2, 3): 252,
+        range(3, 5): 168,
+        range(5, 9): 112,
+        range(9, 17): 56,
+        range(17, 33): 28,
+        range(33, 65): 14,
+        "additional": 7,
+    },
+    "До 13 лет": {
+        range(1, 2): 324,
+        range(2, 3): 216,
+        range(3, 5): 144,
+        range(5, 9): 96,
+        range(9, 17): 48,
+        range(17, 33): 24,
+        range(33, 65): 12,
+        "additional": 6,
+    },
+}
+

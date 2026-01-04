@@ -17,6 +17,7 @@ export interface Tournament {
   category_id: number;
   region_id: number;
   comment: string;
+  is_grand: boolean;
 }
 
 export interface Participant {
