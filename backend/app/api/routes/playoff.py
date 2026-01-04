@@ -474,10 +474,11 @@ async def enter_match_result(
                     participant = await session.get(TournamentParticipant, participant_id)
                     user = await session.get(User, participant.user_id)
                     points = 0
+                    multiplier = 2 if getattr(tournament_obj, "is_grand", False) else 1
                     if bracket_type == "main":
                         for rng, pts in points_map.items():
                             if isinstance(rng, range) and idx + 1 in rng:
-                                points = pts
+                                points = pts * multiplier
                                 break
                         print(
                             f"MAIN: место {idx + 1}, user_id={user.id}, participant_id={participant_id}, points={points}"
