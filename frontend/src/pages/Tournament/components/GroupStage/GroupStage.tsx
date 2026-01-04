@@ -136,7 +136,7 @@ const GroupStage: React.FC = () => {
   // === СОСТОЯНИЕ ДЛЯ PLAYOFF ===
   const [participantMap, setParticipantMap] = useState<{ [id: number]: { displayName: string; points?: number } }>({});
   const [showPlayoff, setShowPlayoff] = useState(false);
-  const [playoffStageKey, setPlayoffStageKey] = useState(0);
+  const [playoffStageKey] = useState(0);
 
   // === ПРОВЕРКА РОЛИ ===
   const checkUserRole = async () => {
