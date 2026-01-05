@@ -441,14 +441,21 @@ const GroupStage: React.FC = () => {
   // === ПОКАЗЫВАТЬ PLAYOFF ЕСЛИ СУЩЕСТВУЕТ НА СЕРВЕРЕ ===
   useEffect(() => {
     if (!tournamentId) return;
-    (async () => {
+    const fetchPlayoff = async () => {
       try {
         const data = await apiRequest(`playoffs/tournament/${tournamentId}`, 'GET');
         if (data && data.stage_id) setShowPlayoff(true);
       } catch {
         setShowPlayoff(false);
       }
-    })();
+    };
+    fetchPlayoff();
+    // Подписка на событие удаления олимпийской сетки
+    const handler = () => setShowPlayoff(false);
+    window.addEventListener('playoffDeleted', handler);
+    return () => {
+      window.removeEventListener('playoffDeleted', handler);
+    };
   }, [tournamentId]);
 
   if (loading) {

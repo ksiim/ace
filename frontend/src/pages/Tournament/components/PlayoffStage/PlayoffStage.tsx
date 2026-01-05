@@ -45,9 +45,9 @@ const PlayoffStage: React.FC<PlayoffStageProps> = ({ tournamentId, participantMa
   const [stage, setStage] = useState<PlayoffStageSchema | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Для хранения временных значений ввода очков
   const [editScores, setEditScores] = useState<{ [matchId: number]: { score1: string; score2: string } }>({});
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const fetchStage = async () => {
     setLoading(true);
@@ -70,17 +70,60 @@ const PlayoffStage: React.FC<PlayoffStageProps> = ({ tournamentId, participantMa
     fetchStage();
   }, [tournamentId]);
 
+  // --- Вычисления, не хуки! ---
+  let canDelete = false;
+  let finalMatch: PlayoffMatch | null = null;
+  let stageId = stage?.stage_id;
+  if (stage && isOrganizer && Array.isArray(stage.brackets) && stage.brackets.length > 0) {
+    const mainBracket = stage.brackets.find(b => b.type === 'main') || stage.brackets[0];
+    if (mainBracket && mainBracket.rounds.length > 0) {
+      const finalRound = mainBracket.rounds[mainBracket.rounds.length - 1];
+      if (finalRound && finalRound.matches.length > 0) {
+        finalMatch = finalRound.matches[0];
+        canDelete = !finalMatch.played;
+      }
+    }
+  }
+
+  const handleDeleteGrid = async () => {
+    if (!stageId) return;
+    setDeleteLoading(true);
+    setDeleteError(null);
+    try {
+      await apiRequest(`playoffs/stage/${stageId}`, 'DELETE', undefined, true);
+      setStage(null); // Скрыть сетку после удаления
+      if (typeof window !== 'undefined' && window.dispatchEvent) {
+        // Сообщить родителю о необходимости скрыть PlayoffStage
+        window.dispatchEvent(new CustomEvent('playoffDeleted'));
+      }
+    } catch (e: any) {
+      setDeleteError(e?.detail || 'Ошибка удаления олимпийской сетки');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   if (loading) return <div>Загрузка олимпийской сетки...</div>;
   if (error) return <div style={{ color: 'red' }}>{error}</div>;
   if (!stage || !stage.brackets) return null;
-
-  // Защита: если brackets не массив или пустой
   if (!Array.isArray(stage.brackets) || stage.brackets.length === 0) {
     return <div style={{ color: '#888', textAlign: 'center', margin: '32px 0' }}>Олимпийская сетка не создана или пуста.</div>;
   }
 
   return (
     <div className={styles.playoffStageWrapper}>
+      {canDelete && (
+        <div style={{ textAlign: 'right', marginBottom: 12 }}>
+          <button
+            style={{ background: '#f95e1b', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 16px', fontWeight: 600, cursor: 'pointer' }}
+            onClick={handleDeleteGrid}
+            disabled={deleteLoading}
+          >
+            {deleteLoading ? 'Удаление...' : 'Удалить олимпийскую сетку'}
+          </button>
+          {deleteError && <div style={{ color: 'red', marginTop: 6 }}>{deleteError}</div>}
+        </div>
+      )}
       {stage.brackets.map(bracket => (
         <div key={bracket.bracket_id} className={styles.bracketBlock}>
           <h3 className={styles.bracketTitle}>{bracket.type === 'main' ? 'Основная сетка' : 'Доп. сетка'}</h3>
