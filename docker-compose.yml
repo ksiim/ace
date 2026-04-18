@@ -88,6 +88,8 @@ services:
         - VITE_FRONTEND_HOST=${FRONTEND_HOST}
     volumes:
       - uploads:/usr/share/nginx/html/uploads
+      - /var/www/certbot:/var/www/certbot:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     env_file:
       - .env
     environment:
