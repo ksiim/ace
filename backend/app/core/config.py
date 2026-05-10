@@ -50,6 +50,11 @@ class Settings(BaseSettings):
     REDIS_HOST: str
     REDIS_PORT: int
     REDIS_PASSWORD: str
+
+    MAX_BOT_TOKEN: str = ""
+    MAX_BOT_LINK: str = ""
+    MAX_REGISTRATION_TTL_SECONDS: int = 2400
+    MAXBOT_INTERNAL_TOKEN: str = ""
     
     @computed_field
     @property
@@ -125,4 +130,3 @@ tournament_categories_map = {
         "additional": 6,
     },
 }
-

@@ -27,6 +27,20 @@ class UserBase(SQLModel):
             nullable=True,
         )
     )
+    max_user_id: Optional[int] = Field(
+        default=None,
+        sa_column=Column(
+            BigInteger,
+            nullable=True,
+        )
+    )
+    max_chat_id: Optional[int] = Field(
+        default=None,
+        sa_column=Column(
+            BigInteger,
+            nullable=True,
+        )
+    )
     organizer: bool | None = Field(default=False, nullable=True)
     end_of_subscription: Optional[datetime.datetime] = Field(default=None, nullable=True)
     updated_at: Optional[datetime.datetime] = Field(
@@ -81,7 +95,8 @@ class UserRegister(SQLModel):
     surname: str
     patronymic: str
     phone_number: str
-    telegram_id: int
+    telegram_id: Optional[int] = None
+    max_registration_token: str
     birth_date: datetime.date
     sex_id: int
     region_id: int

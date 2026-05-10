@@ -11,6 +11,7 @@ from sqlmodel import col, delete, func, select
 from dateutil.relativedelta import relativedelta
 
 from backend.app.crud import user as user_crud
+from backend.app.utils import max_registration
 from backend.app.api.deps import (
     CurrentUser,
     SessionDep,
@@ -195,8 +196,19 @@ async def register_user(session: SessionDep, user_in: UserRegister) -> Any:
     if not sex:
         raise HTTPException(status_code=400, detail="Invalid sex")
 
-    user_create = UserCreate.model_validate(user_in)
+    max_session = await max_registration.require_verified_registration(
+        registration_token=user_in.max_registration_token,
+        phone_number=user_in.phone_number,
+    )
+    user_create = UserCreate.model_validate(
+        user_in,
+        update={
+            "max_user_id": max_session.get("max_user_id"),
+            "max_chat_id": max_session.get("max_chat_id"),
+        },
+    )
     user = await user_crud.create_user(session=session, user_create=user_create)
+    await max_registration.mark_registration_used(user_in.max_registration_token)
     return user
 
 
