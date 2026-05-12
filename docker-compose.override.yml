@@ -21,6 +21,16 @@ services:
     command: >
       sh -c "python bot/main.py"
 
+  maxbot:
+    volumes:
+      - ./maxbot:/app/maxbot
+    environment:
+      - ENV=development
+    restart:
+      unless-stopped
+    command: >
+      sh -c "uvicorn maxbot.main:app --host 0.0.0.0 --port 8010 --reload"
+
   frontend:
     build:
       target: dev  # Используем dev-стадию из Dockerfile

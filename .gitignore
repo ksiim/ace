@@ -27,6 +27,7 @@ share/python-wheels/
 MANIFEST
 nginx.conf
 .DS_Store
+.env
 
 
 # PyInstaller

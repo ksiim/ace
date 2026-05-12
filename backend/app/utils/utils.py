@@ -162,10 +162,7 @@ async def check_redis():
 
 async def check_rabbitmq():
     try:
-        connection = await aio_pika.connect_robust(
-            host=settings.RABBITMQ_HOST,
-            port=int(settings.RABBITMQ_PORT)
-        )
+        connection = await aio_pika.connect_robust(settings.RABBITMQ_URL)
         await connection.close()
         return True
     except Exception:
