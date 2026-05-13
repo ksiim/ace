@@ -5,7 +5,7 @@ from backend.app.api.routes import (
     sex, categories, regions,
     trainers, news, participants,
     transactions, uploads, healthcheck,
-    groups, playoff,
+    groups, playoff, max_registration,
 )
 
 api_router = APIRouter()
@@ -50,4 +50,7 @@ api_router.include_router(
 )
 api_router.include_router(
     playoff.router, tags=["playoffs"], prefix="/playoffs"
+)
+api_router.include_router(
+    max_registration.router, tags=["max-registration"], prefix="/max/registration"
 )

@@ -75,7 +75,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 20s  # Даем время на запуск FastAPI и подключение к зависимостям
+      start_period: 20s
 
   frontend:
     build:
@@ -101,6 +101,8 @@ services:
       - "443:443"
     depends_on:
       backend:
+        condition: service_healthy
+      maxbot:
         condition: service_healthy
 
   rabbitmq:
@@ -129,7 +131,7 @@ services:
     container_name: telegram_bot
     depends_on:
       backend:
-        condition: service_healthy  # Теперь ждет готовности backend
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
       redis:
@@ -146,6 +148,36 @@ services:
     volumes:
       - uploads:/app/uploads
       - ./common:/app/common
+
+  maxbot:
+    build:
+      context: .
+      dockerfile: maxbot/Dockerfile
+    container_name: max_bot
+    restart: always
+    depends_on:
+      backend:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      MAX_BOT_TOKEN: ${MAX_BOT_TOKEN}
+      MAX_WEBHOOK_SECRET: ${MAX_WEBHOOK_SECRET}
+      MAX_API_BASE_URL: ${MAX_API_BASE_URL}
+      BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL}
+      BACKEND_MAX_START_PATH: ${BACKEND_MAX_START_PATH}
+      BACKEND_MAX_CONTACT_PATH: ${BACKEND_MAX_CONTACT_PATH}
+      BACKEND_MAXBOT_TOKEN: ${BACKEND_MAXBOT_TOKEN}
+      MAXBOT_HOST: ${MAXBOT_HOST}
+      MAXBOT_PORT: ${MAXBOT_PORT}
+    ports:
+      - "8010:8010"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8010/health', timeout=3).read()\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   redis:
     image: redis:6
