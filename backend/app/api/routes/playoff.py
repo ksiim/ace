@@ -162,6 +162,40 @@ async def generate_bracket(session, participants, bracket_type, stage_id):
     return bracket
 
 
+FOUR_GROUP_MAIN_SEEDING = [
+    (0, 0),  # 1A
+    (3, 3),  # 4D
+    (1, 1),  # 2B
+    (2, 2),  # 3C
+    (1, 0),  # 1B
+    (2, 3),  # 4C
+    (0, 1),  # 2A
+    (3, 2),  # 3D
+    (2, 0),  # 1C
+    (1, 3),  # 4B
+    (3, 1),  # 2D
+    (0, 2),  # 3A
+    (3, 0),  # 1D
+    (0, 3),  # 4A
+    (2, 1),  # 2C
+    (1, 2),  # 3B
+]
+
+
+def build_four_group_main_seeding(group_participants):
+    """
+    Standard 16-player playoff seeding for four groups with four qualifiers each.
+    Groups are expected in A/B/C/D order, participants inside each group by place.
+    """
+    if len(group_participants) != 4 or any(len(plist) < 4 for plist in group_participants):
+        return None
+
+    return [
+        group_participants[group_index][place_index]
+        for group_index, place_index in FOUR_GROUP_MAIN_SEEDING
+    ]
+
+
 @router.post("/create", response_model=PlayoffStageSchema)
 async def create_playoff(
     tournament_id: int,
@@ -183,6 +217,7 @@ async def create_playoff(
     groups = await get_groups_by_tournament(tournament_id, session)
     if not groups:
         raise HTTPException(status_code=400, detail="No groups found for tournament")
+    groups = sorted(groups, key=lambda group: group.number)
     # Собираем участников по результатам групп
     group_participants = []
     for group in groups:
@@ -241,7 +276,14 @@ async def create_playoff(
     additional_participants = []
     if main_count:
         n_groups = len(group_participants)
-        if n_groups == 2:
+        standard_four_group_seeding = (
+            build_four_group_main_seeding(group_participants)
+            if n_groups == 4 and main_count == 4
+            else None
+        )
+        if standard_four_group_seeding:
+            main_participants = standard_four_group_seeding
+        elif n_groups == 2:
             group1, group2 = group_participants
             pairs = []
             for i in range(0, main_count, 2):
@@ -523,7 +565,9 @@ async def get_playoff_stage(
         round_schemas = []
         for round_obj in rounds:
             matches = await session.execute(
-                select(PlayoffMatch).where(PlayoffMatch.round_id == round_obj.id)
+                select(PlayoffMatch)
+                .where(PlayoffMatch.round_id == round_obj.id)
+                .order_by(PlayoffMatch.id)
             )
             matches = matches.scalars().all()
             match_schemas = [
@@ -535,8 +579,9 @@ async def get_playoff_stage(
                     score2=m.score2,
                     winner_id=m.winner_id,
                     played=m.played,
+                    order=idx,
                 )
-                for m in matches
+                for idx, m in enumerate(matches)
             ]
             round_schemas.append(
                 PlayoffRoundSchema(
@@ -582,7 +627,9 @@ async def get_playoff_stage_by_tournament(
         round_schemas = []
         for round_obj in rounds:
             matches = await session.execute(
-                select(PlayoffMatch).where(PlayoffMatch.round_id == round_obj.id)
+                select(PlayoffMatch)
+                .where(PlayoffMatch.round_id == round_obj.id)
+                .order_by(PlayoffMatch.id)
             )
             matches = matches.scalars().all()
             match_schemas = [
@@ -594,8 +641,9 @@ async def get_playoff_stage_by_tournament(
                     score2=m.score2,
                     winner_id=m.winner_id,
                     played=m.played,
+                    order=idx,
                 )
-                for m in matches
+                for idx, m in enumerate(matches)
             ]
             round_schemas.append(
                 PlayoffRoundSchema(
