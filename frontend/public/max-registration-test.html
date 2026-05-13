@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MAX Registration Test</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f4f4f5;
+        color: #18181b;
+      }
+
+      main {
+        width: min(920px, calc(100% - 24px));
+        margin: 24px auto;
+      }
+
+      section {
+        background: #fff;
+        border: 1px solid #d4d4d8;
+        border-radius: 6px;
+        padding: 16px;
+        margin-bottom: 12px;
+      }
+
+      h1 {
+        font-size: 22px;
+        margin: 0 0 16px;
+      }
+
+      h2 {
+        font-size: 16px;
+        margin: 0 0 12px;
+      }
+
+      label {
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        margin: 10px 0 4px;
+      }
+
+      input {
+        width: 100%;
+        height: 36px;
+        border: 1px solid #a1a1aa;
+        border-radius: 4px;
+        padding: 8px;
+        font-size: 14px;
+      }
+
+      button {
+        height: 36px;
+        border: 0;
+        border-radius: 4px;
+        padding: 0 12px;
+        margin-top: 12px;
+        background: #18181b;
+        color: #fff;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      button.secondary {
+        background: #52525b;
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      pre {
+        min-height: 120px;
+        overflow: auto;
+        margin: 0;
+        padding: 12px;
+        background: #18181b;
+        color: #e4e4e7;
+        border-radius: 4px;
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      a {
+        display: inline-block;
+        margin-top: 8px;
+        color: #2563eb;
+        word-break: break-all;
+      }
+
+      .status {
+        padding: 8px;
+        border-radius: 4px;
+        background: #fef3c7;
+        color: #78350f;
+        font-size: 13px;
+      }
+
+      .status.ok {
+        background: #dcfce7;
+        color: #14532d;
+      }
+
+      .status.bad {
+        background: #fee2e2;
+        color: #7f1d1d;
+      }
+
+      @media (max-width: 720px) {
+        .row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>MAX Registration Test</h1>
+
+      <section>
+        <h2>1. Create MAX session</h2>
+        <label for="apiBase">API base</label>
+        <input id="apiBase" value="/api/v1" />
+
+        <label for="phone">Phone</label>
+        <input id="phone" value="79990000000" />
+
+        <div class="actions">
+          <button id="createSessionBtn">Create session</button>
+          <button id="checkStatusBtn" class="secondary" disabled>Check status</button>
+          <button id="togglePollingBtn" class="secondary" disabled>Start polling</button>
+        </div>
+
+        <p id="sessionStatus" class="status">No session yet.</p>
+        <a id="botLink" href="#" target="_blank" rel="noreferrer" hidden>Open MAX bot</a>
+      </section>
+
+      <section>
+        <h2>2. Signup after verified=true</h2>
+        <div class="row">
+          <div>
+            <label for="email">Email</label>
+            <input id="email" value="max-test@example.com" />
+          </div>
+          <div>
+            <label for="password">Password</label>
+            <input id="password" value="password123" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="surname">Surname</label>
+            <input id="surname" value="Ivanov" />
+          </div>
+          <div>
+            <label for="name">Name</label>
+            <input id="name" value="Ivan" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="patronymic">Patronymic</label>
+            <input id="patronymic" value="Ivanovich" />
+          </div>
+          <div>
+            <label for="telegramId">Telegram ID</label>
+            <input id="telegramId" value="123456789" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="birthDate">Birth date</label>
+            <input id="birthDate" type="date" value="2010-01-01" />
+          </div>
+          <div>
+            <label for="sexId">Sex ID</label>
+            <input id="sexId" value="1" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="regionId">Region ID</label>
+            <input id="regionId" value="1" />
+          </div>
+          <div>
+            <label for="registrationToken">MAX registration token</label>
+            <input id="registrationToken" readonly />
+          </div>
+        </div>
+
+        <button id="signupBtn" disabled>Signup</button>
+      </section>
+
+      <section>
+        <h2>Last response</h2>
+        <pre id="output">{}</pre>
+      </section>
+    </main>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+
+      let registrationToken = "";
+      let pollingTimer = null;
+      let verified = false;
+
+      function apiBase() {
+        return $("apiBase").value.replace(/\/+$/, "");
+      }
+
+      function show(data) {
+        $("output").textContent = JSON.stringify(data, null, 2);
+      }
+
+      function setStatus(text, kind) {
+        const el = $("sessionStatus");
+        el.textContent = text;
+        el.className = "status" + (kind ? " " + kind : "");
+      }
+
+      async function request(path, options = {}) {
+        const response = await fetch(apiBase() + path, {
+          ...options,
+          headers: {
+            "Content-Type": "application/json",
+            ...(options.headers || {}),
+          },
+        });
+        const text = await response.text();
+        const data = text ? JSON.parse(text) : {};
+        if (!response.ok) {
+          throw { status: response.status, data };
+        }
+        return data;
+      }
+
+      async function createSession() {
+        try {
+          verified = false;
+          const data = await request("/max/registration/session", {
+            method: "POST",
+            body: JSON.stringify({ phone_number: $("phone").value }),
+          });
+          registrationToken = data.registration_token;
+          $("registrationToken").value = registrationToken;
+          $("checkStatusBtn").disabled = false;
+          $("togglePollingBtn").disabled = false;
+          $("signupBtn").disabled = true;
+          $("botLink").hidden = false;
+          $("botLink").href = data.bot_link;
+          $("botLink").textContent = data.bot_link;
+          setStatus("Session created. Open MAX bot and share phone.", "");
+          show(data);
+        } catch (error) {
+          setStatus("Create session failed.", "bad");
+          show(error);
+        }
+      }
+
+      async function checkStatus() {
+        if (!registrationToken) return;
+        try {
+          const data = await request(
+            "/max/registration/status/" + encodeURIComponent(registrationToken)
+          );
+          verified = Boolean(data.verified);
+          $("signupBtn").disabled = !verified;
+          setStatus(
+            "Status: " + data.status + ", verified: " + data.verified,
+            verified ? "ok" : ""
+          );
+          show(data);
+          if (verified && pollingTimer) {
+            togglePolling();
+          }
+        } catch (error) {
+          setStatus("Status check failed.", "bad");
+          show(error);
+        }
+      }
+
+      function togglePolling() {
+        if (pollingTimer) {
+          clearInterval(pollingTimer);
+          pollingTimer = null;
+          $("togglePollingBtn").textContent = "Start polling";
+          return;
+        }
+        checkStatus();
+        pollingTimer = setInterval(checkStatus, 3000);
+        $("togglePollingBtn").textContent = "Stop polling";
+      }
+
+      async function signup() {
+        try {
+          const data = await request("/users/signup", {
+            method: "POST",
+            body: JSON.stringify({
+              email: $("email").value,
+              password: $("password").value,
+              name: $("name").value,
+              surname: $("surname").value,
+              patronymic: $("patronymic").value,
+              phone_number: $("phone").value.replace(/\D/g, ""),
+              telegram_id: Number($("telegramId").value),
+              max_registration_token: $("registrationToken").value,
+              birth_date: $("birthDate").value,
+              sex_id: Number($("sexId").value),
+              region_id: Number($("regionId").value),
+            }),
+          });
+          setStatus("Signup succeeded.", "ok");
+          show(data);
+        } catch (error) {
+          setStatus("Signup failed.", "bad");
+          show(error);
+        }
+      }
+
+      $("createSessionBtn").addEventListener("click", createSession);
+      $("checkStatusBtn").addEventListener("click", checkStatus);
+      $("togglePollingBtn").addEventListener("click", togglePolling);
+      $("signupBtn").addEventListener("click", signup);
+    </script>
+  </body>
+</html>
