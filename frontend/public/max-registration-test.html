@@ -125,6 +125,14 @@
         color: #7f1d1d;
       }
 
+      .hint {
+        margin: 10px 0 0;
+        padding-left: 18px;
+        color: #52525b;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
       @media (max-width: 720px) {
         .row {
           grid-template-columns: 1fr;
@@ -152,6 +160,12 @@
 
         <p id="sessionStatus" class="status">No session yet.</p>
         <a id="botLink" href="#" target="_blank" rel="noreferrer" hidden>Open MAX bot</a>
+        <ul class="hint">
+          <li>pending: MAX bot has not sent the start event yet.</li>
+          <li>contact_requested: bot start worked, now share phone in MAX.</li>
+          <li>verified: phone confirmed, signup is available.</li>
+          <li>failed: phone/hash check failed on backend.</li>
+        </ul>
       </section>
 
       <section>
