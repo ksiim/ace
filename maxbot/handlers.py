@@ -29,6 +29,13 @@ class MaxBotHandlers:
 
     async def handle_update(self, update: dict[str, Any]) -> None:
         update_type = get_update_type(update)
+        logger.info(
+            "MAX update received: type=%s user_id=%s chat_id=%s text=%r",
+            update_type,
+            get_user_id(update),
+            get_chat_id(update),
+            get_text(update),
+        )
 
         if update_type in ("message_created", None):
             await self._handle_message(update)
@@ -69,9 +76,26 @@ class MaxBotHandlers:
     async def _handle_message(self, update: dict[str, Any]) -> None:
         user_id = get_user_id(update)
         chat_id = get_chat_id(update)
+        text = get_text(update)
 
         if user_id is None:
             logger.warning("message update has no user_id: %s", update)
+            return
+
+        if text in ("/ping", "ping"):
+            await self._safe_send_text(
+                user_id=user_id,
+                chat_id=chat_id,
+                text="pong",
+            )
+            return
+
+        if text in ("/debug", "debug"):
+            await self._safe_send_text(
+                user_id=user_id,
+                chat_id=chat_id,
+                text=f"MAX bot debug: user_id={user_id}, chat_id={chat_id}",
+            )
             return
 
         contact_payload = get_contact_payload(update)
@@ -84,7 +108,7 @@ class MaxBotHandlers:
             )
             return
 
-        token = extract_registration_token(get_text(update))
+        token = extract_registration_token(text)
         if token is None:
             await self._safe_send_text(
                 user_id=user_id,
