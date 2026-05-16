@@ -5,9 +5,6 @@ import { apiRequest } from '../../utils/apiRequest.ts';
 import { saveToken, setAuthHeader } from '../../utils/serviceToken.ts';
 import axios from 'axios';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import { ru } from 'date-fns/locale';
 
 const Registration: React.FC = () => {
   const navigate = useNavigate();
@@ -41,7 +38,10 @@ const Registration: React.FC = () => {
     confirmPassword: false,
   });
 
+  const [dateDisplay, setDateDisplay] = useState('');
+
   const [maxRegistrationToken, setMaxRegistrationToken] = useState<string | null>(null);
+  const [maxBotLink, setMaxBotLink] = useState<string | null>(null);
   const [maxVerified, setMaxVerified] = useState(false);
   const [maxVerifying, setMaxVerifying] = useState(false);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -106,7 +106,9 @@ const Registration: React.FC = () => {
       confirmPassword: false,
     });
     setApiError(null);
+    setDateDisplay('');
     setMaxRegistrationToken(null);
+    setMaxBotLink(null);
     setMaxVerified(false);
     setMaxVerifying(false);
     stopPolling();
@@ -227,6 +229,24 @@ const validateField = (fieldName: string, value: string | number | null) => {
     }
   };
 
+  const handleDateInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 8);
+    let formatted = digits;
+    if (digits.length > 4) {
+      formatted = `${digits.slice(0, 2)}.${digits.slice(2, 4)}.${digits.slice(4)}`;
+    } else if (digits.length > 2) {
+      formatted = `${digits.slice(0, 2)}.${digits.slice(2)}`;
+    }
+    setDateDisplay(formatted);
+
+    if (digits.length === 8) {
+      const isoDate = `${digits.slice(4)}-${digits.slice(2, 4)}-${digits.slice(0, 2)}`;
+      setFormData(prev => ({ ...prev, birth_date: isoDate }));
+    } else {
+      setFormData(prev => ({ ...prev, birth_date: '' }));
+    }
+  };
+
   const validateForm = () => {
     const emailValid = !errors.email && formData.email !== '';
     const phoneValid = !errors.phone && formData.phone !== '';
@@ -247,7 +267,7 @@ const validateField = (fieldName: string, value: string | number | null) => {
       const response = await apiRequest('max/registration/session', 'POST', { phone_number: phone }, false);
       if (response?.registration_token && response?.bot_link) {
         setMaxRegistrationToken(response.registration_token);
-        window.open(response.bot_link, '_blank');
+        setMaxBotLink(response.bot_link);
       } else {
         setApiError('Не удалось создать сессию MAX. Попробуйте снова.');
         setMaxVerifying(false);
@@ -432,36 +452,14 @@ const navigateToLogin = () => {
 
             {type === 'date' ? (
               <div className={styles.dateInputWrapper}>
-                <DatePicker
-                  selected={formData.birth_date ? new Date(formData.birth_date) : null}
-                  onChange={(date: Date | null) => {
-                    const formattedDate = date ? date.toISOString().split('T')[0] : '';
-                    setFormData(prev => ({
-                      ...prev,
-                      birth_date: formattedDate,
-                    }));
-                    const updateFormField = (name: string, value: string) => {
-                      const input = document.createElement('input');
-                      input.name = name;
-                      input.value = value;
-                      const event = Object.create(new Event('change', { bubbles: true }));
-                      Object.defineProperty(event, 'target', { value: input });
-                      handleChange(event as any);
-                    };
-                    updateFormField('birth_date', formattedDate);
-                  }}
-                  maxDate={new Date()}
-                  placeholderText={placeholder || 'дд.мм.гггг'}
+                <input
+                  type="text"
+                  value={dateDisplay}
+                  onChange={handleDateInput}
                   className={`${styles.input} ${error ? styles.error : ''}`}
-                  locale={ru}
-                  dateFormat="dd.MM.yyyy"
-                  showPopperArrow={false}
-                  popperPlacement="bottom-start"
-                  customInput={
-                    <input
-                      className={`${styles.input} ${error ? styles.error : ''}`}
-                    />
-                  }
+                  placeholder={placeholder || 'дд.мм.гггг'}
+                  maxLength={10}
+                  inputMode="numeric"
                 />
               </div>
             ) : (
@@ -541,6 +539,18 @@ const navigateToLogin = () => {
             <div className={styles.maxVerifiedMessage}>
               MAX подтверждён
             </div>
+          ) : maxBotLink ? (
+            <div className={styles.maxLinkWrapper}>
+              <a
+                href={maxBotLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.maxButton}
+              >
+                Открыть <img src="/maxicon.png" alt="MAX" className={styles.maxIcon} /> для подтверждения
+              </a>
+              <p className={styles.maxHint}>Ожидание подтверждения...</p>
+            </div>
           ) : (
             <button
               type="button"
@@ -549,7 +559,7 @@ const navigateToLogin = () => {
               disabled={maxVerifying || !formData.phone || !!errors.phone}
             >
               {maxVerifying ? (
-                'Ожидание подтверждения...'
+                'Создание сессии...'
               ) : (
                 <>
                   Подтвердить через <img src="/maxicon.png" alt="MAX" className={styles.maxIcon} />
