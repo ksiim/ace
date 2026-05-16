@@ -196,6 +196,22 @@ def build_four_group_main_seeding(group_participants):
     ]
 
 
+def resolve_main_count_per_group(main_count: int, group_participants: list[list]) -> int:
+    """
+    The API historically accepts main_count as "qualifiers per group".
+    Some clients/users pass 16 for a full four-group playoff; normalize that
+    to four qualifiers per group when groups are too small to contain 16 each.
+    """
+    if (
+        len(group_participants) == 4
+        and main_count == len(FOUR_GROUP_MAIN_SEEDING)
+        and min(len(plist) for plist in group_participants) < main_count
+    ):
+        return 4
+
+    return main_count
+
+
 @router.post("/create", response_model=PlayoffStageSchema)
 async def create_playoff(
     tournament_id: int,
@@ -222,12 +238,6 @@ async def create_playoff(
     group_participants = []
     for group in groups:
         participants = await get_participants_by_group(group.id, session)
-        group_size = len(participants)
-        if main_count and additional_count and (main_count + additional_count > group_size):
-            raise HTTPException(
-                status_code=400,
-                detail=f"main_count + additional_count превышает число участников в группе (group_id={group.id})",
-            )
         # Собираем статистику по каждому участнику
         stats = []
         for gp in participants:
@@ -275,10 +285,18 @@ async def create_playoff(
     main_participants = []
     additional_participants = []
     if main_count:
+        main_count_per_group = resolve_main_count_per_group(main_count, group_participants)
+        for group, plist in zip(groups, group_participants):
+            if main_count_per_group + (additional_count or 0) > len(plist):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"main_count + additional_count превышает число участников в группе (group_id={group.id})",
+                )
+
         n_groups = len(group_participants)
         standard_four_group_seeding = (
             build_four_group_main_seeding(group_participants)
-            if n_groups == 4 and main_count == 4
+            if n_groups == 4 and main_count_per_group == 4
             else None
         )
         if standard_four_group_seeding:
@@ -286,9 +304,9 @@ async def create_playoff(
         elif n_groups == 2:
             group1, group2 = group_participants
             pairs = []
-            for i in range(0, main_count, 2):
+            for i in range(0, main_count_per_group, 2):
                 # 1A-2B, 2A-1B, 3A-4B, 4A-3B, ...
-                if i + 1 < main_count:
+                if i + 1 < main_count_per_group:
                     # Четная пара: iA-(i+1)B
                     pairs.append((i, i + 1))
                     # Следом нечетная: (i+1)A-iB
@@ -299,8 +317,8 @@ async def create_playoff(
                     main_participants.append(group2[idx_b])
         else:
             # Для большего числа групп: поочередно по местам
-            for i in range(main_count):
-                for g, plist in enumerate(group_participants):
+            for i in range(main_count_per_group):
+                for plist in group_participants:
                     if i < len(plist):
                         main_participants.append(plist[i])
     if additional_count:
