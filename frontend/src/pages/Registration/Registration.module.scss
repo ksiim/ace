@@ -277,4 +277,48 @@
   width: 100%;
 }
 
+.maxButton {
+  width: 100%;
+  padding: 12px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 25px;
+  font-family: 'Mulish', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  &:hover:not(:disabled) {
+    background: #1d4ed8;
+  }
+
+  &:disabled {
+    background: #93c5fd;
+    cursor: not-allowed;
+  }
+}
+
+.maxIcon {
+  height: 20px;
+  width: auto;
+  vertical-align: middle;
+}
+
+.maxVerifiedMessage {
+  width: 100%;
+  padding: 12px;
+  background: #16a34a;
+  color: #ffffff;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+}
+
 

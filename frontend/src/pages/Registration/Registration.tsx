@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Registration.module.scss';
-import OTPInput from '../../components/OTPInput/OTPInput.tsx';
-import type { OTPInputRef } from '../../components/OTPInput/types.ts';
 import { apiRequest } from '../../utils/apiRequest.ts';
 import { saveToken, setAuthHeader } from '../../utils/serviceToken.ts';
 import axios from 'axios';
@@ -13,16 +11,13 @@ import { ru } from 'date-fns/locale';
 
 const Registration: React.FC = () => {
   const navigate = useNavigate();
-  const otpRef = useRef<OTPInputRef>(null);
 
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     phone: '',
-    telegram_id: null as number | null,
     birth_date: '',
     password: '',
-    verificationCode: '',
     sex: '' as string,
     region_id: null as number | null,
     confirmPassword: '',
@@ -30,26 +25,61 @@ const Registration: React.FC = () => {
 
   const [sexOptions, setSexOptions] = useState<{ id: number; name: string }[]>([]);
   const [regionOptions, setRegionOptions] = useState<{ id: number; name: string }[]>([]);
-  const [showTelegramHint, setShowTelegramHint] = useState(false);
-  const [step, setStep] = useState(1);
-  const [requestId, setRequestId] = useState('');
   const [errors, setErrors] = useState({
     fullName: false,
     email: false,
     phone: false,
     password: false,
-    verificationCode: false,
-    telegram_id: false,
     sex: false,
     region_id: false,
     confirmPassword: false,
   });
-  const [apiError, setApiError] = useState<string | null>(null); // Новое состояние для ошибок API
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const [showPassword, setShowPassword] = useState({
     password: false,
     confirmPassword: false,
   });
+
+  const [maxRegistrationToken, setMaxRegistrationToken] = useState<string | null>(null);
+  const [maxVerified, setMaxVerified] = useState(false);
+  const [maxVerifying, setMaxVerifying] = useState(false);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stopPolling = () => {
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => stopPolling();
+  }, []);
+
+  useEffect(() => {
+    if (!maxRegistrationToken || maxVerified) return;
+
+    pollingRef.current = setInterval(async () => {
+      try {
+        const response = await apiRequest(
+          `max/registration/status/${maxRegistrationToken}`,
+          'GET',
+          undefined,
+          false
+        );
+        if (response?.verified) {
+          setMaxVerified(true);
+          setMaxVerifying(false);
+          stopPolling();
+        }
+      } catch {
+        // продолжаем polling при ошибке
+      }
+    }, 3000);
+
+    return () => stopPolling();
+  }, [maxRegistrationToken, maxVerified]);
 
   const toggleShowPassword = (field: 'password' | 'confirmPassword') => () => {
     setShowPassword(prev => ({ ...prev, [field]: !prev[field] }));
@@ -60,10 +90,8 @@ const Registration: React.FC = () => {
       fullName: '',
       email: '',
       phone: '',
-      telegram_id: null,
       birth_date: '',
       password: '',
-      verificationCode: '',
       sex: '',
       region_id: null,
       confirmPassword: '',
@@ -73,14 +101,15 @@ const Registration: React.FC = () => {
       email: false,
       phone: false,
       password: false,
-      verificationCode: false,
-      telegram_id: false,
       sex: false,
       region_id: false,
       confirmPassword: false,
     });
-    setApiError(null); // Сбрасываем ошибку API
-    setStep(1);
+    setApiError(null);
+    setMaxRegistrationToken(null);
+    setMaxVerified(false);
+    setMaxVerifying(false);
+    stopPolling();
   };
 
   useEffect(() => {
@@ -156,16 +185,10 @@ const Registration: React.FC = () => {
     validateField('confirmPassword', formData.confirmPassword);
   }, [formData.confirmPassword, formData.password]);
 
-  useEffect(() => {
-    validateField('telegram_id', formData.telegram_id);
-  }, [formData.telegram_id]);
-
-  const validateField = (fieldName: string, value: string | number | null) => {
+const validateField = (fieldName: string, value: string | number | null) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^\+?\d{10,}$/;
     const passwordRegex = /^.{8,}$/;
-    const telegramIdValid = value === null || (typeof value === 'number' && (value.toString().length === 9 || value.toString().length === 10 || value.toString().length === 8));
-
     setErrors((prev) => ({
       ...prev,
       [fieldName]: fieldName === 'email'
@@ -176,9 +199,7 @@ const Registration: React.FC = () => {
             ? value !== '' && !passwordRegex.test(value as string)
             : fieldName === 'confirmPassword'
               ? value !== '' && value !== formData.password
-              : fieldName === 'telegram_id'
-                ? value !== null && !telegramIdValid
-                : false,
+              : false,
     }));
   };
 
@@ -198,10 +219,6 @@ const Registration: React.FC = () => {
         cleanedValue = '7' + cleanedValue;
       }
       setFormData((prev) => ({ ...prev, [name]: `+7 ${cleanedValue.slice(1)}` }));
-    } else if (name === 'telegram_id') {
-      const trimmedValue = value.replace(/^0+/, '') || '0';
-      const parsedValue = trimmedValue === '' ? null : parseInt(trimmedValue, 10);
-      setFormData((prev) => ({ ...prev, [name]: parsedValue }));
     } else if (name === 'region_id') {
       const parsedValue = value === '' ? null : parseInt(value, 10);
       setFormData((prev) => ({ ...prev, [name]: parsedValue }));
@@ -215,39 +232,39 @@ const Registration: React.FC = () => {
     const phoneValid = !errors.phone && formData.phone !== '';
     const passwordValid = !errors.password && formData.password !== '';
     const confirmPasswordValid = !errors.confirmPassword && formData.confirmPassword !== '' && formData.confirmPassword === formData.password;
-    const telegramIdValid = !errors.telegram_id && formData.telegram_id !== null;
     const sexValid = formData.sex !== '';
     const regionValid = formData.region_id !== null;
-    return validateFullName() && emailValid && phoneValid && passwordValid && confirmPasswordValid && telegramIdValid && sexValid && regionValid;
+    return validateFullName() && emailValid && phoneValid && passwordValid && confirmPasswordValid && sexValid && regionValid;
   };
 
-  const sendVerificationCode = async () => {
-    const phone = formData.phone.replace(/\D/g, '');
-    const query = new URLSearchParams({ phone_number: phone }).toString();
-    const data = await apiRequest(`users/send_phone_verification_code/?${query}`, 'GET', undefined);
+  const initiateMaxVerification = async () => {
+    if (!formData.phone) return;
+    setApiError(null);
+    setMaxVerifying(true);
 
-    if (data?.response?.ok && data.response.result?.request_id) {
-      setRequestId(data.response.result.request_id);
-      setStep(2);
-    } else {
-      console.error('Ошибка: request_id не получен!');
-    }
-  };
-
-  const verifyCode = async () => {
-    if (!requestId) return;
-
-    const query = new URLSearchParams({ request_id: requestId, code: formData.verificationCode }).toString();
-    const success = await apiRequest(`users/verify_code/?${query}`, 'GET', undefined, false);
-
-    if (success) {
-      await registerUser();
-    } else {
-      setErrors((prev) => ({ ...prev, verificationCode: true }));
+    try {
+      const phone = formData.phone.replace(/\D/g, '');
+      const response = await apiRequest('max/registration/session', 'POST', { phone_number: phone }, false);
+      if (response?.registration_token && response?.bot_link) {
+        setMaxRegistrationToken(response.registration_token);
+        window.open(response.bot_link, '_blank');
+      } else {
+        setApiError('Не удалось создать сессию MAX. Попробуйте снова.');
+        setMaxVerifying(false);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data?.detail) {
+        setApiError(error.response.data.detail);
+      } else {
+        setApiError('Ошибка при инициализации MAX верификации.');
+      }
+      setMaxVerifying(false);
     }
   };
 
   const registerUser = async () => {
+    if (!maxRegistrationToken) return;
+
     const [surname, name, patronymic] = formData.fullName.split(' ');
     const selectedSex = sexOptions.find((sex) => sex.name === formData.sex);
     const sex_id = selectedSex ? selectedSex.id : null;
@@ -259,10 +276,10 @@ const Registration: React.FC = () => {
       surname,
       patronymic,
       phone_number: formData.phone.replace(/\D/g, ''),
-      telegram_id: formData.telegram_id,
       birth_date: formData.birth_date,
       sex_id,
       region_id: formData.region_id,
+      max_registration_token: maxRegistrationToken,
     };
 
     try {
@@ -271,9 +288,8 @@ const Registration: React.FC = () => {
         await login(userData.email, userData.password);
       }
     } catch (error) {
-      // Обработка ошибки с выводом detail
       if (axios.isAxiosError(error) && error.response?.data?.detail) {
-        setApiError(error.response.data.detail); // Устанавливаем сообщение об ошибке из detail
+        setApiError(error.response.data.detail);
       } else {
         setApiError('Произошла ошибка при регистрации. Попробуйте снова.');
       }
@@ -302,7 +318,6 @@ const Registration: React.FC = () => {
         console.error('Токен не получен');
       }
     } catch (error) {
-      // Обработка ошибки логина с выводом detail
       if (axios.isAxiosError(error) && error.response?.data?.detail) {
         setApiError(error.response.data.detail);
       } else {
@@ -314,23 +329,16 @@ const Registration: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setApiError(null); // Сбрасываем ошибку перед новой попыткой
-    if (step === 1 && validateForm()) {
-      await sendVerificationCode();
-    } else if (step === 2 && formData.verificationCode.length === 4) {
-      await verifyCode();
+    setApiError(null);
+    if (!validateForm()) return;
+    if (!maxVerified) {
+      setApiError('Подтвердите номер телефона через MAX перед регистрацией.');
+      return;
     }
+    await registerUser();
   };
 
-  const handleTelegramHintClick = () => {
-    setShowTelegramHint(!showTelegramHint);
-  };
-
-  const handleTelegramBotClick = () => {
-    window.open('https://t.me/Ace_tournament_bot', '_blank');
-  };
-
-  const navigateToLogin = () => {
+const navigateToLogin = () => {
     navigate('/login');
   };
 
@@ -349,7 +357,6 @@ const Registration: React.FC = () => {
           </button>
         </div>
 
-        {/* Отображение ошибки API */}
         {apiError && (
           <div className={styles.apiErrorMessage}>
             {apiError}
@@ -411,14 +418,6 @@ const Registration: React.FC = () => {
             toggleShow: () => toggleShowPassword('confirmPassword'),
           },
           {
-            label: 'Телеграм ID',
-            name: 'telegram_id',
-            type: 'number',
-            placeholder: '111111111',
-            error: errors.telegram_id,
-            errorMessage: 'Телеграм ID должен содержать 8-10 цифр',
-          },
-          {
             label: 'Дата рождения игрока',
             name: 'birth_date',
             type: 'date',
@@ -428,29 +427,7 @@ const Registration: React.FC = () => {
         ].map(({ label, name, type, placeholder, error, errorMessage }) => (
           <div key={name} className={styles.formGroup}>
             <div className={styles.labelWrapper}>
-              <div className={styles.labelWrapper__title}>
-                <label className={styles.label}>{label}</label>
-                {name === 'telegram_id' && (
-                  <div className={styles.hint} onClick={handleTelegramHintClick}>
-                    Как получить id?
-                  </div>
-                )}
-              </div>
-              {(name === 'telegram_id' && showTelegramHint) && (
-                <div className={styles.telegramHint}>
-                  <p>
-                    Отправьте боту команду <strong>/id</strong> чтобы получить
-                    ваш Telegram ID.
-                  </p>
-                  <button
-                    type="button"
-                    className={styles.telegramBotButton}
-                    onClick={handleTelegramBotClick}
-                  >
-                    Перейти к боту
-                  </button>
-                </div>
-              )}
+              <label className={styles.label}>{label}</label>
             </div>
 
             {type === 'date' ? (
@@ -559,18 +536,28 @@ const Registration: React.FC = () => {
           {errors.region_id && <div className={styles.errorMessage}>Пожалуйста, выберите регион</div>}
         </div>
 
-        {step === 2 && (
-          <div className={styles.otp}>
-            <h2>Введите код из Telegram</h2>
-            <OTPInput
-              ref={otpRef}
-              onComplete={(otp) => setFormData({ ...formData, verificationCode: otp })}
-            />
-            <div className={styles.otp__buttons}>
-              <button onClick={() => otpRef.current?.clear()}>Очистить</button>
+        <div className={styles.formGroup}>
+          {maxVerified ? (
+            <div className={styles.maxVerifiedMessage}>
+              MAX подтверждён
             </div>
-          </div>
-        )}
+          ) : (
+            <button
+              type="button"
+              className={styles.maxButton}
+              onClick={initiateMaxVerification}
+              disabled={maxVerifying || !formData.phone || !!errors.phone}
+            >
+              {maxVerifying ? (
+                'Ожидание подтверждения...'
+              ) : (
+                <>
+                  Подтвердить через <img src="/maxicon.png" alt="MAX" className={styles.maxIcon} />
+                </>
+              )}
+            </button>
+          )}
+        </div>
 
         <button
           type="submit"
@@ -579,12 +566,12 @@ const Registration: React.FC = () => {
             errors.email ||
             errors.phone ||
             errors.password ||
-            errors.telegram_id ||
             errors.sex ||
-            errors.region_id
+            errors.region_id ||
+            !maxVerified
           }
         >
-          {step === 1 ? 'Получить код' : 'Завершить регистрацию'}
+          Зарегистрироваться
         </button>
 
         <p className={styles.consentText}>
